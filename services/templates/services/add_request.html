@@ -1,0 +1,194 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Submit Service Request{% endblock %}
+
+{% block content %}
+<style>
+/* CRITICAL CSS: Targets the native file input element to hide the text display area. */
+#formset-container input[type="file"] {
+    display: block;
+    color: transparent;
+    padding: 0;
+}
+
+/* This targets the WebKit/Blink (Chrome/Safari/Edge) browsers to adjust the button itself */
+#formset-container input[type="file"]::-webkit-file-upload-button {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Optional: Add basic Tailwind classes to the button for visual consistency */
+#formset-container input[type="file"] {
+    border: 1px solid #d1d5db; /* border border-gray-300 */
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 0.5rem; /* p-2 */
+    width: 100%; /* w-full */
+    font-size: 0.875rem; /* text-sm */
+}
+
+/* Custom styles for background images in the header */
+.header-background-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    
+    {# --- SERVICE INTRODUCTION HEADER WITH BACKGROUND IMAGES --- #}
+    <div class="relative bg-white rounded-xl shadow-2xl mb-10 overflow-hidden min-h-[300px]"> 
+        
+        {# Background Image Grid #}
+        <div class="absolute inset-0 grid grid-cols-2 gap-0 z-0">
+            <div class="header-background-image" style="background-image: url('{% static 'images/smj1.jpg' %}');"></div>
+            <div class="header-background-image" style="background-image: url('{% static 'images/smj2.jpg' %}');"></div>
+        </div>
+
+        {# Content Overlay #}
+        <div class="relative z-10 p-8 md:p-12 text-white bg-black bg-opacity-60 rounded-xl flex flex-col justify-center min-h-[inherit]"> 
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-3">🛠️ Request Our Expert Service</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90 mb-6">
+                Tell us how Image Electronics Gh can help you.
+            </p>
+            
+            <div class="space-y-3 border-l-4 border-indigo-300 pl-4 bg-indigo-600/50 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold">We Specialize In:</h2>
+                <ul class="list-disc list-inside space-y-1 text-sm md:text-base">
+                    <li>**Studio Setup:** Design and installation of small, medium, and large studios for TV, podcast, YouTube, and streaming.</li>
+                    <li>**Digital Photography & Video Graphy:** Professional coverage for all events.</li>
+                    <li>**Audiovisual Equipment:** Rental, sales, and repair of Cameras, Projectors, and Parts.</li>
+                    <li>**Custom Solutions:** Graphic Design, Printing, and technical consultation.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {# --- END SERVICE INTRODUCTION HEADER WITH BACKGROUND IMAGES --- #}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        
+        {# --- NEW: SIDEBAR/GUIDE --- #}
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold text-yellow-800 mb-3">Quick Submission Tips</h3>
+                <ul class="text-sm text-gray-700 space-y-2">
+                    <li>1. **Be Specific:** Detail the make, model, and exact problem (e.g., "Canon EOS 5D Mark IV shutter jammed").</li>
+                    <li>2. **Attach Photos:** Use the attachment section to include clear photos of the damage or required repair.</li>
+                    <li>3. **Check Email:** We will send an initial response and any quote to your provided contact email.</li>
+                </ul>
+            </div>
+            
+            <a href="{% url 'services:customer_requests_list' %}"
+               class="block w-full text-center py-3 border border-indigo-600 text-indigo-600 font-bold rounded-lg shadow-md hover:bg-indigo-50 transition duration-300">
+                View My Pending Requests
+            </a>
+            
+            <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                <h4 class="font-semibold mb-1">Our Process:</h4>
+                <ol class="list-decimal list-inside ml-2">
+                    <li>Submit Request</li>
+                    <li>We Review (Status: PENDING)</li>
+                    <li>We Send Quote (Status: QUOTED)</li>
+                    <li>**You Approve & Send Product (If Repair Service)**</li>
+                    <li>We Begin Work (Status: IN PROGRESS)</li>
+                    <li>Delivery to Client (Upon Completion)</li>
+                </ol>
+            </div>
+        </div>
+        {# --- END NEW: SIDEBAR/GUIDE --- #}
+
+
+        {# --- MAIN FORM AREA --- #}
+        <div class="lg:col-span-2 bg-white p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Service Details Form</h2>
+            
+            <form method="POST" enctype="multipart/form-data" action="{% url 'services:add_service_request' %}" class="space-y-6">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    <div class="flex flex-col">
+                        <label for="{{ field.id_for_label }}" class="mb-2 font-semibold text-gray-700">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                            {% endif %}
+                        </label>
+
+                        {# Render the field using Django's default widget #}
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <p class="text-sm text-gray-500 mt-1">{{ field.help_text }}</p>
+                        {% endif %}
+                        
+                        {% for error in field.errors %}
+                            <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="flex flex-col border p-4 rounded-lg bg-gray-50">
+                    <label class="mb-2 font-semibold text-gray-700">Attachment (Max 4 images)</label>
+                    
+                    {{ formset.management_form }}
+                    
+                    <div id="formset-container" class="flex flex-wrap gap-4 items-start">
+                        {% for form_field in formset %}
+                            <div id="attachment-form-{{ forloop.counter0 }}" class="attachment-form-item flex-1 min-w-0 my-2">
+                                {% for hidden in form_field.hidden_fields %}{{ hidden }}{% endfor %}
+                                
+                                {{ form_field.file }} 
+                                
+                                <div id="preview-{{ form_field.file.id_for_label }}" class="mt-2"></div>
+                                {% for error in form_field.file.errors %}
+                                    <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                </div>
+                
+                <button type="submit" 
+                        class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01]">
+                    Send Request
+                </button>
+            </form>
+            
+        </div>
+        {# --- END MAIN FORM AREA --- #}
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('#formset-container input[type="file"]').forEach(fileInput => {
+            
+            fileInput.addEventListener('change', function(event) {
+                const previewAreaId = 'preview-' + fileInput.id;
+                const previewArea = document.getElementById(previewAreaId);
+                
+                if (previewArea) {
+                    previewArea.innerHTML = ''; 
+                    const file = event.target.files[0];
+                    
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewArea.innerHTML = `<div class="w-16 h-16 overflow-hidden rounded-lg shadow-md border border-gray-200"><img src="${e.target.result}" alt="${file.name}" class="w-full h-full object-cover"></div>`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock content %}

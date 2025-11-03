@@ -1,0 +1,121 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="lg:flex lg:gap-12">
+        
+        <!-- Image Gallery (Left Side) -->
+        <div class="lg:w-1/2 mb-8 lg:mb-0">
+            <div class="bg-gray-100 p-4 rounded-lg shadow-lg">
+                <!-- Primary Image Display (Using the first image as main, or placeholder) -->
+                {% with main_image=images.0 %}
+                <img id="main-product-image" 
+                    src="{% if main_image %}{{ main_image.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                    alt="{{ product.name }}" 
+                    class="w-full h-96 object-contain rounded-lg mb-4 bg-white transition duration-300">
+                {% endwith %}
+                
+                <!-- Thumbnail Grid -->
+                <div class="flex space-x-3 overflow-x-auto p-2 bg-white rounded-md shadow-inner">
+                    {% for image in images %}
+                    <img src="{{ image.image.url }}" 
+                        alt="Thumbnail {{ forloop.counter }}" 
+                        class="w-20 h-20 object-cover rounded-md cursor-pointer border-2 border-transparent hover:border-indigo-600 transition duration-150 thumbnail-image"
+                        data-full-url="{{ image.image.url }}"
+                    >
+                    {% empty %}
+                    <p class="text-gray-500 text-sm">No additional images available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details (Right Side) -->
+        <div class="lg:w-1/2">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">{{ product.name }}</h1>
+            
+            <!-- Price Block -->
+            <div class="mb-6">
+                {% if product.discount_price and product.discount_price < product.price %}
+                    <p class="text-sm text-gray-500 line-through">Original Price: GHC{{ product.price|floatformat:2 }}</p>
+                    <p class="text-5xl font-bold text-red-600">GHC{{ product.discount_price|floatformat:2 }}</p>
+                {% else %}
+                    <p class="text-4xl font-bold text-gray-800">GHC{{ product.price|floatformat:2 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Short Description -->
+            <p class="text-gray-700 mb-8 leading-relaxed">{{ product.description|linebreaksbr }}</p>
+
+            <!-- Action Button & Stock Status -->
+            <div class="flex items-center space-x-4">
+                
+                {% if product.stock_quantity > 0 %}
+                <!-- ENABLED Button -->
+                <button data-product="{{ product.id }}" data-action="add" 
+                        class="add-to-cart flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition duration-300 shadow-md">
+                    Add to Cart
+                </button>
+                {% else %}
+                <!-- DISABLED Button -->
+                <button disabled
+                        class="flex-1 bg-gray-400 text-white py-3 px-6 rounded-lg text-lg font-semibold cursor-not-allowed shadow-md">
+                    Out of Stock
+                </button>
+                {% endif %}
+
+                <!-- Stock Status Text -->
+                <div class="text-lg font-semibold">
+                    {% if product.stock_quantity > 0 %}
+                        <span class="text-green-600">In Stock ({{ product.stock_quantity }})</span>
+                    {% else %}
+                        <span class="text-red-600">Currently Unavailable</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Details -->
+            <div class="mt-10 border-t pt-6">
+                <h3 class="text-xl font-semibold mb-3">Product Specifications</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li><strong>Category:</strong> {{ product.category.name|default:"Uncategorized" }}</li>
+                    <li><strong>SKU:</strong> {{ product.sku|default:"N/A" }}</li>
+                    <li><strong>Weight:</strong> {{ product.weight|default:"N/A" }}</li>
+                    <!-- Add more product fields as needed -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript to handle thumbnail clicks and update the main image
+    document.addEventListener('DOMContentLoaded', () => {
+        const mainImage = document.getElementById('main-product-image');
+        const thumbnails = document.querySelectorAll('.thumbnail-image');
+
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', (event) => {
+                const fullUrl = event.target.getAttribute('data-full-url');
+                mainImage.src = fullUrl;
+                
+                // Optional: Update border to show which thumbnail is active
+                thumbnails.forEach(t => t.classList.remove('border-indigo-600'));
+                event.target.classList.add('border-indigo-600');
+            });
+        });
+        
+        // Ensure the first thumbnail is highlighted by default if images exist
+        if(thumbnails.length > 0) {
+            thumbnails[0].classList.add('border-indigo-600');
+        }
+    });
+
+    // NOTE: Cart logic (update_item) should be handled by an external JS file 
+    // or defined below if you include the JS logic inline.
+</script>
+
+{% endblock %}

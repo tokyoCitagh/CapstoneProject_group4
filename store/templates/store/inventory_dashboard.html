@@ -1,0 +1,159 @@
+{% extends 'base_portal.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block main_content %}
+
+<div class="px-4 py-8 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center mb-6">
+<h1 class="text-3xl font-extrabold text-gray-900">{{ page_title }}</h1>
+
+    {# FIX: Use 'portal:add_product' #}
+    <a href="{% url 'portal:add_product' %}" 
+       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+        <i class="fas fa-plus mr-2"></i> Add New Product
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    
+    {# 1. Total Products (Using the new total_products variable) #}
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5 border border-gray-200">
+        <p class="text-sm font-medium text-gray-500 truncate">Total Products</p>
+        <p class="mt-1 text-3xl font-semibold text-gray-900">
+            {{ total_products }} 
+        </p>
+    </div>
+    
+    {# 2. Low Stock Alert (Using the new low_stock_count variable) #}
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5 border border-gray-200">
+        <p class="text-sm font-medium text-gray-500 truncate">Low Stock Alert</p>
+        <p class="mt-1 text-3xl font-semibold 
+            {% if low_stock_count > 0 %}text-red-600{% else %}text-green-600{% endif %}">
+            {{ low_stock_count }}
+        </p>
+    </div>
+    
+    {# 3. Pending Orders (Using the new pending_orders_count variable) #}
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5 border border-gray-200">
+        <p class="text-sm font-medium text-gray-500 truncate">Pending Orders</p>
+        <p class="mt-1 text-3xl font-semibold text-indigo-600">
+            {{ pending_orders_count }}
+        </p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="lg:col-span-2 bg-white shadow rounded-lg border border-gray-200">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-bar text-indigo-600 mr-3"></i> Top Selling Products
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sold</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for product in product_sales %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ product.name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {% if product.stock_quantity <= 5 %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Low ({{ product.stock_quantity }})
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-500">{{ product.stock_quantity }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                                {% if product.total_sold %}
+                                    {{ product.total_sold|intcomma }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {# FIX: Use 'portal:edit_product' #}
+                                <a href="{% url 'portal:edit_product' pk=product.pk %}" class="text-indigo-600 hover:text-indigo-900">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                                No products found in inventory.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="lg:col-span-1 bg-white shadow rounded-lg border border-gray-200">
+        <div class="p-6">
+            {# UPDATED BLOCK: Added link to See All Logs #}
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-history text-indigo-600 mr-3"></i> Latest Activity Log
+                </h2>
+                <a href="{% url 'portal:all_activity_log' %}" 
+                   class="text-sm font-medium text-indigo-600 hover:text-indigo-900 transition duration-150">
+                    See All Logs <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            {# END UPDATED BLOCK #}
+            <ul class="divide-y divide-gray-200">
+                {% for log in latest_activities %}
+                <li class="py-3">
+                    <div class="text-sm font-medium text-gray-900 flex justify-between">
+                        <span>
+                            {% if log.action_type == 'PRODUCT_ADDED' %}
+                                <span class="text-green-600"><i class="fas fa-folder-plus"></i> ADDED:</span>
+                            {% elif log.action_type == 'STOCK_UPDATED' %}
+                                <span class="text-yellow-600"><i class="fas fa-warehouse"></i> STOCK:</span>
+                            {% elif log.action_type == 'PRICE_UPDATED' or log.action_type == 'DISCOUNT_APPLIED' %}
+                                <span class="text-blue-600"><i class="fas fa-tag"></i> PRICE:</span>
+                            {% elif log.action_type == 'PRODUCT_DELETED' %}
+                                <span class="text-red-600"><i class="fas fa-trash-alt"></i> DELETED:</span>
+                            {% elif log.action_type == 'ORDER_COMPLETED' %}
+                                <span class="text-indigo-600"><i class="fas fa-check-circle"></i> SALE:</span>
+                            {% else %}
+                                <span class="text-gray-600"><i class="fas fa-info-circle"></i> LOG:</span>
+                            {% endif %}
+                            
+                            {{ log.description }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 flex justify-between">
+                        <span>by {{ log.user.username }}</span>
+                        {# CRITICAL FIX: Changed log.timestamp to log.action_time #}
+                        <span title="{{ log.action_time }}">{{ log.action_time|naturaltime }}</span>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="py-3 text-center text-gray-500">No recent activity recorded.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    </div>
+
+
+</div>
+{% endblock main_content %}

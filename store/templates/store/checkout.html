@@ -1,0 +1,154 @@
+{% extends 'store/base.html' %} 
+{% load static %}
+
+{% block content %}
+    <div class="container my-5">
+        
+        <h1 class="mb-5 pb-3 fw-normal text-dark border-bottom">
+            <i class="fas fa-arrow-circle-right me-3 text-primary"></i> Finalize Your Order
+        </h1>
+        
+        <div class="row g-4">
+            
+            <div class="col-lg-7 order-md-1">
+                
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-5">
+                        <h4 class="mb-4 fw-bold text-dark border-bottom pb-2">1. Delivery Details</h4>
+                        
+                        <form id="shipping-form" oninput="togglePaymentButton()">
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted small">Customer</label>
+                                    <input type="text" class="form-control bg-light" value="{{ request.user.get_full_name|default:request.user.username }}" disabled>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted small">Contact Email</label>
+                                    <input type="email" class="form-control bg-light" value="{{ request.user.email }}" disabled>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="address" class="form-label fw-semibold">Street Address <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg border-primary" id="address" placeholder="1234 Main St" required>
+                                <div class="form-text">House Number, Street Name, and nearest landmark.</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-5 mb-3">
+                                    <label for="city" class="form-label fw-semibold">City <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="city" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="state" class="form-label fw-semibold">State / Region <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="state" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="zipcode" class="form-label fw-semibold">Zip Code</label>
+                                    <input type="text" class="form-control" id="zipcode">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-5">
+                        <h4 class="mb-4 fw-bold text-dark border-bottom pb-2">2. Payment Method</h4>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentOnline" checked>
+                            <label class="form-check-label fw-bold text-dark" for="paymentOnline">
+                                <i class="fas fa-credit-card me-2"></i> Pay Online (Card / Mobile Money)
+                            </label>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentTransfer" disabled>
+                            <label class="form-check-label text-muted" for="paymentTransfer">
+                                <i class="fas fa-university me-2"></i> Bank Transfer (Unavailable)
+                            </label>
+                        </div>
+                        
+                        <button id="make-payment" class="btn btn-success btn-lg w-100 mt-3 rounded-pill shadow" disabled>
+                            Fill required fields to enable payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 order-md-2 sticky-top" style="top: 20px;">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-primary text-black p-3 rounded-top-4">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-list-alt me-2"></i> Order Summary (Review)</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in items %}
+                        {% with primary_img=item.product.primary_image %}
+                        <li class="list-group-item d-flex align-items-center py-3 px-3">
+                            <img 
+                                src="{% if primary_img %}{{ primary_img.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                                alt="{{ item.product.name }}" 
+                                class="img-thumbnail me-3 rounded-3" 
+                                style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd;">
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-semibold">{{ item.product.name }}</h6>
+                                <p class="text-muted small mb-0">Qty: {{ item.quantity }}</p>
+                            </div>
+                            <strong class="text-dark fs-6">GHC {{ item.get_total|floatformat:2 }}</strong>
+                        </li>
+                        {% endwith %}
+                        {% endfor %}
+                        
+                        <li class="list-group-item d-flex justify-content-between bg-dark text-black py-2 px-3 small">
+                            <span>Subtotal</span>
+                            <span>GHC {{ order.get_cart_total|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between bg-dark text-black py-2 px-3 small">
+                            <span>Shipping Fee</span>
+                            <span class="text-success fw-semibold">GHC 0.00</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between bg-success text-black py-3 px-3 border-top border-3">
+                            <span class="fs-4 fw-bold">Grand Total</span>
+                            <strong class="fs-4 fw-bold">GHC {{ order.get_cart_total|floatformat:2 }}</strong>
+                        </li>
+                    </ul>
+                    
+                    <div class="card-footer text-center bg-white rounded-bottom-4 py-3">
+                        <a href="{% url 'store:cart' %}" class="btn btn-sm btn-outline-secondary">
+                            &#x2190; Go Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePaymentButton() {
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const paymentButton = document.getElementById('make-payment');
+            const total = '{{ order.get_cart_total|floatformat:2 }}'; // Get total from Django context
+
+            // Check if critical fields are minimally filled
+            if (address && city && state) {
+                paymentButton.disabled = false;
+                paymentButton.classList.remove('btn-secondary');
+                paymentButton.classList.add('btn-success');
+                paymentButton.innerHTML = `<i class="fas fa-lock me-2"></i> Pay GHC ${total} & Place Order`;
+            } else {
+                paymentButton.disabled = true;
+                paymentButton.classList.remove('btn-success');
+                paymentButton.classList.add('btn-secondary');
+                paymentButton.innerHTML = 'Fill required fields to enable payment';
+            }
+        }
+
+        // Initialize button state when the page loads
+        document.addEventListener('DOMContentLoaded', togglePaymentButton);
+    </script>
+{% endblock content %}

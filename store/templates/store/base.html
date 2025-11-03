@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    {# --- CRITICAL: The Tailwind script MUST be placed here in the parent base template head --- #}
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    {# --- Font Awesome for Icons (Loads after Tailwind) --- #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <title>My Shop - {% block title %}{% endblock title %}</title>
+    
+    {# This block is for non-critical, extra head content from child templates #}
+    {% block extra_head %}{% endblock extra_head %} 
+    
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 text-white shadow-md">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            
+            {# --- LOGO INTEGRATION: Replaced text with image --- #}
+            <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                <img src="{% static 'images/imjlogo.webp' %}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                <span class="text-2xl font-bold tracking-wide hidden sm:inline">Image Electronics</span>
+            </a>
+            {# --- END LOGO INTEGRATION --- #}
+            
+            <div class="space-x-4 flex items-center">
+                
+                <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a> 
+                <a href="{% url 'store:store' %}" class="hover:text-gray-300">Products</a>
+                
+                <a href="{% url 'services:add_service_request' %}" class="hover:text-gray-300">Services</a>
+                
+                {# ⭐ IMPROVEMENT: Added cart icon and adjusted layout for it ⭐ #}
+                <a href="{% url 'store:cart' %}" class="hover:text-gray-300 relative flex items-center space-x-1">
+                    <i class="fas fa-shopping-cart text-lg"></i>
+                    <span>Cart</span>
+                    <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">
+                        {% if user.is_authenticated %}{{ cartItems|default:0 }}{% else %}0{% endif %}
+                    </span>
+                </a>
+                
+                {# --- DYNAMIC LOGIN/LOGOUT BUTTON BLOCK (FIXED for allauth) --- #}
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'account_email' %}" class="text-sm text-gray-400 hover:text-white">Hello, **{{ request.user.username }}**</a>
+                    
+                    {# FIX: Use the correct allauth logout URL name 'account_logout' #}
+                    <form action="{% url 'account_logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200">
+                            Logout
+                        </button>
+                    </form>
+                    
+                {% else %}
+                    {# FIX: Use the correct allauth login URL name 'account_login' #}
+                    {# The button links to the login page, which has a link to signup #}
+                    <a href="{% url 'account_login' %}" class="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded transition duration-200">Sign in</a>
+                {% endif %}
+                {# --- END DYNAMIC LOGIN/LOGOUT BUTTON BLOCK --- #}
+
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        {# Display Django messages (e.g., success messages from allauth) #}
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 mb-2 rounded shadow 
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500
+                        {% elif message.tags == 'error' %}bg-red-100 text-red-800 border-l-4 border-red-500
+                        {% else %}bg-blue-100 text-blue-800 border-l-4 border-blue-500{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    {# --- UPDATED FOOTER SECTION --- #}
+    <footer class="mt-10 p-6 bg-gray-800 text-gray-400 border-t border-gray-700">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center md:items-start space-y-4 md:space-y-0">
+            
+            <div class="text-center md:text-left">
+                <h4 class="text-lg font-semibold text-white mb-2">Image Electronics</h4>
+                <p class="text-sm">&copy; 2025 My E-commerce Site</p>
+            </div>
+            
+            {# ⭐ IMPROVEMENT: Wrapped contact info in <address> tag for semantic HTML ⭐ #}
+            <address class="text-center md:text-left not-italic">
+                <h4 class="text-lg font-semibold text-white mb-2">Contact & Location 📍</h4>
+                <p class="text-sm">
+                    **Address:** Santa Maria, Ghana (Area Code 00233)
+                </p>
+                <p class="text-sm">
+                    **Email:** <a href="mailto:imageelectronicsgh@yahoo.com" class="hover:text-white underline">imageelectronicsgh@yahoo.com</a>
+                </p>
+            </address>
+            
+        </div>
+    </footer>
+    {# --- END UPDATED FOOTER SECTION --- #}
+
+    <script type="text/javascript">
+        // 1. Define the 'user' status for cart.js
+        var user = '{{ request.user.is_authenticated|yesno:"AuthenticatedUser,AnonymousUser" }}';
+        
+        // 2. Define the CSRF Token for all AJAX POST requests
+        var csrftoken = '{{ csrf_token }}';
+        
+        console.log('User Status:', user);
+    </script>
+    
+    <script type="text/javascript" src="{% static 'store/js/cart.js' %}"></script>
+
+</body>
+</html>

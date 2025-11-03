@@ -1,0 +1,44 @@
+{% extends 'store/base.html' %} 
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">{{ page_title }}</h2>
+    
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="py-3 px-4 font-semibold text-sm text-gray-600 uppercase tracking-wider">ID</th>
+                <th class="py-3 px-4 font-semibold text-sm text-gray-600 uppercase tracking-wider">Service Type</th>
+                <th class="py-3 px-4 font-semibold text-sm text-gray-600 uppercase tracking-wider">Status</th>
+                <th class="py-3 px-4 font-semibold text-sm text-gray-600 uppercase tracking-wider">Date</th>
+                <th class="py-3 px-4 font-semibold text-sm text-gray-600 uppercase tracking-wider">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for req in requests_list %}
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4">{{ req.id }}</td>
+                <td class="py-3 px-4">{{ req.service_type }}</td>
+                <td class="py-3 px-4">
+                    <span class="font-bold 
+                        {% if req.status == 'PENDING' %}text-red-500{% elif req.status == 'QUOTED' %}text-yellow-600{% elif req.status == 'IN_PROGRESS' %}text-blue-500{% else %}text-green-600{% endif %}">
+                        {{ req.get_status_display }}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-500">{{ req.date_requested|date:"M d, Y" }}</td>
+                <td class="py-3 px-4">
+                    <a href="{% url 'services:customer_chat' pk=req.pk %}" class="text-indigo-600 hover:text-indigo-800 font-medium">View/Chat</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="py-5 px-4 text-center text-gray-500">You have no service requests. <a href="{% url 'services:add_service_request' %}" class="text-indigo-600 hover:underline">Submit one now.</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

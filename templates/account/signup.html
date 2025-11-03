@@ -1,0 +1,292 @@
+{% load static %}  
+{% load i18n widget_tweaks %}
+{% load account %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Electronics - {% trans "Sign Up" %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* BASE STYLES */
+        body {
+            background-color: #f3f4f6; /* Light Background */
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            color: #374151;
+        }
+        
+        /* HEADER */
+        .header {
+            background-color: #1f2937; /* Dark Grey */
+            color: #ffffff;
+            padding: 1rem 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .header-link {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-link:hover {
+            color: #ffffff;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+
+        /* CARD */
+        .card {
+            width: 100%;
+            max-width: 448px;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .card-heading {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .login-link {
+            text-align: center;
+            color: #4b5563;
+            margin-bottom: 24px;
+        }
+        .login-link a {
+            color: #4f46e5; /* Primary Blue */
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .login-link a:hover {
+            color: #3730a3;
+        }
+
+        /* FORM STYLES */
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            row-gap: 16px;
+        }
+        .field-container {
+            margin-bottom: 0;
+        }
+        .field-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .form-input {
+            display: block;
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 0.875rem;
+            box-sizing: border-box; /* Crucial for padding/border not to change width */
+        }
+        .password-wrapper {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            padding-right: 12px;
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #4b5563;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .password-toggle:hover {
+            color: #1f2937;
+        }
+        .error-text {
+            color: #ef4444; /* Red */
+            font-size: 0.75rem;
+            font-style: italic;
+            margin-top: 4px;
+        }
+        .help-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-style: italic;
+            margin-top: 4px;
+        }
+        .submit-button {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #ffffff;
+            background-color: #10b981; /* Green Button */
+            transition: background-color 0.2s;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .submit-button:hover {
+            background-color: #059669; /* Darker Green on Hover */
+        }
+        
+        /* FOOTER */
+        .footer {
+            background-color: #1f2937;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto;
+        }
+        .footer-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="header-logo">
+                Image Electronics
+            </a>
+            <a href="{% url 'store:store' %}" class="header-link">
+                Back to Shop
+            </a>
+        </div>
+    </header>
+
+    <div class="main-content">
+
+        <div class="card">
+            
+            <h1 class="card-heading">
+                📝 {% trans "Create Account" %}
+            </h1>
+            
+            {% url 'account_login' as login_url %}
+            <p class="login-link">
+                {# FIX: Separating the url tag from blocktrans to resolve TemplateSyntaxError #}
+                {% blocktrans %}Already have an account? Then please{% endblocktrans %}
+                <a href="{{ login_url }}">
+                    {% trans "sign in" %}
+                </a>{% blocktrans %}.{% endblocktrans %}
+            </p>
+
+            <form class="signup-form" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    <div class="field-container">
+                        <label for="{{ field.id_for_label }}" class="field-label">
+                            {{ field.label }}
+                        </label>
+                        
+                        {# Check if the current field is a password field #}
+                        {% if 'password' in field.id_for_label or field.field.widget.input_type == 'password' %} 
+                            <div class="password-wrapper">
+                                {# Apply CSS class for the input #}
+                                {% render_field field class="form-input" %}
+                                
+                                {# Toggle Button (Eye Icon) #}
+                                <span class="password-toggle"
+                                      onclick="togglePasswordVisibility('{{ field.auto_id }}', this)"> 
+                                    <i class="fas fa-eye" id="icon-{{ field.auto_id }}"></i> 
+                                </span>
+                            </div>
+                        {% else %}
+                            {# Apply CSS class for non-password fields #}
+                            {% render_field field class="form-input" %}
+                        {% endif %}
+                        
+                        {# Display field errors #}
+                        {% for error in field.errors %}
+                            <p class="error-text">{{ error }}</p>
+                        {% endfor %}
+
+                        {% if field.help_text %}
+                            <p class="help-text">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {# Add the required redirect field if present #}
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <button type="submit" class="submit-button">
+                    {% trans "Sign Up" %}
+                </button>
+            </form>
+        </div>
+
+    </div>
+    
+    <footer class="footer">
+        <p class="footer-text">&copy; 2025 Image Electronics</p>
+    </footer>
+
+{# --- JAVASCRIPT FOR PASSWORD TOGGLE --- #}
+<script>
+    function togglePasswordVisibility(fieldId, iconElement) {
+        const field = document.getElementById(fieldId);
+        const icon = iconElement.querySelector('i');
+        
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash'); // Change to "Hide" icon
+        } else {
+            field.type = "password";
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye'); // Change to "Show" icon
+        }
+    }
+</script>
+</body>
+</html>

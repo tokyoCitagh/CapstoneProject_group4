@@ -1,0 +1,113 @@
+{% load static %}  
+{% load i18n widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <title>Image Electronics - Staff Portal Login</title>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+    {# --- HEADER: Indigo Portal Style --- #}
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            
+            {# Link to the Staff Dashboard upon login #}
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-warehouse text-2xl"></i>
+                <a href="{% url 'inventory_dashboard' %}" class="text-2xl font-bold tracking-wide text-white hover:text-indigo-200">
+                    Staff Portal
+                </a>
+            </div>
+            
+            {# Link back to the public store #}
+            <a href="{% url 'store:store' %}" class="text-indigo-200 hover:text-white transition duration-200">
+                <i class="fas fa-undo-alt mr-1"></i> Back to Public Shop
+            </a>
+        </div>
+    </header>
+    {# --- END HEADER --- #}
+
+    {# --- MAIN CONTENT: LOGIN FORM RESTORED --- #}
+    <div class="flex-grow flex flex-col items-center justify-center p-10">
+
+        <div class="w-full max-w-md bg-white p-10 rounded-xl shadow-2xl border border-indigo-200">
+            
+            <h1 class="text-3xl font-extrabold text-indigo-800 mb-2 text-center">
+                🔒 Staff Access
+            </h1>
+            <p class="text-center text-gray-600 mb-8">
+                {% trans "Sign in with your staff credentials." %}
+            </p>
+            
+            <form method="POST" action="{% url 'portal_login' %}" class="flex flex-col space-y-6">
+                {% csrf_token %}
+                
+                {# Display non-field errors at the top #}
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                        <p class="font-bold">Error:</p>
+                        {% for error in form.non_field_errors %}
+                            <p class="text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {# --- Form Fields Loop (Using widget_tweaks) --- #}
+                {% for field in form %}
+                    <div class="space-y-1">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ field.label }}
+                        </label>
+                        
+                        {# Custom rendering for the 'Remember Me' checkbox #}
+                        {% if field.label == 'Remember Me' %}
+                            <div class="flex items-center space-x-2 mt-1">
+                                {% render_field field class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" %}
+                                <span class="text-sm text-gray-600">{{ field.label }}</span>
+                            </div>
+                        {% else %}
+                            {# Standard input fields (Username/Email and Password) #}
+                            {% render_field field class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                        {% endif %}
+                        
+                        {# Display field errors #}
+                        {% for error in field.errors %}
+                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                {# --- End Form Fields Loop --- #}
+
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <div class="flex justify-end mt-4">
+                    <a class="text-sm font-medium text-indigo-600 hover:text-indigo-500" href="{% url 'account_reset_password' %}">
+                        {% trans "Forgot Password?" %}
+                    </a>
+                </div>
+
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                    {% trans "Sign In" %}
+                </button>
+                
+            </form>
+        </div>
+
+    </div>
+    {# --- END MAIN CONTENT --- #}
+    
+    <footer class="mt-auto p-4 bg-gray-200 text-gray-600 text-center border-t">
+        <p class="text-sm">Inventory Portal - Image Electronics &copy; 2025</p>
+    </footer>
+
+</body>
+</html>

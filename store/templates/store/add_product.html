@@ -1,0 +1,76 @@
+{% extends 'base_portal.html' %} 
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Add New Product{% endblock %}
+
+{% block main_content %}
+<div class="px-4 py-8 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+    
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900 flex items-center">
+            <i class="fas fa-box-open mr-3 text-indigo-600"></i> Add New Product
+        </h1>
+        
+        {# FIX: Use the 'portal:' namespace #}
+        <a href="{% url 'portal:inventory_dashboard' %}" class="text-indigo-600 hover:text-indigo-800 font-medium transition duration-150">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div class="bg-white shadow-xl rounded-xl p-8 border border-gray-200">
+        
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {% for field in form %}
+                    <div class="
+                        {% if field.name == 'description' %}md:col-span-2{% endif %} 
+                        {% if field.name == 'category' %}md:col-span-2{% endif %}
+                    ">
+                        
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ field.label }}
+                        </label>
+                        
+                        {# --- Apply Tailwind styling based on field type --- #}
+                        {% if field.field.widget.input_type == 'file' %}
+                            {# File input needs custom styling #}
+                            {% render_field field class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" %}
+                        {% elif field.field.widget.input_type == 'checkbox' %}
+                            {# Checkbox positioning #}
+                            <div class="flex items-center mt-2">
+                                {% render_field field class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" %}
+                                <label for="{{ field.id_for_label }}" class="ml-2 text-sm text-gray-500">{{ field.help_text }}</label>
+                            </div>
+                        {% elif field.field.widget.input_type == 'textarea' %}
+                            {# Textarea for Description #}
+                            {% render_field field class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-3" rows="5" %}
+                        {% else %}
+                            {# Standard Text/Number/Select inputs #}
+                            {% render_field field class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2" %}
+                        {% endif %}
+
+                        {# Display errors and help text #}
+                        {% for error in field.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                        
+                    </div>
+                {% endfor %}
+            </div>
+            
+            {# --- SUBMIT BUTTON --- #}
+            <div class="pt-5">
+                <button type="submit" 
+                        class="w-full inline-flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                    <i class="fas fa-save mr-3"></i> Save Product to Inventory
+                </button>
+            </div>
+        </form>
+        
+    </div>
+    </div>
+{% endblock main_content %}

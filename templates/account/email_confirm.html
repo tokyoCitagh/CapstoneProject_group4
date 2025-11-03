@@ -1,0 +1,77 @@
+{% load static %}  
+{% load i18n %}
+{% load account %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Electronics - {% trans "Confirm E-mail Address" %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body style="background-color: #f3f4f6; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: ui-sans-serif, system-ui, sans-serif;">
+
+    <header style="background-color: #1f2937; color: #ffffff; padding: 1rem 1rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <div style="max-width: 1280px; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'home' %}" style="font-size: 1.5rem; font-weight: 700; text-decoration: none; color: #ffffff;">
+                Image Electronics
+            </a>
+            <a href="{% url 'store:store' %}" style="color: #d1d5db; text-decoration: none; transition: color 0.2s;">
+                Back to Shop
+            </a>
+        </div>
+    </header>
+
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px;">
+
+        <div style="width: 100%; max-width: 448px; background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb;">
+            
+            <h2 style="font-size: 2.25rem; font-weight: 800; color: #1f2937; margin-bottom: 24px; text-align: center;">
+                {% trans "Confirm E-mail Address" %}
+            </h2>
+
+            {% if confirmation %}
+
+                {% user_display confirmation.email_address.user as user_display %}
+
+                {# Confirmation is for a user who is logged in or not logged in #}
+                <p style="color: #4b5563; margin-bottom: 24px; line-height: 1.6;">
+                    {% blocktrans with confirmation.email_address.email as email %}Please confirm that 
+                    <a href="mailto:{{ email }}" style="color: #4f46e5; font-weight: 600; text-decoration: underline;">{{ email }}</a> 
+                    is an e-mail address for user **{{ user_display }}**.
+                    {% endblocktrans %}
+                </p>
+
+                <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            style="width: 100%; display: flex; justify-content: center; padding: 10px 16px; border: 1px solid transparent; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); font-size: 1.125rem; font-weight: 500; color: #ffffff; background-color: #10b981; transition: background-color 0.2s; cursor: pointer;">
+                        {% trans 'Confirm' %}
+                    </button>
+                </form>
+
+            {% else %}
+                {# The confirmation key is invalid or has expired #}
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #dc2626; margin-bottom: 16px; text-align: center;">{% trans "Confirmation Failed" %} ❌</h3>
+                <p style="color: #4b5563; margin-bottom: 24px; text-align: center;">
+                    {% trans "The confirmation link was invalid, possibly because it has already been used." %}
+                </p>
+                <div style="margin-top: 24px; text-align: center;">
+                    <a href="{% url 'account_email' %}" 
+                       style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 700; padding: 10px 16px; border-radius: 6px; transition: background-color 0.2s; text-decoration: none;">
+                        {% trans "Resend Confirmation Email" %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <footer style="background-color: #1f2937; text-align: center; padding: 10px; margin-top: auto;">
+        <p style="font-size: 0.8rem; color: #9ca3af;">&copy; 2025 Image Electronics</p>
+    </footer>
+
+</body>
+</html>

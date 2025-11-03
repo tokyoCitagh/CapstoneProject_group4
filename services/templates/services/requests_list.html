@@ -1,0 +1,56 @@
+{% extends 'base_portal.html' %} 
+{% load static %}
+
+{% block title %}All Service Requests{% endblock %}
+
+{% block main_content %}
+<div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">💬 All Service Requests (Staff View)</h2>
+    
+    <div class="mb-4">
+        {# Changed 'services:' to 'portal:' #}
+        <a href="{% url 'portal:staff_requests_list' %}" class="text-indigo-600 hover:text-indigo-800 font-medium underline">
+            Refresh All Requests
+        </a>
+    </div>
+
+    <table class="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
+        <thead class="bg-indigo-700 text-white">
+            <tr>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">ID</th>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">Type</th>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">Status</th>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">Date</th>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">Customer</th>
+                <th class="py-3 px-4 font-semibold text-sm uppercase tracking-wider text-left">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for req in requests_list %}
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 text-gray-700 font-semibold">{{ req.id }}</td>
+                <td class="py-3 px-4 text-gray-700">{{ req.service_type }}</td>
+                <td class="py-3 px-4">
+                    <span class="font-bold 
+                        {% if req.status == 'PENDING' %}text-red-600{% elif req.status == 'QUOTED' %}text-yellow-600{% elif req.status == 'IN_PROGRESS' %}text-blue-600{% else %}text-green-600{% endif %}">
+                        {{ req.get_status_display }}
+                    </span>
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-500">{{ req.date_requested|date:"M d, H:i" }}</td>
+                <td class="py-3 px-4 text-gray-700">{{ req.customer.name|default:"Guest" }}</td>
+                <td class="py-3 px-4">
+                    {# Changed 'services:staff_chat' to 'portal:staff_chat' #}
+                    <a href="{% url 'portal:staff_chat' pk=req.pk %}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                        Open Chat
+                    </a> 
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="py-5 px-4 text-center text-gray-500">No service requests found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock main_content %}

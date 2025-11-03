@@ -1,0 +1,208 @@
+{% load static %}  
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Electronics - {% trans "Verify Your E-mail Address" %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* BASE STYLES */
+        body {
+            background-color: #f3f4f6; /* Light Background */
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            color: #374151;
+        }
+        
+        /* HEADER */
+        .header {
+            background-color: #1f2937; /* Dark Grey */
+            color: #ffffff;
+            padding: 1rem 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .header-link {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-link:hover {
+            color: #ffffff;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+
+        /* CARD */
+        .card {
+            width: 100%;
+            max-width: 448px;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .card-heading {
+            font-size: 1.75rem; 
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* ALERT BOX (The verification message) */
+        .alert-box {
+            padding: 24px;
+            background-color: #eff6ff; /* Light Blue Background */
+            border-left: 4px solid #3b82f6; /* Blue Border */
+            color: #1e40af; /* Dark Blue Text */
+            border-radius: 8px;
+        }
+        .alert-header {
+            display: flex;
+            align-items: center;
+        }
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+        .alert-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin: 0;
+        }
+        .alert-text {
+            margin-top: 16px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+        .alert-text-bold {
+            margin-top: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* RESEND LINK STYLES */
+        .resend-section {
+            margin-top: 32px;
+            text-align: center;
+        }
+        .resend-text {
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        .resend-link {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.875rem;
+            color: #10b981; /* Green link color */
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #10b981;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .resend-link:hover {
+            color: #059669;
+            border-color: #059669;
+        }
+        
+        /* FOOTER */
+        .footer {
+            background-color: #1f2937;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto;
+        }
+        .footer-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="header-logo">
+                Image Electronics
+            </a>
+            <a href="{% url 'store:store' %}" class="header-link">
+                Back to Shop
+            </a>
+        </div>
+    </header>
+
+    <div class="main-content">
+
+        <div class="card">
+            
+            <h2 class="card-heading">
+                {% trans "Verify Your E-mail Address" %} 🔒
+            </h2>
+            
+            <div class="alert-box" role="alert">
+                <div class="alert-header">
+                    <i class="fas fa-check-circle alert-icon"></i>
+                    <p class="alert-title">
+                        {% trans "Confirmation Sent!" %}
+                    </p>
+                </div>
+                <p class="alert-text">
+                    {% blocktrans %}We've sent an e-mail to you for verification. Follow the link provided to finalize the signup process.{% endblocktrans %}
+                </p>
+                <p class="alert-text-bold">
+                    {% blocktrans %}If you do not see the e-mail in a few minutes, check your spam folder.{% endblocktrans %}
+                </p>
+            </div>
+
+            <div class="resend-section">
+                <p class="resend-text">
+                    {% trans "Still waiting for your email?" %}
+                </p>
+                <a href="{% url 'account_email' %}" 
+                   class="resend-link">
+                    {% trans "Check Email Status / Resend" %}
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2025 Image Electronics</p>
+    </footer>
+
+</body>
+</html>

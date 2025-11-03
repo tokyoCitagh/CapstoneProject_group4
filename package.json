@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "tailwindcss": "^4.1.16"
+  },
+  "name": "ecomapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch-css": "tailwindcss -i ./static/css/main.css -o ./static/css/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

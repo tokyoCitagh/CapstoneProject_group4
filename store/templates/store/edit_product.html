@@ -1,0 +1,273 @@
+{% extends 'base_portal.html' %} 
+{% load static %}
+
+{% block title %}Edit Product{% endblock %}
+
+{% block main_content %}
+    <style>
+        /* Base Form Container */
+        .form-container {
+            max-width: 800px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            /* FIX: Added 'auto' for left/right margin to center the container */
+            margin: 20px auto 0; 
+        }
+
+        /* Form Input Group - Forces Label and Input onto one line */
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Space out label and input */
+            margin-bottom: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-row label {
+            flex-shrink: 0; /* Label won't shrink */
+            font-weight: 600;
+            color: #333;
+            width: 200px; /* Give the label a fixed width for alignment */
+            margin-right: 10px;
+        }
+
+        .form-row input[type="text"],
+        .form-row input[type="number"],
+        .form-row select {
+            flex-grow: 1; /* Input takes up remaining space */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-width: 350px;
+        }
+        
+        /* Digital Field Radio Buttons */
+        .digital-field-group {
+            display: flex;
+            gap: 15px; /* Space between radio options */
+            flex-grow: 1;
+            max-width: 350px;
+        }
+        .digital-field-group label {
+            font-weight: normal !important;
+            width: auto !important; /* Reset width for individual radio labels */
+        }
+        .digital-field-group input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        /* Image Formset Styling */
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .image-card {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            width: 160px; /* Slightly wider for better visual */
+            text-align: center;
+            background: #fafafa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .image-card img {
+            max-width: 100%;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .image-card label {
+            font-weight: normal;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* --- ACTION BUTTONS & MODAL STYLES --- */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+        .delete-btn {
+            background-color: #dc3545; 
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+    </style>
+    
+    <h2 style="text-align: center;">✏️ Edit Product: {{ product.name }}</h2>
+    
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# 1. PRIMARY PRODUCT FIELDS #}
+            <h3>Product Details</h3>
+            <div class="form-input-group">
+                
+                {# Use form-row for clean alignment #}
+                <div class="form-row">
+                    {{ form.name.label_tag }} 
+                    {{ form.name }}
+                </div>
+                
+                <div class="form-row">
+                    {{ form.price.label_tag }} 
+                    {{ form.price }}
+                </div>
+                
+                <div class="form-row">
+                    {{ form.discount_price.label_tag }} 
+                    {{ form.discount_price }}
+                </div>
+
+                <div class="form-row">
+                    {{ form.stock_quantity.label_tag }} 
+                    {{ form.stock_quantity }}
+                </div>
+                
+                {# Special handling for the digital field radio buttons #}
+                <div class="form-row">
+                    {{ form.digital.label_tag }} 
+                    <div class="digital-field-group">
+                        {{ form.digital }}
+                    </div>
+                </div>
+                
+                {# Add description field if it exists #}
+                {% if form.description %}
+                <div class="form-row" style="align-items: flex-start; border-bottom: none;">
+                    {{ form.description.label_tag }} 
+                    {{ form.description }}
+                </div>
+                {% endif %}
+
+            </div>
+            
+            <hr style="margin: 20px 0;">
+
+            {# 2. IMAGE FORMSET FIELDS #}
+            <h3>Product Photos (Add/Edit/Delete)</h3>
+            
+            {{ image_formset.management_form }} 
+
+            <div class="image-gallery">
+                
+                {% for image_form in image_formset %}
+                <div class="image-card">
+                    
+                    {# Image Preview #}
+                    {% if image_form.instance.pk %}
+                        <img src="{{ image_form.instance.image.url }}" alt="Photo Preview">
+                        
+                        <p style="margin: 5px 0;">
+                            {{ image_form.DELETE.label_tag }} {{ image_form.DELETE }}
+                        </p>
+                        <p class="text-xs text-gray-500 mb-2">Change/Replace:</p>
+                        {{ image_form.image }}
+                        {{ image_form.id }}
+                    {% else %}
+                        <div style="height: 120px; line-height: 120px; color: #aaa; border: 1px dashed #ccc; margin-bottom: 10px; font-size: 0.9em; border-radius: 4px;">+ New Photo</div>
+                        {{ image_form.image }}
+                        {{ image_form.id }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; transition: background-color 0.2s;">Save Changes</button>
+                
+                {# --- DELETE BUTTON: Triggers the custom modal --- #}
+                <button type="button" id="openDeleteModal" class="delete-btn">
+                    Delete Product
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <p style="margin-top: 20px; text-align: center;"><a href="{% url 'portal:inventory_dashboard' %}" style="color: #4f46e5; text-decoration: underline;">← Back to Dashboard</a></p>
+
+    <div id="deleteConfirmationModal" class="modal">
+        <div class="modal-content">
+            <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Confirm Deletion</p>
+            <p>Are you absolutely sure you want to delete **{{ product.name }}**?</p>
+            <p style="font-size: 0.875rem; color: #ef4444; margin-top: 0.25rem;">This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button onclick="document.getElementById('deleteConfirmationModal').style.display='none'" 
+                        style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                </button>
+                
+                <form id="delete-form" method="POST" action="{% url 'portal:delete_product' pk=product.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="delete-btn">
+                        Yes, Delete Permanently
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // JavaScript for Modal Interaction
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('deleteConfirmationModal');
+            const openBtn = document.getElementById('openDeleteModal');
+
+            // Open the modal when the delete button is clicked
+            openBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+            });
+
+            // Close the modal if the user clicks anywhere outside of it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+    </script>
+{% endblock main_content %}
