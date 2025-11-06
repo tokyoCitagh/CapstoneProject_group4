@@ -18,8 +18,8 @@
     {# --- CRITICAL: Check if the user is logged in AND is staff --- #}
     {% if not user.is_authenticated or not user.is_staff %}
         
-        {# NOTE: The 'portal_login' URL is used here to get the staff login path #}
-        {% url 'portal_login' as login_url %}
+        {# NOTE: The 'portal:login' URL is used here to get the staff login path #}
+        {% url 'portal:login' as login_url %}
         
         {# FIX #1: If user is on a protected page (not the login page), force redirect #}
         {% if request.path != login_url %}
@@ -117,8 +117,8 @@
                                 Hello, **{{ user.username }}**
                             </span>
                             
-                            {# UPDATED LOGOUT BUTTON: Wrap the link/icon in a form to force a POST request #}
-                            <form method="post" action="{% url 'account_logout' %}">
+                            {# FIX: Changed 'portal:staff_logout' to the correct URL name 'portal:logout' #}
+                            <form method="post" action="{% url 'portal:logout' %}"> 
                                 {% csrf_token %}
                                 <button type="submit" 
                                    class="p-1 rounded-full text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" title="Logout">

@@ -1,4 +1,3 @@
-# services/urls.py (FINAL COMPLETE CODE - Dedicated URLs)
 from django.urls import path
 from . import views
 

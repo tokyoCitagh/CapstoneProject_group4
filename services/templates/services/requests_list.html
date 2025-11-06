@@ -26,7 +26,8 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-            {% for req in requests_list %}
+            {# Corrected loop variable: 'requests' #}
+            {% for req in requests %}
             <tr class="hover:bg-gray-50">
                 <td class="py-3 px-4 text-gray-700 font-semibold">{{ req.id }}</td>
                 <td class="py-3 px-4 text-gray-700">{{ req.service_type }}</td>
@@ -37,9 +38,8 @@
                     </span>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-500">{{ req.date_requested|date:"M d, H:i" }}</td>
-                <td class="py-3 px-4 text-gray-700">{{ req.customer.name|default:"Guest" }}</td>
+                <td class="py-3 px-4 text-gray-700">{{ req.customer.name|default:"N/A" }}</td>
                 <td class="py-3 px-4">
-                    {# Changed 'services:staff_chat' to 'portal:staff_chat' #}
                     <a href="{% url 'portal:staff_chat' pk=req.pk %}" class="text-indigo-600 hover:text-indigo-800 font-medium">
                         Open Chat
                     </a> 

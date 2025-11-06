@@ -14,4 +14,20 @@
   "author": "",
   "license": "ISC",
   "description": ""
+
+
+
+    // Tells Pylance to search for modules starting from the current directory ('.').
+    "extraPaths": [
+        "."
+    ],
+    // Automatically attempts to find and configure Django app paths.
+    "autoSearchPaths": true,
+    // Ensure Pylance uses the correct Python version for checking
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "pythonVersion": "3.11" // Match your Python version
+        }
+    ]
 }

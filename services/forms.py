@@ -1,5 +1,4 @@
 # services/forms.py (Updated with clear black borders)
-
 from django import forms
 from django.forms.models import inlineformset_factory
 from .models import ServiceRequest, ServiceAttachment 
@@ -9,27 +8,30 @@ from .models import ServiceRequest, ServiceAttachment
 class ServiceRequestForm(forms.ModelForm):
     class Meta:
         model = ServiceRequest
+        # Uses fields confirmed in models.py
         fields = ['customer_name', 'contact_email', 'service_type', 'description'] 
         widgets = {
-            'customer_name': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full'}),
-            'contact_email': forms.EmailInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full'}),
-            'service_type': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full'}),
-            'description': forms.Textarea(attrs={'rows': 4, 'class': 'border-2 border-black p-2 rounded-lg w-full'}),
+            'customer_name': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'Your Full Name'}),
+            'contact_email': forms.EmailInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'name@example.com'}),
+            'service_type': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'e.g., Camera Repair'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'Describe your service needs in detail...'}),
         }
+        labels = {
+            'customer_name': 'Your Name',
+            'contact_email': 'Contact Email',
+            'service_type': 'Service Requested',
+        }
+
 
 # Define a form for the attachment model
 class ServiceAttachmentForm(forms.ModelForm):
-    # The file input is styled primarily through CSS/JS in the template, 
-    # but we can ensure the widget has basic classes.
-    file = forms.FileField(
-        label='Attachment', 
-        widget=forms.FileInput(attrs={'accept': 'image/*', 'class': 'border-2 border-black p-2 rounded-lg w-full'}),
-        required=False  
-    )
-
     class Meta:
         model = ServiceAttachment
-        fields = ['file']
+        # Only 'file' is used, matching the model
+        fields = ['file'] 
+        widgets = {
+            'file': forms.FileInput(attrs={'accept': 'image/*,application/pdf', 'class': 'border-2 border-black p-2 rounded-lg w-full'}),
+        }
 
 
 # Final Formset Definition
@@ -37,8 +39,9 @@ AttachmentFormSet = inlineformset_factory(
     ServiceRequest, 
     ServiceAttachment, 
     form=ServiceAttachmentForm, 
-    fields=('file',),
-    extra=4, 
+    # Only 'file' is used, matching the model and form
+    fields=('file',), 
+    extra=1, 
     max_num=4, 
     can_delete=False, 
 )

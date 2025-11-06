@@ -1,7 +1,7 @@
 # services/models.py (FINAL)
 
 from django.db import models
-from django.contrib.auth.models import User # <-- NEW IMPORT
+from django.contrib.auth.models import User
 from store.models import Customer 
 
 # Choices for the status field
@@ -11,7 +11,7 @@ STATUS_CHOICES = (
     ('ACCEPTED', 'Quote Accepted'),
     ('COMPLETE', 'Job Completed'),
     ('CANCELLED', 'Cancelled'),
-    ('IN_PROGRESS', 'In Progress'), # Added for clarity when staff replies
+    ('IN_PROGRESS', 'In Progress'),
 )
 
 # Choices for the sender field in QuoteMessage
@@ -43,6 +43,7 @@ class ServiceAttachment(models.Model):
         on_delete=models.CASCADE, 
         related_name='attachments'
     )
+    # CRITICAL: Only 'file' is present, which is why the old forms crashed.
     file = models.FileField(upload_to='service_attachments/', null=False, blank=False)
     
     def __str__(self):
@@ -52,10 +53,7 @@ class ServiceAttachment(models.Model):
 # 3. Model for the chat/quote messages between admin and customer
 class QuoteMessage(models.Model):
     request = models.ForeignKey(ServiceRequest, on_delete=models.CASCADE, related_name='messages')
-    
-    # FIX: Add the user field to resolve the TypeError
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True) 
-    
     sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)

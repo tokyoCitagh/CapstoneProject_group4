@@ -1,20 +1,23 @@
 # store/views.py (FINAL UPDATED - Secure Portal Views)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum 
-from django.db import models # CRITICAL: Import models from 'django.db' to fix ImportError and use models.Q
+from django.db.models import Q 
 from django.http import JsonResponse
 from django.forms import inlineformset_factory 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone 
-from django.contrib import messages 
+from django.contrib.auth import logout as auth_logout 
 import json 
+from django.contrib import messages 
+
+# *** CRITICAL: Import the AllAuth Login View to handle the login form render ***
+from allauth.account.views import LoginView as StaffLoginView
 
 # --- CRITICAL IMPORTS ---
-from .models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
-from .utils import cartData 
-from services.models import ServiceRequest 
-from .forms import ProductForm 
+from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
+from store.utils import cartData 
+from store.forms import ProductForm 
 # -------------------------------------------------------------------------------------
 
 # Define the Image Formset
@@ -42,12 +45,12 @@ def get_customer_or_create(request):
     return customer
 
 
-# --- NEW: STAFF CHECK UTILITY FUNCTION ---
+# --- STAFF CHECK UTILITY FUNCTION ---
 def is_staff_user(user):
     """Checks if the user is active and has staff privileges."""
     return user.is_active and user.is_staff
 
-# Use reverse_lazy for decorators to resolve the URL name after settings are loaded
+# CRITICAL FIX: Use reverse_lazy('portal:login') 
 PORTAL_LOGIN_URL = reverse_lazy('portal:login') 
 
 # --- USER-FACING E-COMMERCE VIEWS (NO CHANGES) ---
@@ -240,6 +243,11 @@ def process_order(request):
 
 # --- PORTAL/ADMIN VIEWS (SECURED WITH @user_passes_test) ---
 
+# The view function that the 'portal:login' URL will resolve to
+staff_login_view = StaffLoginView.as_view(template_name='store/login_portal.html') 
+
+# *** staff_logout_view REMOVED as DjangoLogoutView handles it in project urls ***
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def delete_product(request, pk):
@@ -260,10 +268,10 @@ def delete_product(request, pk):
         )
         # ---------------------------
         
-        # FIX: Changed to namespaced URL 'portal:inventory_dashboard'
+        # FIX: Uses namespaced URL 'portal:inventory_dashboard'
         return redirect('portal:inventory_dashboard') 
     
-    # FIX: Changed to namespaced URL 'portal:edit_product'
+    # FIX: Uses namespaced URL 'portal:edit_product'
     return redirect('portal:edit_product', pk=pk) 
 
 
@@ -272,8 +280,6 @@ def delete_product(request, pk):
 def inventory_dashboard(request):
     
     # --- DASHBOARD STATS CALCULATION ---
-    
-    # 1. Total Products (Calculated via product_sales|length in template, but calculating here is cleaner)
     total_products = Product.objects.count()
     
     # 2. Low Stock Alert (Threshold set to 5)
@@ -320,7 +326,7 @@ def add_product(request):
             )
             # ---------------------------
             
-            # FIX: Changed to namespaced URL 'portal:inventory_dashboard'
+            # FIX: Uses namespaced URL 'portal:inventory_dashboard'
             return redirect('portal:inventory_dashboard') 
     else:
         form = ProductForm()
@@ -396,7 +402,6 @@ def edit_product(request, pk):
                 logs_created = True
             
             # d) General Product Update (only if name changed or if other changes occurred but weren't specific logs)
-            # The logic below ensures a log is created if the name changed OR if no specific log was created above.
             if updated_product.name != original_name or not logs_created:
                 ActivityLog.objects.create(
                     user=request.user,
@@ -406,7 +411,7 @@ def edit_product(request, pk):
                     object_repr=updated_product.name
                 )
             
-            # FIX: Changed to namespaced URL 'portal:inventory_dashboard'
+            # FIX: Uses namespaced URL 'portal:inventory_dashboard'
             return redirect('portal:inventory_dashboard') 
     else:
         form = ProductForm(instance=product)
@@ -442,10 +447,10 @@ def all_activity_log_view(request):
     # 2. Keyword Search Filtering (Searches in description and user username)
     keyword = request.GET.get('keyword')
     if keyword:
-        # Use models.Q for complex lookups (OR logic)
+        # Use Q for complex lookups (OR logic)
         logs = logs.filter(
-            models.Q(description__icontains=keyword) |
-            models.Q(user__username__icontains=keyword)
+            Q(description__icontains=keyword) |
+            Q(user__username__icontains=keyword)
         ).distinct()
         
     context = {

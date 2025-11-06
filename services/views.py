@@ -1,19 +1,40 @@
-# services/views.py (FINAL COMPLETE CODE with Activity Loggers)
-
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.db.models import F 
+from django.db.models import Sum, Q 
+from django.http import JsonResponse
+from django.forms import inlineformset_factory 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone 
+from django.contrib import messages 
+import json 
+from allauth.account.views import logout as allauth_logout
 
-# CRITICAL: Import ActivityLog from the store app
-from store.models import Customer, ActivityLog 
+# --- CRITICAL IMPORTS ---
 
-# FIX: Import STATUS_CHOICES from models for use in the view
-from .models import ServiceRequest, QuoteMessage, STATUS_CHOICES 
-from .forms import ServiceRequestForm, AttachmentFormSet 
+# 1. Import E-COMMERCE models from the 'store' app
+from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
 
+# 2. Import UTILITY functions from the 'store' app
+from store.utils import cartData 
 
-# --- Utility (Must exist for user linking) ---
+# 3. Import SERVICE-RELATED models and forms from the 'services' app
+from services.models import ServiceRequest, QuoteMessage, ServiceAttachment 
+from services.forms import ServiceRequestForm, AttachmentFormSet 
+# -------------------------------------------------------------------------------------
+
+# Import for E-commerce forms (already present in original code block)
+from store.forms import ProductForm
+
+# Define the Image Formset (E-commerce related)
+ImageFormSet = inlineformset_factory(
+    Product, 
+    ProductImage, 
+    fields=('image',), 
+    extra=1, 
+    can_delete=True
+)
+
+# --- UTILITY FUNCTION ---
 def get_customer_or_create(request):
     """Utility function to safely get or create a Customer profile for an authenticated user."""
     customer = None
@@ -27,196 +48,491 @@ def get_customer_or_create(request):
                 email=request.user.email
             )
     return customer
-# ---------------------------------------------
 
-# --- 0. Service Home View ---
+
+# --- STAFF CHECK UTILITY FUNCTION ---
+def is_staff_user(user):
+    """Checks if the user is active and has staff privileges."""
+    return user.is_active and user.is_staff
+
+# Use reverse_lazy for decorators to resolve the URL name after settings are loaded
+PORTAL_LOGIN_URL = reverse_lazy('portal_login') 
+
+# --- USER-FACING E-COMMERCE VIEWS (NO CHANGES HERE) ---
+def home_view(request):
+    data = cartData(request) 
+    context = {'cartItems': data['cartItems']} 
+    return render(request, 'store/home.html', context)
+
+def store_view(request):
+    data = cartData(request) 
+    products = Product.objects.all()
+    context = {'products': products, 'cartItems': data['cartItems']} 
+    return render(request, 'store/store_front.html', context) 
+
+def product_detail_view(request, pk):
+    data = cartData(request) 
+    product = get_object_or_404(Product, pk=pk)
+    images = product.images.all() 
+    context = {
+        'product': product,
+        'images': images,
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'store/product_detail.html', context)
+
+def cart_view(request):
+    data = cartData(request) 
+    if request.user.is_authenticated:
+        customer = get_customer_or_create(request)
+        if customer:
+            order, created = Order.objects.get_or_create(customer=customer, complete=False)
+            items = order.orderitem_set.all()
+        else:
+            items = []
+            order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
+    else:
+        items = data['items']
+        order = data['order']
+        
+    context = {'items': items, 'order': order, 'cartItems': data['cartItems']} 
+    return render(request, 'store/cart.html', context)
+
+def checkout_view(request):
+    data = cartData(request) 
+    if request.user.is_authenticated:
+        customer = get_customer_or_create(request)
+        if customer:
+            order, created = Order.objects.get_or_create(customer=customer, complete=False)
+            items = order.orderitem_set.all()
+        else:
+            items = []
+            order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
+    else:
+        items = data['items']
+        order = data['order']
+        
+    context = {'items': items, 'order': order, 'cartItems': data['cartItems']} 
+    return render(request, 'store/checkout.html', context) 
+
+def update_item(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'message': 'Invalid JSON body.'}, safe=False, status=400)
+    
+    productId = data.get('productId')
+    action = data.get('action')
+    
+    if not action:
+         return JsonResponse({'message': 'Missing action.'}, safe=False, status=400)
+    
+    if request.user.is_authenticated:
+        customer = get_customer_or_create(request) 
+        
+        if not customer:
+            return JsonResponse({'message': 'Error retrieving customer profile.'}, safe=False, status=500)
+            
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        if action == 'clear':
+            order.orderitem_set.all().delete()
+            updated_data = cartData(request) 
+            new_cart_items = updated_data['cartItems']
+            return JsonResponse({'message': 'Cart successfully cleared.', 'cartItems': new_cart_items}, safe=False)
+        
+        if not productId:
+            return JsonResponse({'message': 'Missing productId for add/remove/delete action.'}, safe=False, status=400)
+            
+        try:
+            product = Product.objects.get(id=productId)
+        except Product.DoesNotExist:
+            return JsonResponse({'message': 'Product not found.'}, safe=False, status=404)
+            
+        orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
+
+        if action == 'add':
+            orderItem.quantity += 1
+        elif action == 'remove':
+            orderItem.quantity -= 1
+        elif action == 'delete': 
+            orderItem.quantity = 0
+
+        orderItem.save()
+        if orderItem.quantity <= 0:
+            orderItem.delete()
+
+        updated_data = cartData(request) 
+        new_cart_items = updated_data['cartItems']
+        
+        return JsonResponse({'message': 'Item was updated', 'cartItems': new_cart_items}, safe=False)
+    
+    return JsonResponse({'message': 'User is not authenticated (requires cookie handling logic).'}, safe=False, status=403)
+
+
+def process_order(request):
+    transaction_id = timezone.now().timestamp() 
+    data = json.loads(request.body)
+    
+    if request.user.is_authenticated:
+        customer = get_customer_or_create(request)
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        
+        total = float(data['form']['total'])
+        if round(total, 2) != round(order.get_cart_total, 2):
+             print(f"SECURITY ALERT: Total mismatch! Client: {total}, Server: {order.get_cart_total}")
+             return JsonResponse('Total mismatch', safe=False, status=400)
+             
+        order.transaction_id = transaction_id
+        order.complete = True
+        order.save()
+        
+        for item in order.orderitem_set.all():
+            item.product.stock_quantity -= item.quantity
+            item.product.save()
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='ORDER_COMPLETED',
+                description=f"Order {order.id} sold {item.quantity} units of '{item.product.name}'. Stock reduced to {item.product.stock_quantity}.",
+                object_id=item.product.pk,
+                object_repr=item.product.name
+            )
+        
+        if order.shipping:
+            ShippingAddress.objects.create(
+                customer=customer,
+                order=order,
+                address=data['shipping']['address'],
+                city=data['shipping']['city'],
+                state=data['shipping']['state'],
+                zipcode=data['shipping']['zipcode'],
+                country=data['shipping']['country'],
+            )
+            
+        return JsonResponse('Payment submitted and Order Completed.', safe=False)
+    else:
+        return JsonResponse('User not logged in. Anonymous checkout is not yet implemented.', safe=False, status=403)
+
+
+# --- PORTAL/ADMIN VIEWS (E-COMMERCE) ---
+
+def staff_logout_view(request):
+    allauth_logout(request)
+    return redirect(reverse('portal_login'))
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def delete_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    product_name = product.name
+    product_id = product.pk
+    
+    if request.method == 'POST':
+        product.delete()
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type='PRODUCT_DELETED',
+            description=f"Product '{product_name}' (ID: {product_id}) was permanently deleted from inventory.",
+            object_id=product_id,
+            object_repr=product_name
+        )
+        return redirect('portal:inventory_dashboard') 
+    
+    return redirect('portal:edit_product', pk=pk) 
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def inventory_dashboard(request):
+    total_products = Product.objects.count()
+    LOW_STOCK_THRESHOLD = 5
+    low_stock_count = Product.objects.filter(stock_quantity__lte=LOW_STOCK_THRESHOLD).count()
+    pending_orders_count = Order.objects.filter(complete=False).count()
+    
+    product_sales = Product.objects.annotate(
+        total_sold=Sum('orderitem__quantity')
+    ).order_by('-total_sold') 
+    
+    latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10] 
+
+    context = {
+        'product_sales': product_sales,
+        'page_title': 'Inventory Dashboard',
+        'latest_activities': latest_activities,
+        'total_products': total_products, 
+        'low_stock_count': low_stock_count,
+        'pending_orders_count': pending_orders_count,
+    }
+    return render(request, 'store/inventory_dashboard.html', context)
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            new_product = form.save()
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='PRODUCT_ADDED',
+                description=f"New product '{new_product.name}' (Price: GHC{new_product.price}, Stock: {new_product.stock_quantity}) was added to inventory.",
+                object_id=new_product.pk,
+                object_repr=new_product.name
+            )
+            return redirect('portal:inventory_dashboard') 
+    else:
+        form = ProductForm()
+        
+    context = {'form': form, 'page_title': 'Add New Product'}
+    return render(request, 'store/add_product.html', context)
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def edit_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    original_name = product.name
+    original_price = product.price
+    original_discount = product.discount_price
+    original_stock = product.stock_quantity 
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        image_formset = ImageFormSet(request.POST, request.FILES, instance=product)
+        
+        if form.is_valid() and image_formset.is_valid():
+            updated_product = form.save() 
+            image_formset.save()
+            
+            logs_created = False
+            
+            if updated_product.stock_quantity != original_stock:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type='STOCK_UPDATED',
+                    description=f"Stock for '{updated_product.name}' changed from {original_stock} to {updated_product.stock_quantity}.",
+                    object_id=updated_product.pk,
+                    object_repr=updated_product.name
+                )
+                logs_created = True
+
+            if updated_product.price != original_price:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type='PRICE_UPDATED',
+                    description=f"Price for '{updated_product.name}' changed from GHC{original_price} to GHC{updated_product.price}.",
+                    object_id=updated_product.pk,
+                    object_repr=updated_product.name
+                )
+                logs_created = True
+            
+            if updated_product.discount_price != original_discount:
+                action_type = 'DISCOUNT_APPLIED' if updated_product.discount_price else 'DISCOUNT_REMOVED'
+                description = f"Discount for '{updated_product.name}' set to GHC{updated_product.discount_price}." if updated_product.discount_price else f"Discount for '{updated_product.name}' was removed (was GHC{original_discount})."
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type=action_type,
+                    description=description,
+                    object_id=updated_product.pk,
+                    object_repr=updated_product.name
+                )
+                logs_created = True
+            
+            if updated_product.name != original_name or not logs_created:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type='PRODUCT_UPDATED',
+                    description=f"General details for product '{updated_product.name}' were modified.",
+                    object_id=updated_product.pk,
+                    object_repr=updated_product.name
+                )
+            
+            return redirect('portal:inventory_dashboard') 
+    else:
+        form = ProductForm(instance=product)
+        image_formset = ImageFormSet(instance=product) 
+        
+    context = {
+        'form': form, 
+        'product': product,
+        'image_formset': image_formset, 
+        'page_title': f'Edit Product: {product.name}'
+    }
+    return render(request, 'store/edit_product.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def all_activity_log_view(request):
+    logs = ActivityLog.objects.all().order_by('-action_time')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    if start_date:
+        logs = logs.filter(action_time__date__gte=start_date)
+    if end_date:
+        logs = logs.filter(action_time__date__lte=end_date)
+        
+    keyword = request.GET.get('keyword')
+    if keyword:
+        logs = logs.filter(
+            Q(description__icontains=keyword) | 
+            Q(user__username__icontains=keyword)
+        ).distinct()
+        
+    context = {
+        'page_title': 'All Activity Logs',
+        'activity_logs': logs,
+        'start_date': start_date,
+        'end_date': end_date,
+        'keyword': keyword,
+    }
+    return render(request, 'store/all_activity_log.html', context)
+
+# --- USER-FACING SERVICE VIEWS ---
+
 def service_home(request):
-    """The main landing page for service-related information."""
-    context = {} 
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
     return render(request, 'services/service_home.html', context)
 
 
-# --- 1. Customer: Submit New Service Request ---
+@login_required 
 def add_service_request(request):
-    """Allows customers to submit a new service request."""
-    empty_instance = ServiceRequest() 
+    data = cartData(request)
+    customer = get_customer_or_create(request)
     
     if request.method == 'POST':
         form = ServiceRequestForm(request.POST) 
-        formset = AttachmentFormSet(request.POST, request.FILES, instance=empty_instance) 
-        
-        if form.is_valid() and formset.is_valid():
+        attachment_formset = AttachmentFormSet(request.POST, request.FILES)
+
+        if form.is_valid() and attachment_formset.is_valid():
             new_request = form.save(commit=False)
-            
-            if request.user.is_authenticated:
-                new_request.customer = get_customer_or_create(request)
-            
+            new_request.customer = customer
             new_request.save()
             
-            # Re-instantiate the formset with the *saved* instance for saving attachments
-            formset = AttachmentFormSet(request.POST, request.FILES, instance=new_request)
-
-            # Save the formset (attachments)
-            formset.save() 
+            attachment_formset.instance = new_request 
+            attachment_formset.save()
             
-            # Redirect to the customer's list
-            return redirect(reverse('services:customer_requests_list')) 
-        
+            messages.success(request, 'Your service request has been submitted! We will respond shortly.')
+            return redirect('services:customer_requests_list') # Redirect to the customer list
+        else:
+            messages.error(request, 'There was an error in your form submission. Please check the details.')
+            
     else:
-        initial_data = {}
-        if request.user.is_authenticated:
-            customer = get_customer_or_create(request)
-            if customer:
-                initial_data['customer_name'] = customer.name
-                initial_data['contact_email'] = customer.email
-
-        form = ServiceRequestForm(initial=initial_data)
-        formset = AttachmentFormSet(instance=empty_instance) 
-
-    context = {'form': form, 'formset': formset}
+        form = ServiceRequestForm()
+        attachment_formset = AttachmentFormSet()
+        
+    context = {
+        'form': form,
+        'attachment_formset': attachment_formset,
+        'page_title': 'Submit Service Request',
+        'cartItems': data['cartItems'],
+    }
+    # **FIX: Corrected the template name from 'add_service_request.html' to 'add_request.html'**
     return render(request, 'services/add_request.html', context)
 
-
-# --- 2A. Staff/Admin: List ALL Service Requests ---
-@login_required 
-def staff_requests_list(request):
-    """Displays a list of all service requests, restricted to staff."""
-    if not request.user.is_staff:
-        # Redirect non-staff to their personal request list
-        return redirect(reverse('services:customer_requests_list')) 
-        
-    requests_list = ServiceRequest.objects.all().order_by('-date_requested')
+@login_required
+def customer_requests_list(request):
+    """Displays a list of service requests submitted by the logged-in customer."""
+    customer = get_customer_or_create(request)
+    requests = ServiceRequest.objects.filter(customer=customer).order_by('-date_requested')
     
+    data = cartData(request)
     context = {
-        'requests_list': requests_list,
-        'page_title': 'Staff: All Service Requests'
+        'page_title': 'My Service Requests',
+        'requests': requests,
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'services/customer_requests_list.html', context)
+
+def customer_service_request_chat(request, pk):
+    """Handles the customer view and chat for a single service request."""
+    customer = get_customer_or_create(request)
+    service_request = get_object_or_404(
+        ServiceRequest.objects.prefetch_related('messages', 'attachments'), 
+        pk=pk, 
+        customer=customer
+    )
+    
+    if request.method == 'POST':
+        message_text = request.POST.get('message')
+        if message_text:
+            QuoteMessage.objects.create(
+                request=service_request,
+                user=request.user,
+                sender='CUSTOMER',
+                message=message_text
+            )
+            messages.success(request, "Reply sent successfully.")
+            # Note: You need a URL named 'services:customer_chat' defined in your urls.py
+            return redirect('services:customer_chat', pk=pk)
+            
+    data = cartData(request)
+    context = {
+        'page_title': f'Request #{pk} - Chat',
+        'service_request': service_request,
+        'messages': service_request.messages.all().order_by('timestamp'),
+        'attachments': service_request.attachments.all(),
+        'cartItems': data['cartItems'],
+    }
+    # NOTE: Assuming the template is service_request_chat.html based on your listing
+    return render(request, 'services/service_request_chat.html', context)
+
+
+# --- PORTAL/ADMIN SERVICE VIEWS ---
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def staff_requests_list(request):
+    """Displays a list of all Service Requests for staff review."""
+    requests = ServiceRequest.objects.all().order_by('-date_requested')
+    context = {
+        'page_title': 'Service Requests List',
+        'requests': requests,
     }
     return render(request, 'services/requests_list.html', context)
 
 
-# --- 2B. Customer: List ONLY Their Service Requests (THE MISSING FUNCTION) ---
-@login_required 
-def customer_requests_list(request):
-    """Displays a list of service requests belonging only to the logged-in customer."""
-    customer = get_customer_or_create(request)
-    
-    # Filter requests where the customer matches the logged-in user
-    requests_list = ServiceRequest.objects.filter(customer=customer).order_by('-date_requested')
-    
-    context = {
-        'requests_list': requests_list,
-        'page_title': 'Your Service Requests'
-    }
-    return render(request, 'services/customer_requests_list.html', context)
-
-
-# --- 3A. Customer: Dedicated Request Chat View ---
-@login_required 
-def customer_service_request_chat(request, pk):
-    """Handles the chat interface for a service request for the Customer."""
-    service_request = get_object_or_404(ServiceRequest, pk=pk)
-    
-    # SECURITY FIX: Only redirect if the user is NOT staff AND they are NOT the request owner.
-    if not request.user.is_staff and (service_request.customer is None or service_request.customer.user != request.user):
-         return redirect(reverse('services:customer_requests_list'))
-
-    # --- HANDLE FORM SUBMISSION ---
-    if request.method == 'POST':
-        message_text = request.POST.get('message_text')
-        
-        if message_text:
-            # Save the new message 
-            QuoteMessage.objects.create(
-                request=service_request,
-                message=message_text,
-                sender='CUSTOMER',
-                user=request.user 
-            )
-            return redirect(reverse('services:customer_chat', kwargs={'pk': pk})) # Use the new URL name
-
-    context = {
-        'request': service_request,
-        'messages': service_request.messages.all().order_by('timestamp'),
-    }
-    
-    # Renders the dedicated customer template
-    return render(request, 'services/service_request_chat.html', context)
-
-
-# --- 3B. Staff/Admin: Dedicated Request Chat View (WITH LOGGING) ---
-@login_required 
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def staff_service_request_chat(request, pk):
-    """Handles the chat interface for a service request for Staff/Admin."""
-    service_request = get_object_or_404(ServiceRequest, pk=pk)
+    """Handles the staff view for a single service request, including quoting and chat."""
+    service_request = get_object_or_404(
+        ServiceRequest.objects.prefetch_related('messages', 'attachments'), 
+        pk=pk
+    )
     
-    if not request.user.is_staff:
-         return redirect(reverse('services:customer_requests_list')) # Deny non-staff
-
-    # --- HANDLE FORM SUBMISSION ---
     if request.method == 'POST':
-        
-        # 1. Handle Status Update (Staff only)
-        if 'update_status' in request.POST:
-            new_status = request.POST.get('new_status')
-            if new_status and new_status in dict(STATUS_CHOICES):
-                
-                old_status_display = service_request.get_status_display()
-                service_request.status = new_status
-                service_request.save()
-                
-                # Log status change in QuoteMessage
-                QuoteMessage.objects.create(
-                    request=service_request,
-                    message=f"System: Status changed from {old_status_display} to {service_request.get_status_display()} by {request.user.username}.",
-                    sender='ADMIN',
-                    user=request.user 
-                )
-                
-                # --- LOG: Activity Log Entry ---
-                ActivityLog.objects.create(
-                    user=request.user,
-                    action_type='REQUEST_STATUS_UPDATED',
-                    description=f"Status for Service Request #{pk} changed to {service_request.get_status_display()}.",
-                    object_id=pk,
-                    object_repr=f"Service Request #{pk}"
-                )
-                # -------------------------------
-
-            return redirect(reverse('services:staff_chat', kwargs={'pk': pk}))
-
-
-        # 2. Handle Chat Message Submission (Staff only)
-        message_text = request.POST.get('message_text')
+        message_text = request.POST.get('message')
+        new_status = request.POST.get('new_status') 
         
         if message_text:
             QuoteMessage.objects.create(
                 request=service_request,
-                message=message_text,
+                user=request.user,
                 sender='ADMIN',
-                user=request.user 
+                message=message_text
             )
-            
-            # Automatically update status if replying to PENDING request
-            if service_request.status == 'PENDING':
+            if service_request.status in ['PENDING', 'QUOTED']:
                 service_request.status = 'IN_PROGRESS'
                 service_request.save()
             
-            # --- LOG: Activity Log Entry ---
-            ActivityLog.objects.create(
-                user=request.user,
-                action_type='REQUEST_REPLY_SENT',
-                description=f"Sent chat reply (Quote/Info) to Service Request #{pk}.",
-                object_id=pk,
-                object_repr=f"Service Request #{pk}"
-            )
-            # -------------------------------
+            messages.success(request, "Reply sent successfully.")
+            return redirect('services:staff_chat', pk=pk)
             
-            return redirect(reverse('services:staff_chat', kwargs={'pk': pk}))
-
-    context = {
-        'request': service_request,
-        'messages': service_request.messages.all().order_by('timestamp'),
-        'status_choices': STATUS_CHOICES, # Passed to the staff template
-    }
+        if new_status and new_status != service_request.status:
+            service_request.status = new_status
+            service_request.save()
+            messages.success(request, f"Request status updated to {new_status}.")
+            return redirect('services:staff_chat', pk=pk)
     
+    # FIX: Use Django's internal field choices lookup to reliably get the choices list.
+    status_choices = ServiceRequest._meta.get_field('status').choices
+            
+    context = {
+        'page_title': f'Request #{pk} - {service_request.service_type}',
+        'service_request': service_request,
+        'messages': service_request.messages.all().order_by('timestamp'),
+        'attachments': service_request.attachments.all(),
+        'STATUS_CHOICES': status_choices, 
+    }
     return render(request, 'services/service_request_chat_staff.html', context)

@@ -1,7 +1,8 @@
 {% extends "base_portal.html" %}
 {% load static %}
-{% load service_utils %}
-{% block title %}Chat: Request #{{ request.id }} (Staff Portal){% endblock %}
+{% load service_utils %} {# Assumed custom tag import #}
+
+{% block title %}Chat: Request #{{ service_request.id }} (Staff Portal){% endblock %}
 
 {% block main_content %} 
 <style>
@@ -76,9 +77,9 @@
     
     {# --- HEADER --- #}
     <h2 style="color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; font-size: 1.8em; font-weight: bold;">
-        ⚙️ Service Portal: Request #{{ request.id }}
+        ⚙️ Service Portal: Request #{{ service_request.id }}
     </h2>
-    <p style="color: #007bff; font-size: 1.2em; margin-bottom: 15px;">{{ request.service_type }}</p>
+    <p style="color: #007bff; font-size: 1.2em; margin-bottom: 15px;">{{ service_request.service_type }}</p>
 
     {# --- STAFF-ONLY STATUS UPDATE FORM --- #}
     <form method="post" style="margin-bottom: 20px; padding: 15px; border: 1px solid #c3e6cb; border-radius: 8px; background-color: #f7fff5;">
@@ -88,8 +89,9 @@
             <select name="new_status" required 
                     style="padding: 8px; border: 1px solid #198754; border-radius: 5px; flex-grow: 1;">
                 <option value="" disabled selected>Change Status To...</option>
-                {% for key, value in status_choices %}
-                    <option value="{{ key }}" {% if key == request.status %}selected{% endif %}>{{ value }}</option>
+                {# Using status_choices context variable from view #}
+                {% for key, value in STATUS_CHOICES %}
+                    <option value="{{ key }}" {% if key == service_request.status %}selected{% endif %}>{{ value }}</option>
                 {% endfor %}
             </select>
             <button type="submit" name="update_status" value="true" 
@@ -103,12 +105,13 @@
     <details style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #fafafa;">
         <summary style="font-weight: bold; cursor: pointer; color: #333;">Show Request Details</summary>
         <div style="padding-top: 10px; font-size: 0.9em; line-height: 1.6;">
-            <p><strong>Customer:</strong> {{ request.customer.name|default:"N/A" }} ({{ request.customer.email|default:"N/A" }})</p>
-            <p><strong>Current Status:</strong> <span style="font-weight: bold; color: {% if request.status == 'PENDING' %}red{% elif request.status == 'QUOTED' %}orange{% else %}green{% endif %};">
-                {{ request.status }}
+            {# Use customer_name/contact_email from the request model directly #}
+            <p><strong>Customer:</strong> {{ service_request.customer_name|default:"N/A" }} ({{ service_request.contact_email|default:"N/A" }})</p> 
+            <p><strong>Current Status:</strong> <span style="font-weight: bold; color: {% if service_request.status == 'PENDING' %}red{% elif service_request.status == 'QUOTED' %}orange{% else %}green{% endif %};">
+                {{ service_request.get_status_display }}
             </span></p>
-            <p><strong>Initial Description:</strong> {{ request.description }}</p>
-            {% for attachment in request.attachments.all %}
+            <p><strong>Initial Description:</strong> {{ service_request.description }}</p>
+            {% for attachment in attachments %}
                 <p><strong>Attachment {{ forloop.counter }}:</strong> 
                 <a href="{{ attachment.file.url }}" target="_blank" style="color: #007bff; text-decoration: underline;">View File ({{ attachment.file.name|split:'/'|last }})</a></p>
             {% endfor %}
@@ -142,7 +145,7 @@
     <h3 style="font-size: 1.5em; color: #555; margin-top: 20px; margin-bottom: 10px;">Send a Response</h3>
     <form method="post" style="display: flex; flex-direction: column; gap: 10px;">
         {% csrf_token %}
-        <textarea name="message_text" rows="4" required placeholder="Type your quote, question, or update..."
+        <textarea name="message" rows="4" required placeholder="Type your quote, question, or update..."
                   style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; resize: vertical;"></textarea>
         
         <button type="submit" 
