@@ -298,3 +298,27 @@ SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 # Enable site framework (required for allauth)
 SITE_ID = 1
 # Ensure the site domain is set correctly in the admin interface
+
+# ----------------------------
+# Logging: ensure logs are written to stdout so platform captures them
+# ----------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
