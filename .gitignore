@@ -20,6 +20,13 @@ var/
 .installed.cfg
 *.egg
 
+# -------------------------------------------------------------
+# 🚀 CRITICAL SECURITY ADDITION
+# -------------------------------------------------------------
+# Ignore the file containing SECRET_KEY, email passwords, etc.
+.env
+# -------------------------------------------------------------
+
 # Django
 *.log
 *.pot
@@ -27,6 +34,10 @@ var/
 db.sqlite3
 media/
 product_photos/
+
+# Ignore collected static files directory (if used)
+static_root/
+staticfiles/
 
 # Virtual Environment
 env/

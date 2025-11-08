@@ -1,16 +1,37 @@
-# store/forms.py (FINAL UPDATED CODE including custom forms)
+# store/forms.py (FINAL UPDATED CODE including custom forms and LOGIN FIX)
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm # <-- Import UserCreationForm
-from .models import Product, ProductImage # Import necessary models
+from django.contrib.auth.forms import UserCreationForm 
+from .models import Product, ProductImage 
 
+# Import allauth's base form for overriding the login view
+from allauth.account.forms import LoginForm as AllauthLoginForm 
+from django.utils.translation import gettext_lazy as _
+
+# -------------------------------------------------------------------
+# 0. CRITICAL LOGIN FIX: Custom Form to force the 'password' field
+# -------------------------------------------------------------------
+class CustomLoginForm(AllauthLoginForm):
+    """
+    A custom form that explicitly ensures the 'password' field is present
+    and orders the fields correctly, bypassing the stubborn allauth internal logic.
+    """
+    password = forms.CharField(
+        label=_("Password"),
+        widget=forms.PasswordInput(attrs={'placeholder': _('Password')})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure the field order is correct for 'username_email' method
+        self.fields.keyOrder = ['login', 'password', 'remember']
+        
 # -------------------------------------------------------------------
 # 1. FIX: Custom Registration Form to ADD Email Field
 # -------------------------------------------------------------------
 class CustomUserCreationForm(UserCreationForm):
     """
     A custom form that adds the email field to the standard UserCreationForm.
-    This is necessary for email confirmation and password reset to work correctly.
     """
     email = forms.EmailField(
         required=True,
@@ -24,7 +45,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 # -------------------------------------------------------------------
-# 2. ProductForm Definition (as you provided)
+# 2. ProductForm Definition 
 # -------------------------------------------------------------------
 class ProductForm(forms.ModelForm):
     """
@@ -32,7 +53,6 @@ class ProductForm(forms.ModelForm):
     """
     class Meta:
         model = Product
-        # MODIFIED: Added 'stock_quantity' field
         fields = ['name', 'price', 'discount_price', 'stock_quantity', 'digital'] 
         labels = {
             'name': 'Product Name',
@@ -43,7 +63,6 @@ class ProductForm(forms.ModelForm):
         }
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
-            # Use NumberInput for better mobile experience and validation
             'stock_quantity': forms.NumberInput(attrs={'min': 0, 'step': 1}), 
         }
 

@@ -4,6 +4,7 @@ from .models import Order, Customer
 
 def cart_count(request):
     """Adds the active cart's item count to the context of every request."""
+    # Initialize cart_items to 0 as a default value
     cart_items = 0
     
     if request.user.is_authenticated:

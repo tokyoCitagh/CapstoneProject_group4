@@ -34,10 +34,18 @@
                 <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a> 
                 <a href="{% url 'store:store' %}" class="hover:text-gray-300">Products</a>
                 
-                <a href="{% url 'services:add_service_request' %}" class="hover:text-gray-300">Services</a>
+                {# ⭐ FIX APPLIED HERE: Logged-in users now go directly to the request form ⭐ #}
+                {% if request.user.is_authenticated %}
+                    {# Logged-in users go directly to the service submission form #}
+                    <a href="{% url 'services:add_service_request' %}" class="hover:text-gray-300">Services</a>
+                {% else %}
+                    {# Logged-out users are sent to the general customer login page #}
+                    <a href="{% url 'account_login' %}" class="hover:text-gray-300">Services</a>
+                {% endif %}
                 
-                {# ⭐ IMPROVEMENT: Added cart icon and adjusted layout for it ⭐ #}
-                <a href="{% url 'store:cart' %}" class="hover:text-gray-300 relative flex items-center space-x-1">
+                {# ⭐ Cart Link Redirects Logged-out users to customer login ⭐ #}
+                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" 
+                    class="hover:text-gray-300 relative flex items-center space-x-1">
                     <i class="fas fa-shopping-cart text-lg"></i>
                     <span>Cart</span>
                     <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">

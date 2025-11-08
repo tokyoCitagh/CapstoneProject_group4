@@ -1,26 +1,30 @@
-# store/views.py (FINAL UPDATED - Secure Portal Views)
+# store/views.py (FINAL UPDATED - MANUAL AUTHENTICATION LOGIC WITH NEXT/ACTIVE CHECKS)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum 
 from django.db.models import Q 
 from django.http import JsonResponse
 from django.forms import inlineformset_factory 
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy 
 from django.utils import timezone 
-from django.contrib.auth import logout as auth_logout 
+# Ensure these are imported:
+from django.contrib.auth import logout as auth_logout, authenticate, login 
 import json 
 from django.contrib import messages 
-
-# *** CRITICAL: Import the AllAuth Login View to handle the login form render ***
-from allauth.account.views import LoginView as StaffLoginView
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
 from store.utils import cartData 
 from store.forms import ProductForm 
+from services.models import ServiceRequest, QuoteMessage, ServiceAttachment 
+from services.forms import ServiceRequestForm, AttachmentFormSet 
+# FIX: Import standard Django AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
+# CRITICAL FIX: Import the allauth EmailAddress model
+from allauth.account.models import EmailAddress
 # -------------------------------------------------------------------------------------
 
-# Define the Image Formset
+# Define the Image Formset (E-commerce related)
 ImageFormSet = inlineformset_factory(
     Product, 
     ProductImage, 
@@ -29,7 +33,7 @@ ImageFormSet = inlineformset_factory(
     can_delete=True
 )
 
-# --- UTILITY FUNCTION ---
+# --- UTILITY FUNCTIONS ---
 def get_customer_or_create(request):
     """Utility function to safely get or create a Customer profile for an authenticated user."""
     customer = None
@@ -45,15 +49,92 @@ def get_customer_or_create(request):
     return customer
 
 
-# --- STAFF CHECK UTILITY FUNCTION ---
 def is_staff_user(user):
     """Checks if the user is active and has staff privileges."""
     return user.is_active and user.is_staff
 
-# CRITICAL FIX: Use reverse_lazy('portal:login') 
+# CRITICAL: Use reverse_lazy('portal:login') for consistent redirects
 PORTAL_LOGIN_URL = reverse_lazy('portal:login') 
+PORTAL_DASHBOARD_URL = reverse_lazy('portal:inventory_dashboard') # Define the success URL
 
-# --- USER-FACING E-COMMERCE VIEWS (NO CHANGES) ---
+# --- FIX: Custom view to handle manual authentication ---
+def portal_login_view(request):
+    """Handles both rendering and manual processing of the staff login form."""
+    
+    # 1. Early exit if staff is already logged in
+    if request.user.is_authenticated and is_staff_user(request.user):
+        return redirect(PORTAL_DASHBOARD_URL)
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            # Authenticate the user manually
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                # Check if the authenticated user has staff and active privileges
+                if user.is_staff and user.is_active:
+                    login(request, user)
+                    
+                    # Log the successful staff login
+                    ActivityLog.objects.create(
+                        user=user,
+                        action_type='STAFF_LOGIN',
+                        description=f"Successful staff login to the portal.",
+                    )
+                    
+                    # Use the 'next' parameter if present, otherwise default to dashboard
+                    next_url = request.GET.get('next') or PORTAL_DASHBOARD_URL
+                    return redirect(next_url)
+                
+                # Fails authentication but user exists
+                elif not user.is_staff:
+                    messages.error(request, "Login failed: Your account does not have staff privileges.")
+                elif not user.is_active:
+                    messages.error(request, "Login failed: Your staff account is currently inactive.")
+            else:
+                # Authentication failed (bad credentials)
+                messages.error(request, "Invalid username or password.")
+        
+        # If form is not valid or authentication failed, re-render with errors
+        context = {'form': form}
+        return render(request, 'account/login_portal.html', context)
+        
+    else:
+        # GET request: render empty form
+        form = AuthenticationForm() 
+        
+    context = {'form': form}
+    return render(request, 'account/login_portal.html', context) 
+# ---------------------------------------------------------------
+
+
+# --- CUSTOMER ACCOUNT VIEWS (ADDED FOR EMAIL DATE FIX) ---
+@login_required
+def custom_email_list_view(request):
+    """
+    Custom view to list user emails, fetching objects directly to ensure 
+    'date_created' is available for display in the simplified 'email.html' template.
+    """
+    
+    # Fetch all EmailAddress objects related to the logged-in user
+    emailaddresses = EmailAddress.objects.filter(user=request.user).order_by('primary', 'verified')
+    
+    # Pass necessary context for the allauth template
+    context = {
+        'emailaddresses': emailaddresses,
+        # 'form' is required by the original email.html template structure
+        'form': None, 
+    }
+    return render(request, 'account/email.html', context)
+# --------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------
+# --- USER-FACING E-COMMERCE VIEWS ---
+# -------------------------------------------------------------------------------------
 
 def home_view(request):
     """The main landing page for the site."""
@@ -213,7 +294,7 @@ def process_order(request):
             item.product.stock_quantity -= item.quantity
             item.product.save()
             
-            # Log the successful sale/stock deduction (Optional but helpful)
+            # Log the successful sale/stock deduction 
             ActivityLog.objects.create(
                 user=request.user,
                 action_type='ORDER_COMPLETED',
@@ -237,16 +318,13 @@ def process_order(request):
         return JsonResponse('Payment submitted and Order Completed.', safe=False)
 
     else:
-        # Handle anonymous user checkout (requires more complex cookie logic)
+        # Handle anonymous user checkout (not implemented here)
         return JsonResponse('User not logged in. Anonymous checkout is not yet implemented.', safe=False, status=403)
 
 
+# -------------------------------------------------------------------------------------
 # --- PORTAL/ADMIN VIEWS (SECURED WITH @user_passes_test) ---
-
-# The view function that the 'portal:login' URL will resolve to
-staff_login_view = StaffLoginView.as_view(template_name='store/login_portal.html') 
-
-# *** staff_logout_view REMOVED as DjangoLogoutView handles it in project urls ***
+# -------------------------------------------------------------------------------------
 
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
@@ -268,10 +346,8 @@ def delete_product(request, pk):
         )
         # ---------------------------
         
-        # FIX: Uses namespaced URL 'portal:inventory_dashboard'
         return redirect('portal:inventory_dashboard') 
     
-    # FIX: Uses namespaced URL 'portal:edit_product'
     return redirect('portal:edit_product', pk=pk) 
 
 
@@ -282,11 +358,11 @@ def inventory_dashboard(request):
     # --- DASHBOARD STATS CALCULATION ---
     total_products = Product.objects.count()
     
-    # 2. Low Stock Alert (Threshold set to 5)
+    # Low Stock Alert (Threshold set to 5)
     LOW_STOCK_THRESHOLD = 5
     low_stock_count = Product.objects.filter(stock_quantity__lte=LOW_STOCK_THRESHOLD).count()
     
-    # 3. Pending Orders (Orders not complete)
+    # Pending Orders (Orders not complete)
     pending_orders_count = Order.objects.filter(complete=False).count()
     
     # --- TOP SELLING PRODUCTS ---
@@ -301,7 +377,6 @@ def inventory_dashboard(request):
         'product_sales': product_sales,
         'page_title': 'Inventory Dashboard',
         'latest_activities': latest_activities,
-        # --- NEW CONTEXT VARIABLES ---
         'total_products': total_products, 
         'low_stock_count': low_stock_count,
         'pending_orders_count': pending_orders_count,
@@ -326,7 +401,6 @@ def add_product(request):
             )
             # ---------------------------
             
-            # FIX: Uses namespaced URL 'portal:inventory_dashboard'
             return redirect('portal:inventory_dashboard') 
     else:
         form = ProductForm()
@@ -351,7 +425,6 @@ def edit_product(request, pk):
         
         if form.is_valid() and image_formset.is_valid():
             
-            # Save the product now to get the 'updated_product' instance
             updated_product = form.save() 
             image_formset.save()
             
@@ -383,25 +456,18 @@ def edit_product(request, pk):
             
             # c) Discount Change
             if updated_product.discount_price != original_discount:
-                if updated_product.discount_price:
-                    ActivityLog.objects.create(
-                        user=request.user,
-                        action_type='DISCOUNT_APPLIED',
-                        description=f"Discount for '{updated_product.name}' set to GHC{updated_product.discount_price}.",
-                        object_id=updated_product.pk,
-                        object_repr=updated_product.name
-                    )
-                else:
-                    ActivityLog.objects.create(
-                        user=request.user,
-                        action_type='DISCOUNT_REMOVED',
-                        description=f"Discount for '{updated_product.name}' was removed (was GHC{original_discount}).",
-                        object_id=updated_product.pk,
-                        object_repr=updated_product.name
-                    )
+                action_type = 'DISCOUNT_APPLIED' if updated_product.discount_price else 'DISCOUNT_REMOVED'
+                description = f"Discount for '{updated_product.name}' set to GHC{updated_product.discount_price}." if updated_product.discount_price else f"Discount for '{updated_product.name}' was removed (was GHC{original_discount})."
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type=action_type,
+                    description=description,
+                    object_id=updated_product.pk,
+                    object_repr=updated_product.name
+                )
                 logs_created = True
             
-            # d) General Product Update (only if name changed or if other changes occurred but weren't specific logs)
+            # d) General Product Update
             if updated_product.name != original_name or not logs_created:
                 ActivityLog.objects.create(
                     user=request.user,
@@ -411,7 +477,6 @@ def edit_product(request, pk):
                     object_repr=updated_product.name
                 )
             
-            # FIX: Uses namespaced URL 'portal:inventory_dashboard'
             return redirect('portal:inventory_dashboard') 
     else:
         form = ProductForm(instance=product)
@@ -426,7 +491,6 @@ def edit_product(request, pk):
     return render(request, 'store/edit_product.html', context)
 
 
-# NEW VIEW: All Activity Log
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def all_activity_log_view(request):
@@ -437,17 +501,13 @@ def all_activity_log_view(request):
     end_date = request.GET.get('end_date')
     
     if start_date:
-        # Filter logs from the start_date (inclusive)
         logs = logs.filter(action_time__date__gte=start_date)
-        
     if end_date:
-        # Filter logs up to the end_date (inclusive)
         logs = logs.filter(action_time__date__lte=end_date)
         
-    # 2. Keyword Search Filtering (Searches in description and user username)
+    # 2. Keyword Search Filtering
     keyword = request.GET.get('keyword')
     if keyword:
-        # Use Q for complex lookups (OR logic)
         logs = logs.filter(
             Q(description__icontains=keyword) |
             Q(user__username__icontains=keyword)
@@ -461,3 +521,155 @@ def all_activity_log_view(request):
         'keyword': keyword,
     }
     return render(request, 'store/all_activity_log.html', context)
+
+
+# -------------------------------------------------------------------------------------
+# --- USER-FACING SERVICE VIEWS ---
+# -------------------------------------------------------------------------------------
+
+def service_home(request):
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
+    return render(request, 'services/service_home.html', context)
+
+
+@login_required 
+def add_service_request(request):
+    data = cartData(request)
+    customer = get_customer_or_create(request)
+    
+    if request.method == 'POST':
+        form = ServiceRequestForm(request.POST) 
+        attachment_formset = AttachmentFormSet(request.POST, request.FILES)
+
+        if form.is_valid() and attachment_formset.is_valid():
+            new_request = form.save(commit=False)
+            new_request.customer = customer
+            new_request.save()
+            
+            attachment_formset.instance = new_request 
+            attachment_formset.save()
+            
+            messages.success(request, 'Your service request has been submitted! We will respond shortly.')
+            return redirect('services:customer_requests_list') 
+        else:
+            messages.error(request, 'There was an error in your form submission. Please check the details.')
+            
+    else:
+        form = ServiceRequestForm()
+        attachment_formset = AttachmentFormSet()
+        
+    context = {
+        'form': form,
+        'attachment_formset': attachment_formset,
+        'page_title': 'Submit Service Request',
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'services/add_request.html', context)
+
+@login_required
+def customer_requests_list(request):
+    """Displays a list of service requests submitted by the logged-in customer."""
+    customer = get_customer_or_create(request)
+    requests = ServiceRequest.objects.filter(customer=customer).order_by('-date_requested')
+    
+    data = cartData(request)
+    context = {
+        'page_title': 'My Service Requests',
+        'requests_list': requests, 
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'services/customer_requests_list.html', context)
+
+@login_required
+def customer_service_request_chat(request, pk):
+    """Handles the customer view and chat for a single service request."""
+    customer = get_customer_or_create(request)
+    service_request = get_object_or_404(
+        ServiceRequest.objects.prefetch_related('messages', 'attachments'), 
+        pk=pk, 
+        customer=customer
+    )
+    
+    if request.method == 'POST':
+        message_text = request.POST.get('message')
+        if message_text:
+            QuoteMessage.objects.create(
+                request=service_request,
+                user=request.user,
+                sender='CUSTOMER',
+                message=message_text
+            )
+            messages.success(request, "Reply sent successfully.")
+            return redirect('services:customer_chat', pk=pk)
+            
+    data = cartData(request)
+    context = {
+        'page_title': f'Request #{pk} - Chat',
+        'service_request': service_request,
+        'messages': service_request.messages.all().order_by('timestamp'),
+        'attachments': service_request.attachments.all(),
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'services/service_request_chat.html', context)
+
+
+# -------------------------------------------------------------------------------------
+# --- PORTAL/ADMIN SERVICE VIEWS (SECURED) ---
+# -------------------------------------------------------------------------------------
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def staff_requests_list(request):
+    """Displays a list of all Service Requests for staff review."""
+    requests = ServiceRequest.objects.all().order_by('-date_requested')
+    context = {
+        'page_title': 'Service Requests List',
+        'requests': requests,
+    }
+    return render(request, 'services/requests_list.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def staff_service_request_chat(request, pk):
+    """Handles the staff view for a single service request, including quoting and chat."""
+    service_request = get_object_or_404(
+        ServiceRequest.objects.prefetch_related('messages', 'attachments'), 
+        pk=pk
+    )
+    
+    if request.method == 'POST':
+        message_text = request.POST.get('message')
+        new_status = request.POST.get('new_status') 
+        
+        if message_text:
+            QuoteMessage.objects.create(
+                request=service_request,
+                user=request.user,
+                sender='ADMIN',
+                message=message_text
+            )
+            if service_request.status in ['PENDING', 'QUOTED']:
+                service_request.status = 'IN_PROGRESS'
+                service_request.save()
+            
+            messages.success(request, "Reply sent successfully.")
+            return redirect('portal:staff_chat', pk=pk)
+            
+        if new_status and new_status != service_request.status:
+            service_request.status = new_status
+            service_request.save()
+            messages.success(request, f"Request status updated to {new_status}.")
+            return redirect('portal:staff_chat', pk=pk)
+    
+    status_choices = ServiceRequest._meta.get_field('status').choices
+            
+    context = {
+        'page_title': f'Request #{pk} - {service_request.service_type}',
+        'service_request': service_request,
+        'messages': service_request.messages.all().order_by('timestamp'),
+        'attachments': service_request.attachments.all(),
+        'STATUS_CHOICES': status_choices, 
+    }
+    return render(request, 'services/service_request_chat_staff.html', context)
