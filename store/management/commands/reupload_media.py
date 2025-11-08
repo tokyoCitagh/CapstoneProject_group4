@@ -8,8 +8,17 @@ import os
 class Command(BaseCommand):
     help = 'Re-upload local media files to configured storage (e.g., Cloudinary) and update image fields.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--media-root',
+            dest='media_root',
+            help='Override settings.MEDIA_ROOT with this path (useful when running with Cloudinary enabled).',
+            default=None,
+        )
+
     def handle(self, *args, **options):
-        media_root = getattr(settings, 'MEDIA_ROOT', None)
+        # Allow passing an explicit media_root to override settings (useful when CLOUDINARY is enabled)
+        media_root = options.get('media_root') or getattr(settings, 'MEDIA_ROOT', None)
         if not media_root:
             self.stderr.write('MEDIA_ROOT is not set in settings; aborting.')
             return
