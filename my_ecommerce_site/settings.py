@@ -116,7 +116,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 # Where `collectstatic` will collect static files for production
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Allow overriding STATIC_ROOT from environment to handle platform-specific
+# container working-dir differences (some deploys use /app as project root).
+_static_root_env = os.environ.get('STATIC_ROOT')
+if _static_root_env:
+    STATIC_ROOT = Path(_static_root_env)
+else:
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Use WhiteNoise storage backend for compressed static files on Railway
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
