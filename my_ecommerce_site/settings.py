@@ -15,6 +15,14 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 _allowed = config('ALLOWED_HOSTS', default='')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else []
 
+# Allow configuring CSRF trusted origins via environment (comma-separated list)
+# Useful for deployment platforms where you can't edit settings directly.
+_csrf = config('CSRF_TRUSTED_ORIGINS', default='')
+if _csrf:
+    CSRF_TRUSTED_ORIGINS = [u.strip() for u in _csrf.split(',') if u.strip()]
+
+# NOTE: Ensure DEBUG=False in production. DEBUG can be toggled via the DEBUG env var above.
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
