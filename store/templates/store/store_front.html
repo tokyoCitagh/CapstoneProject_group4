@@ -1,5 +1,5 @@
 {% extends 'store/base.html' %} 
-{% load static %}
+{% load static cloudinary_helpers %}
 
 {% block title %}Shop All Products{% endblock %}
 
@@ -76,7 +76,7 @@
             
                 {% with primary_img=product.primary_image %}
                     {% if primary_img %}
-                        <img src="{{ primary_img.image.url }}" alt="{{ product.name }}">
+                        <img src="{{ primary_img.image|cloud_url }}" alt="{{ product.name }}">
                     {% else %}
                         <img src="{% static 'images/placeholder.jpg' %}" alt="No Image Available">
                     {% endif %}

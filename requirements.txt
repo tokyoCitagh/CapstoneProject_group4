@@ -20,3 +20,8 @@ cloudinary==1.33.0
 # Relax cloudinary storage pin so Railway (Python 3.11) can pick a compatible release.
 # Some newer releases may require Python >=3.12; allow any 0.x/1.x release compatible with 3.11
 django-cloudinary-storage>=0.3.0,<2.0
+
+# Background task queue
+celery==5.3.1
+# Use a broad, compatible redis client range that is available on PyPI for Python 3.11
+redis>=4.6,<5.0

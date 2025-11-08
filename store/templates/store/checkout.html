@@ -1,5 +1,5 @@
 {% extends 'store/base.html' %} 
-{% load static %}
+{% load static cloudinary_helpers %}
 
 {% block content %}
     <div class="container my-5">
@@ -87,7 +87,7 @@
                         {% with primary_img=item.product.primary_image %}
                         <li class="list-group-item d-flex align-items-center py-3 px-3">
                             <img 
-                                src="{% if primary_img %}{{ primary_img.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                                src="{% if primary_img %}{{ primary_img.image|cloud_url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
                                 alt="{{ item.product.name }}" 
                                 class="img-thumbnail me-3 rounded-3" 
                                 style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd;">

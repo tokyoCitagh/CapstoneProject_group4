@@ -1,5 +1,5 @@
 {% extends 'base_portal.html' %} 
-{% load static %}
+{% load static cloudinary_helpers %}
 
 {% block title %}Edit Product{% endblock %}
 
@@ -200,7 +200,7 @@
                     
                     {# Image Preview #}
                     {% if image_form.instance.pk %}
-                        <img src="{{ image_form.instance.image.url }}" alt="Photo Preview">
+                        <img src="{{ image_form.instance.image|cloud_url }}" alt="Photo Preview">
                         
                         <p style="margin: 5px 0;">
                             {{ image_form.DELETE.label_tag }} {{ image_form.DELETE }}

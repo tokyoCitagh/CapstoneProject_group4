@@ -1,5 +1,5 @@
 {% extends 'store/base.html' %}
-{% load static %}
+{% load static cloudinary_helpers %}
 
 {% block title %}{{ product.name }}{% endblock %}
 
@@ -13,7 +13,7 @@
                 <!-- Primary Image Display (Using the first image as main, or placeholder) -->
                 {% with main_image=images.0 %}
                 <img id="main-product-image" 
-                    src="{% if main_image %}{{ main_image.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                    src="{% if main_image %}{{ main_image.image|cloud_url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
                     alt="{{ product.name }}" 
                     class="w-full h-96 object-contain rounded-lg mb-4 bg-white transition duration-300">
                 {% endwith %}
@@ -21,10 +21,10 @@
                 <!-- Thumbnail Grid -->
                 <div class="flex space-x-3 overflow-x-auto p-2 bg-white rounded-md shadow-inner">
                     {% for image in images %}
-                    <img src="{{ image.image.url }}" 
+                    <img src="{{ image.image|cloud_url }}" 
                         alt="Thumbnail {{ forloop.counter }}" 
                         class="w-20 h-20 object-cover rounded-md cursor-pointer border-2 border-transparent hover:border-indigo-600 transition duration-150 thumbnail-image"
-                        data-full-url="{{ image.image.url }}"
+                        data-full-url="{{ image.image|cloud_url }}"
                     >
                     {% empty %}
                     <p class="text-gray-500 text-sm">No additional images available.</p>
