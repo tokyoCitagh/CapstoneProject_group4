@@ -48,9 +48,6 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
-    # Temporary diagnostic middleware: logs uncaught exceptions to stdout/stderr so
-    # that deployment platforms (e.g., Railway) capture full Python tracebacks.
-    'my_ecommerce_site.middleware.ExceptionLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
