@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib import messages 
 import json 
 from allauth.account.views import logout as allauth_logout
+from allauth.account.views import LoginView as StaffLoginView # Added StaffLoginView import for context
 
 # --- CRITICAL IMPORTS ---
 
@@ -56,9 +57,12 @@ def is_staff_user(user):
     return user.is_active and user.is_staff
 
 # Use reverse_lazy for decorators to resolve the URL name after settings are loaded
-PORTAL_LOGIN_URL = reverse_lazy('portal_login') 
+# FIX: Using 'portal:login' with the namespace instead of 'portal_login'
+PORTAL_LOGIN_URL = reverse_lazy('portal:login') 
 
-# --- USER-FACING E-COMMERCE VIEWS (NO CHANGES HERE) ---
+# --- USER-FACING E-COMMERCE VIEWS (No Changes) ---
+# ... (home_view, store_view, product_detail_view, cart_view, checkout_view, update_item, process_order remain unchanged)
+
 def home_view(request):
     data = cartData(request) 
     context = {'cartItems': data['cartItems']} 
@@ -212,12 +216,9 @@ def process_order(request):
     else:
         return JsonResponse('User not logged in. Anonymous checkout is not yet implemented.', safe=False, status=403)
 
-
 # --- PORTAL/ADMIN VIEWS (E-COMMERCE) ---
 
-def staff_logout_view(request):
-    allauth_logout(request)
-    return redirect(reverse('portal_login'))
+# REMOVED: staff_logout_view as it's now handled by DjangoLogoutView in project urls
 
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
@@ -427,7 +428,7 @@ def add_service_request(request):
         'page_title': 'Submit Service Request',
         'cartItems': data['cartItems'],
     }
-    # **FIX: Corrected the template name from 'add_service_request.html' to 'add_request.html'**
+    # NOTE: Assuming the template path is correct.
     return render(request, 'services/add_request.html', context)
 
 @login_required
@@ -439,7 +440,10 @@ def customer_requests_list(request):
     data = cartData(request)
     context = {
         'page_title': 'My Service Requests',
-        'requests': requests,
+        # *** FIX APPLIED HERE ***
+        # Changed 'requests' to 'requests_list' to match the template variable name.
+        'requests_list': requests, 
+        # ***********************
         'cartItems': data['cartItems'],
     }
     return render(request, 'services/customer_requests_list.html', context)
@@ -447,6 +451,7 @@ def customer_requests_list(request):
 def customer_service_request_chat(request, pk):
     """Handles the customer view and chat for a single service request."""
     customer = get_customer_or_create(request)
+    # Note: Assuming 'services:customer_chat' is the correct URL name for the chat view.
     service_request = get_object_or_404(
         ServiceRequest.objects.prefetch_related('messages', 'attachments'), 
         pk=pk, 
@@ -463,7 +468,6 @@ def customer_service_request_chat(request, pk):
                 message=message_text
             )
             messages.success(request, "Reply sent successfully.")
-            # Note: You need a URL named 'services:customer_chat' defined in your urls.py
             return redirect('services:customer_chat', pk=pk)
             
     data = cartData(request)
@@ -474,7 +478,6 @@ def customer_service_request_chat(request, pk):
         'attachments': service_request.attachments.all(),
         'cartItems': data['cartItems'],
     }
-    # NOTE: Assuming the template is service_request_chat.html based on your listing
     return render(request, 'services/service_request_chat.html', context)
 
 
@@ -517,15 +520,15 @@ def staff_service_request_chat(request, pk):
                 service_request.save()
             
             messages.success(request, "Reply sent successfully.")
-            return redirect('services:staff_chat', pk=pk)
+            # Note: Assuming the URL name for staff chat is correct.
+            return redirect('portal:staff_chat', pk=pk)
             
         if new_status and new_status != service_request.status:
             service_request.status = new_status
             service_request.save()
             messages.success(request, f"Request status updated to {new_status}.")
-            return redirect('services:staff_chat', pk=pk)
+            return redirect('portal:staff_chat', pk=pk)
     
-    # FIX: Use Django's internal field choices lookup to reliably get the choices list.
     status_choices = ServiceRequest._meta.get_field('status').choices
             
     context = {

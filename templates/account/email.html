@@ -7,8 +7,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Electronics - {% trans "E-mail Addresses" %}</title>
+    <title>Image Electronics - {% trans "Account Settings" %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic styles for clarity and structure, matching your inline CSS */
+        .primary-button {
+            background-color: #4f46e5; /* Indigo */
+            color: #ffffff;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+        }
+        .primary-button:hover {
+            background-color: #4338ca; /* Darker Indigo on hover */
+        }
+    </style>
 </head>
 
 <body style="background-color: #f3f4f6; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: ui-sans-serif, system-ui, sans-serif;">
@@ -29,95 +49,78 @@
         <div style="width: 100%; max-width: 672px; background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb;">
             
             <h2 style="font-size: 2.25rem; font-weight: 800; color: #1f2937; margin-bottom: 8px; text-align: center;">
-                {% trans "E-mail Addresses" %} 📧
+                {% trans "Account Settings" %} ⚙️
             </h2>
             
             {% user_display user as user_display %}
 
-            <p style="color: #4b5563; margin-bottom: 24px; text-align: center;">
-                {% blocktrans %}The following e-mail addresses are associated with your account, **{{ user_display }}**.{% endblocktrans %}
-            </p>
+            <div style="text-align: center; margin-bottom: 24px;">
+                <p style="color: #4b5563; margin-bottom: 8px;">
+                    {% blocktrans %}Settings for your account, <strong>{{ user_display }}</strong>.{% endblocktrans %}
+                </p>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 8px;">
+                    <span style="display: inline-block; background-color: #f3f4f6; padding: 4px 12px; border-radius: 9999px;">
+                        Member since {{ user.date_joined|date:"F j, Y" }}
+                    </span>
+                </p>
+            </div>
 
+            {# --- 1. Your Registered Emails Section --- #}
             {% if emailaddresses %}
             <div style="margin-bottom: 24px;">
                 <h3 style="font-size: 1.25rem; font-weight: 600; color: #374151; margin-bottom: 12px;">{% trans "Your Registered Emails" %}</h3>
-                <form action="{% url 'account_email' %}" method="post" style="display: flex; flex-direction: column; row-gap: 16px;">
-                    {% csrf_token %}
+                
+                {% for emailaddress in emailaddresses %}
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb; margin-bottom: 12px;">
                     
-                    {# List of Current Emails #}
-                    {% for emailaddress in emailaddresses %}
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
-                        <div style="display: flex; align-items: center;">
-                            <input type="radio" name="email" value="{{ emailaddress.email }}" 
-                                   {% if emailaddress.primary %}checked="checked"{% endif %} 
-                                   style="height: 16px; width: 16px; color: #4f46e5; border-color: #d1d5db; margin-right: 12px;">
-                            <label for="email" style="font-size: 1rem; font-weight: 500; color: #1f2937;">
-                                {{ emailaddress.email }}
-                            </label>
+                    {# Email and Date Created #}
+                    <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                        <div style="font-size: 1rem; font-weight: 500; color: #1f2937;">
+                            {{ emailaddress.email }}
                         </div>
+                    </div>
+                    
+                    {# Status Badges #}
+                    <div style="font-size: 0.75rem; font-weight: 500; display: flex; flex-wrap: wrap; column-gap: 8px; row-gap: 8px; margin-left: 20px;">
+                        {% if emailaddress.verified %}
+                            <span style="padding: 2px 10px; border-radius: 9999px; background-color: #d1fae5; color: #065f46;">
+                                {% trans "Verified" %}
+                            </span>
+                        {% else %}
+                            <span style="padding: 2px 10px; border-radius: 9999px; background-color: #fffbeb; color: #b45309;">
+                                {% trans "Unverified" %}
+                            </span>
+                        {% endif %}
                         
-                        <div style="font-size: 0.75rem; font-weight: 500; display: flex; column-gap: 8px;">
-                            {% if emailaddress.verified %}
-                                <span style="padding: 2px 10px; border-radius: 9999px; background-color: #d1fae5; color: #065f46;">
-                                    {% trans "Verified" %}
-                                </span>
-                            {% else %}
-                                <span style="padding: 2px 10px; border-radius: 9999px; background-color: #fffbeb; color: #b45309;">
-                                    {% trans "Unverified" %}
-                                </span>
-                            {% endif %}
-                            
-                            {% if emailaddress.primary %}
-                                <span style="padding: 2px 10px; border-radius: 9999px; background-color: #e0f2fe; color: #1d4ed8;">
-                                    {% trans "Primary" %}
-                                </span>
-                            {% endif %}
-                        </div>
+                        {% if emailaddress.primary %}
+                            <span style="padding: 2px 10px; border-radius: 9999px; background-color: #e0f2fe; color: #1d4ed8;">
+                                {% trans "Primary" %}
+                            </span>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-
-                    {# Action Buttons #}
-                    <div style="display: flex; column-gap: 12px; margin-top: 16px;">
-                        <button type="submit" name="action_send" style="flex: 1; background-color: #f59e0b; color: #ffffff; font-weight: 700; padding: 10px 16px; border-radius: 6px; transition: background-color 0.2s; cursor: pointer; border: none;">
-                            {% trans 'Resend Verification' %}
-                        </button>
-                        <button type="submit" name="action_primary" style="flex: 1; background-color: #4f46e5; color: #ffffff; font-weight: 700; padding: 10px 16px; border-radius: 6px; transition: background-color 0.2s; cursor: pointer; border: none;">
-                            {% trans 'Make Primary' %}
-                        </button>
-                        <button type="submit" name="action_remove" style="flex: 1; background-color: #dc2626; color: #ffffff; font-weight: 700; padding: 10px 16px; border-radius: 6px; transition: background-color 0.2s; cursor: pointer; border: none;">
-                            {% trans 'Remove' %}
-                        </button>
-                    </div>
-                </form>
+                </div>
+                {% endfor %}
             </div>
             {% else %}
-                <p style="text-align: center; color: #dc2626; margin-bottom: 24px; font-weight: 500;">{% trans 'Warning: You do not have any email addresses configured.' %}</p>
+                <p style="text-align: center; color: #dc2626; margin-bottom: 24px; font-weight: 500;">{% trans 'No email addresses found for this account.' %}</p>
             {% endif %}
 
-            {# Add New Email Address Form #}
-            <h3 style="font-size: 1.25rem; font-weight: 600; color: #374151; margin-bottom: 12px; margin-top: 24px;">{% trans "Add New E-mail Address" %}</h3>
-            <form method="post" action="{% url 'account_email' %}" style="display: flex; flex-direction: column; row-gap: 16px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
-                {% csrf_token %}
-                
-                {# Render the Add Email form field #}
-                {% for field in form %}
-                    <div style="margin-bottom: 0;">
-                        <label for="{{ field.id_for_label }}" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 4px;">
-                            {{ field.label }}
-                        </label>
-                        {% render_field field style="display: block; width: 100%; padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); font-size: 0.875rem;" %}
-                        
-                        {% for error in field.errors %}
-                            <p style="color: #ef4444; font-size: 0.75rem; font-style: italic; margin-top: 4px;">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 24px 0;">
 
-                <button type="submit" name="action_add" 
-                        style="width: 100%; display: flex; justify-content: center; padding: 10px 16px; border: 1px solid transparent; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); font-size: 1.125rem; font-weight: 500; color: #ffffff; background-color: #10b981; transition: background-color 0.2s; cursor: pointer;">
-                    {% trans "Add E-mail" %}
-                </button>
-            </form>
+            {# --- 2. Password Reset Button --- #}
+            <div style="margin-top: 24px;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: #374151; margin-bottom: 12px;">{% trans "Account Security" %}</h3>
+
+                <p style="color: #6b7280; margin-bottom: 16px;">
+                    {% trans "Use the link below to securely change or reset your password." %}
+                </p>
+
+                <a href="{% url 'account_reset_password' %}" class="primary-button" 
+                   style="display: block; width: 100%; text-decoration: none; padding: 12px 20px; text-align: center;">
+                    <i class="fas fa-lock" style="margin-right: 8px;"></i> {% trans 'Reset Password' %}
+                </a>
+            </div>
+
         </div>
 
     </div>

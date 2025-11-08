@@ -7,202 +7,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Electronics - {% trans "Verify Your E-mail Address" %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <style>
-        /* BASE STYLES */
-        body {
-            background-color: #f3f4f6; /* Light Background */
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-family: ui-sans-serif, system-ui, sans-serif;
-            color: #374151;
-        }
-        
-        /* HEADER */
-        .header {
-            background-color: #1f2937; /* Dark Grey */
-            color: #ffffff;
-            padding: 1rem 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .header-content {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-decoration: none;
-            color: #ffffff;
-        }
-        .header-link {
-            color: #d1d5db;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .header-link:hover {
-            color: #ffffff;
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 16px;
-        }
-
-        /* CARD */
-        .card {
-            width: 100%;
-            max-width: 448px;
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e5e7eb;
-        }
-        .card-heading {
-            font-size: 1.75rem; 
-            font-weight: 800;
-            color: #1f2937;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        /* ALERT BOX (The verification message) */
-        .alert-box {
-            padding: 24px;
-            background-color: #eff6ff; /* Light Blue Background */
-            border-left: 4px solid #3b82f6; /* Blue Border */
-            color: #1e40af; /* Dark Blue Text */
-            border-radius: 8px;
-        }
-        .alert-header {
-            display: flex;
-            align-items: center;
-        }
-        .alert-icon {
-            font-size: 1.5rem;
-            margin-right: 12px;
-        }
-        .alert-title {
-            font-weight: 700;
-            font-size: 1.125rem;
-            margin: 0;
-        }
-        .alert-text {
-            margin-top: 16px;
-            font-size: 0.875rem;
-            line-height: 1.4;
-        }
-        .alert-text-bold {
-            margin-top: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* RESEND LINK STYLES */
-        .resend-section {
-            margin-top: 32px;
-            text-align: center;
-        }
-        .resend-text {
-            font-size: 0.875rem;
-            color: #4b5563;
-        }
-        .resend-link {
-            display: inline-block;
-            margin-top: 8px;
-            font-size: 0.875rem;
-            color: #10b981; /* Green link color */
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #10b981;
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .resend-link:hover {
-            color: #059669;
-            border-color: #059669;
-        }
-        
-        /* FOOTER */
-        .footer {
-            background-color: #1f2937;
-            text-align: center;
-            padding: 10px;
-            margin-top: auto;
-        }
-        .footer-text {
-            font-size: 0.8rem;
-            color: #9ca3af;
-        }
-    </style>
-
 </head>
 
-<body>
-
-    <header class="header">
-        <div class="header-content">
-            <a href="{% url 'home' %}" class="header-logo">
-                Image Electronics
-            </a>
-            <a href="{% url 'store:store' %}" class="header-link">
-                Back to Shop
-            </a>
-        </div>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-gray-900 shadow-lg">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0">
+                    <a href="{% url 'store:store' %}" class="text-2xl font-bold text-white">
+                        Image Electronics
+                    </a>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'account_login' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Sign In</a>
+                    <a href="{% url 'account_signup' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Sign Up</a>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <div class="main-content">
-
-        <div class="card">
-            
-            <h2 class="card-heading">
-                {% trans "Verify Your E-mail Address" %} 🔒
-            </h2>
-            
-            <div class="alert-box" role="alert">
-                <div class="alert-header">
-                    <i class="fas fa-check-circle alert-icon"></i>
-                    <p class="alert-title">
-                        {% trans "Confirmation Sent!" %}
-                    </p>
-                </div>
-                <p class="alert-text">
-                    {% blocktrans %}We've sent an e-mail to you for verification. Follow the link provided to finalize the signup process.{% endblocktrans %}
-                </p>
-                <p class="alert-text-bold">
-                    {% blocktrans %}If you do not see the e-mail in a few minutes, check your spam folder.{% endblocktrans %}
-                </p>
-            </div>
-
-            <div class="resend-section">
-                <p class="resend-text">
-                    {% trans "Still waiting for your email?" %}
-                </p>
-                <a href="{% url 'account_email' %}" 
-                   class="resend-link">
-                    {% trans "Check Email Status / Resend" %}
-                </a>
-            </div>
-        </div>
-
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 border border-gray-300 rounded-lg shadow-xl mt-10">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">
+            {% trans "Verify Your E-mail Address" %} 🔒
+        </h2>
     </div>
 
-    <footer class="footer">
-        <p class="footer-text">&copy; 2025 Image Electronics</p>
-    </footer>
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mb-8">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-lg font-medium text-blue-800">
+                    {% trans "Confirmation Sent!" %}
+                </h3>
+                <div class="mt-2 text-sm text-blue-700 space-y-3">
+                    <p>
+                        {% blocktrans %}We've sent an e-mail to you for verification. Follow the link provided to finalize the signup process.{% endblocktrans %}
+                    </p>
+                    <p class="font-medium">
+                        {% blocktrans %}If you do not see the e-mail in a few minutes, check your spam folder.{% endblocktrans %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    {% if messages %}
+    <div class="mb-8">
+        {% for message in messages %}
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ message }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="text-center space-y-4">
+        <p class="text-gray-600">
+            {% trans "Still waiting for your email?" %}
+        </p>
+        <a href="{% url 'account_email' %}" 
+           class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            {% trans "Check Email Status / Resend" %}
+        </a>
+    </div>
+</div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center">
+                <p class="text-gray-400 text-sm">&copy; 2025 Image Electronics. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
