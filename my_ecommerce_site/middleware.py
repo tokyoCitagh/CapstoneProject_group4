@@ -1,5 +1,6 @@
 import logging
 import traceback
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -27,5 +28,15 @@ class ExceptionLoggingMiddleware:
                 # If logging itself fails, fallback to printing the traceback.
                 print("Exception while logging request:")
                 traceback.print_exc()
+            # Always print the full traceback to stdout as a fallback so hosting
+            # platforms that don't capture logger output still receive it.
+            try:
+                print("--- START EXCEPTION TRACEBACK (diagnostic) ---")
+                traceback.print_exc()
+                print("Request path:", getattr(request, 'path', '<unknown>'))
+                print("--- END EXCEPTION TRACEBACK (diagnostic) ---")
+                sys.stdout.flush()
+            except Exception:
+                pass
             # Re-raise to let the normal error handlers run (and return 500 to the client)
             raise
