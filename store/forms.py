@@ -24,7 +24,19 @@ class CustomLoginForm(AllauthLoginForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ensure the field order is correct for 'username_email' method
-        self.fields.keyOrder = ['login', 'password', 'remember']
+        # Use order_fields (supported in modern Django) instead of the
+        # deprecated/invalid `keyOrder` attribute which raises AttributeError
+        # when set on the underlying OrderedDict.
+        try:
+            self.order_fields(['login', 'password', 'remember'])
+        except Exception:
+            # Fallback: ensure keys exist and attempt a safe reorder
+            field_keys = ['login', 'password', 'remember']
+            ordered = {k: self.fields[k] for k in field_keys if k in self.fields}
+            for k in list(self.fields.keys()):
+                if k not in ordered:
+                    ordered[k] = self.fields[k]
+            self.fields = type(self.fields)(ordered)
         
 # -------------------------------------------------------------------
 # 1. FIX: Custom Registration Form to ADD Email Field
