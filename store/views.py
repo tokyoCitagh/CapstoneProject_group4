@@ -111,6 +111,42 @@ def portal_login_view(request):
 # ---------------------------------------------------------------
 
 
+def account_login_view(request):
+    """Replacement login view to handle /accounts/login/ when allauth causes issues in production.
+
+    This uses Django's AuthenticationForm to authenticate users and renders the
+    existing `templates/account/login.html` which expects a `form` and
+    `redirect_field_value` context variables.
+    """
+    from django.conf import settings
+
+    # If already authenticated, redirect to configured LOGIN_REDIRECT_URL
+    if request.user.is_authenticated:
+        return redirect(settings.LOGIN_REDIRECT_URL)
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            # honor 'next' parameter
+            next_url = request.POST.get('next') or request.GET.get('next')
+            return redirect(next_url or settings.LOGIN_REDIRECT_URL)
+    else:
+        form = AuthenticationForm(request)
+
+    redirect_field_name = 'next'
+    redirect_field_value = request.GET.get(redirect_field_name, '')
+
+    context = {
+        'form': form,
+        'redirect_field_name': redirect_field_name,
+        'redirect_field_value': redirect_field_value,
+    }
+    return render(request, 'account/login.html', context)
+
+
+
 # --- CUSTOMER ACCOUNT VIEWS (ADDED FOR EMAIL DATE FIX) ---
 @login_required
 def custom_email_list_view(request):
