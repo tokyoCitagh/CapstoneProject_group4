@@ -25,7 +25,11 @@
             {# --- LOGO INTEGRATION: Replaced text with image --- #}
             <a href="{% url 'home' %}" class="flex items-center space-x-2">
                 {# Prefer Cloudinary-hosted logo if available, otherwise fallback to static file #}
-                <img src="{{ STATIC_CLOUDINARY_IMJLOGO_URL|default:static('images/imjlogo.webp') }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                {% if STATIC_CLOUDINARY_IMJLOGO_URL %}
+                    <img src="{{ STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                {% else %}
+                    <img src="{% static 'images/imjlogo.webp' %}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                {% endif %}
                 <span class="text-2xl font-bold tracking-wide hidden sm:inline">Image Electronics</span>
             </a>
             {# --- END LOGO INTEGRATION --- #}
