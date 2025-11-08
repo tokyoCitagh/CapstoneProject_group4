@@ -13,6 +13,8 @@ python-decouple==3.8
 sqlparse==0.5.3
 whitenoise==6.11.0
 django-storages==1.13.1
-boto3==1.26.190
+# Relax boto3 pin so pip/railway can pick a compatible build for their environment.
+# Use a broad but safe range: any 1.x boto3 (>=1.26, <2.0).
+boto3>=1.26,<2.0
 cloudinary==1.33.0
 django-cloudinary-storage==1.7.3
