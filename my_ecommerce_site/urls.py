@@ -46,7 +46,10 @@ urlpatterns = [
     path('', store_views.home_view, name='home'), 
     
     # Authentication URLs
-    path('accounts/', include('allauth.urls')),
+     # Override allauth's login URL with our fallback view (placed before include)
+     path('accounts/login/', store_views.account_login_view, name='account_login'),
+
+     path('accounts/', include('allauth.urls')),
     
     # Custom email page override
     path('accounts/email/', store_views.custom_email_list_view, name='account_email'),
