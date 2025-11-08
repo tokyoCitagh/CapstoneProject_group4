@@ -52,7 +52,7 @@
                                     <div class="col-12 col-md-4 d-flex align-items-center ps-4">
                                         {% with primary_img=item.product.primary_image %}
                                             <img 
-                                                src="{% if primary_img %}{{ primary_img.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                                                src="{% if primary_img %}{{ primary_img.image|cloud_url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
                                                 alt="{{ item.product.name }}" 
                                                 class="img-thumbnail me-3 rounded-md" 
                                                 style="max-width: 80px; height: 80px; object-fit: cover;">

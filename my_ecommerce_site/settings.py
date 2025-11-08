@@ -272,6 +272,9 @@ ACCOUNT_FORMS = {
     'login': 'store.forms.CustomLoginForm'
 }
 
+# Use a custom allauth adapter that enqueues emails to Celery when configured.
+ACCOUNT_ADAPTER = config('ACCOUNT_ADAPTER', default='store.mail_adapter.CeleryAccountAdapter')
+
 # Password settings
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 
@@ -280,7 +283,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # =============================================================
 
 # --- EMAIL BACKEND CONFIGURATION (READING FROM .ENV) ---
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
+# Allow overriding the email backend from environment so we can switch to a
+# non-blocking backend (console/dummy) in production for diagnostics.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 
 # Load email settings securely
 EMAIL_HOST = config('EMAIL_HOST')
@@ -291,6 +296,20 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
+
+# Celery / Redis configuration (for background tasks)
+# Provide REDIS_URL in Railway variables (e.g. redis://:<password>@<host>:<port>/0)
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
+else:
+    # Allow explicit override via CELERY_BROKER_URL env var for local dev
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+# Whether to run Celery tasks eagerly (useful for local dev / debugging)
+CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=False, cast=bool)
 
 # Enable site framework (required for allauth)
 SITE_ID = 1
