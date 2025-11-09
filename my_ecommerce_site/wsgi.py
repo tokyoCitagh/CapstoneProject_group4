@@ -7,10 +7,14 @@ For more information on this file, see
 https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
-import os
+"""WSGI entrypoint.
 
-from django.core.wsgi import get_wsgi_application
+Temporary emergency: replace the Django WSGI app with a minimal
+maintenance WSGI app so the platform can serve a simple 503 response
+without importing Django or compiling any templates. Remove this file
+or revert after the real fix is deployed.
+"""
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_ecommerce_site.settings')
-
-application = get_wsgi_application()
+def application(environ, start_response):
+	start_response('503 Service Unavailable', [('Content-Type', 'text/html; charset=utf-8')])
+	return [b"Service temporarily unavailable (maintenance)\n"]
