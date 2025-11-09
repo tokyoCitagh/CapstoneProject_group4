@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.contrib.auth import logout as auth_logout, authenticate, login 
 import json 
 from django.contrib import messages 
+import logging
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
@@ -470,11 +471,49 @@ def edit_product(request, pk):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         image_formset = ImageFormSet(request.POST, request.FILES, instance=product)
+
+        # Diagnostic logging: record incoming files and which storage backend is active.
+        try:
+            from django.core.files.storage import default_storage
+            logger = logging.getLogger('store.uploads')
+            logger.info(
+                "edit_product POST start: product_id=%s user=%s files=%s storage=%s",
+                pk,
+                request.user.username if request.user.is_authenticated else None,
+                list(request.FILES.keys()),
+                f"{default_storage.__class__.__module__}.{default_storage.__class__.__name__}",
+            )
+        except Exception:
+            # Keep diagnostics non-fatal in production
+            logging.exception("Failed to log upload diagnostics")
         
         if form.is_valid() and image_formset.is_valid():
-            
+            # Capture existing image names so we can detect newly-saved images
+            try:
+                prev_names = set(product.images.values_list('image', flat=True))
+            except Exception:
+                prev_names = set()
+
             updated_product = form.save() 
             image_formset.save()
+
+            # Log newly added images and their storage URLs (best-effort)
+            try:
+                from django.core.files.storage import default_storage
+                new_names = set(updated_product.images.values_list('image', flat=True))
+                added = new_names - prev_names
+                if added:
+                    logger = logging.getLogger('store.uploads')
+                    for name in added:
+                        try:
+                            url = default_storage.url(name)
+                        except Exception:
+                            url = None
+                        logger.info("New image saved for product %s: %s url=%s", updated_product.pk, name, url)
+                else:
+                    logging.getLogger('store.uploads').info("No new images detected after save for product %s", updated_product.pk)
+            except Exception:
+                logging.exception("Failed to log saved image diagnostics")
             
             logs_created = False
             
