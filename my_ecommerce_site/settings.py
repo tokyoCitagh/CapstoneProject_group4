@@ -71,9 +71,14 @@ TEMPLATES = [
         # cached loader which can serve stale compiled templates after deploys.
         'APP_DIRS': False,
         'OPTIONS': {
+            # Use preprocessing loaders to rewrite any occurrences of
+            # "default:static('...')" into a safe literal default so bad
+            # templates left on the running image don't cause a parse-time
+            # TemplateSyntaxError. These loaders delegate to the standard
+            # filesystem/app_directories loaders but preprocess the source.
             'loaders': [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
+                'my_ecommerce_site.template_loaders.PreprocessingFilesystemLoader',
+                'my_ecommerce_site.template_loaders.PreprocessingAppDirectoriesLoader',
             ],
             'context_processors': [
                 'django.template.context_processors.debug',
