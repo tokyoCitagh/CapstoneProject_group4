@@ -30,7 +30,7 @@
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
     <header class="bg-gray-800 text-white shadow-md">
-        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <nav class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
             
             {# --- LOGO INTEGRATION: Replaced text with image --- #}
             <a href="{% url 'home' %}" class="flex items-center space-x-2">
@@ -40,7 +40,7 @@
             </a>
             {# --- END LOGO INTEGRATION --- #}
             
-            <div class="space-x-4 flex items-center">
+            <div class="space-x-4 flex items-center flex-wrap">
                 
                 <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a> 
                 <a href="{% url 'store:store' %}" class="hover:text-gray-300">Products</a>
@@ -69,9 +69,9 @@
                     <a href="{% url 'account_email' %}" class="text-sm text-gray-400 hover:text-white">Hello, **{{ request.user.username }}**</a>
                     
                     {# FIX: Use the correct allauth logout URL name 'account_logout' #}
-                    <form action="{% url 'account_logout' %}" method="post" class="inline">
+                    <form action="{% url 'account_logout' %}" method="post" class="inline flex-shrink-0">
                         {% csrf_token %}
-                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200">
+                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200 flex-shrink-0">
                             Logout
                         </button>
                     </form>
