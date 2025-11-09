@@ -29,7 +29,7 @@
             {% for order in orders %}
             <tr>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ order.pk }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.customer.name if order.customer else 'Guest' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{% if order.customer %}{{ order.customer.name }}{% else %}Guest{% endif %}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.get_cart_items }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GHC {{ order.get_cart_total|floatformat:2 }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">

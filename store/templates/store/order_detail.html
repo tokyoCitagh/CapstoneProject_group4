@@ -11,7 +11,7 @@
 
   <div class="bg-white shadow rounded-lg border border-gray-200 p-6">
     <div class="mb-4">
-      <p><strong>Customer:</strong> {{ order.customer.name if order.customer else 'Guest' }}</p>
+      <p><strong>Customer:</strong> {% if order.customer %}{{ order.customer.name }}{% else %}Guest{% endif %}</p>
       <p><strong>Date:</strong> {{ order.date_ordered }}</p>
       <p><strong>Status:</strong> {% if order.complete %}Completed{% else %}Pending{% endif %}</p>
     </div>
@@ -29,9 +29,9 @@
         <tbody class="bg-white divide-y divide-gray-200">
           {% for item in items %}
           <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.product.name if item.product else 'Deleted product' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if item.product %}{{ item.product.name }}{% else %}Deleted product{% endif %}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.quantity }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GHC {{ item.product.selling_price|floatformat:2 if item.product else '0.00' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{% if item.product %}GHC {{ item.product.selling_price|floatformat:2 }}{% else %}GHC 0.00{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>
