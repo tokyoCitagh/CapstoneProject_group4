@@ -65,8 +65,16 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
+        # Disable the cached template loader so deploys pick up template changes
+        # immediately. Some platforms or buildpacks wrap loaders with the cached
+        # loader in production; explicitly configure loaders to avoid using the
+        # cached loader which can serve stale compiled templates after deploys.
+        'APP_DIRS': False,
         'OPTIONS': {
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ],
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
