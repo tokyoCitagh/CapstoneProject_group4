@@ -31,59 +31,73 @@
 
     <header class="bg-gray-800 text-white shadow-md">
         <nav class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
-            
-            {# --- LOGO INTEGRATION: Replaced text with image --- #}
-            <a href="{% url 'home' %}" class="flex items-center space-x-2">
-                {# Prefer Cloudinary-hosted logo if available, otherwise fallback to static file #}
-                     <img src="{{ SAFE_STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
-                <span class="text-2xl font-bold tracking-wide hidden sm:inline">Image Electronics</span>
-            </a>
-            {# --- END LOGO INTEGRATION --- #}
-            
-            <div class="space-x-4 flex items-center flex-wrap">
-                
-                <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a> 
+
+            {# Logo + mobile toggle #}
+            <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
+                <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                    <img src="{{ SAFE_STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                    <span class="text-2xl font-bold tracking-wide hidden sm:inline">Image Electronics</span>
+                </a>
+
+                <button id="nav-toggle" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+
+            {# Desktop menu (visible md and up) #}
+            <div class="hidden md:flex md:items-center md:space-x-4">
+                <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a>
                 <a href="{% url 'store:store' %}" class="hover:text-gray-300">Products</a>
-                
-                {# ⭐ FIX APPLIED HERE: Logged-in users now go directly to the request form ⭐ #}
                 {% if request.user.is_authenticated %}
-                    {# Logged-in users go directly to the service submission form #}
                     <a href="{% url 'services:add_service_request' %}" class="hover:text-gray-300">Services</a>
                 {% else %}
-                    {# Logged-out users are sent to the general customer login page #}
                     <a href="{% url 'account_login' %}" class="hover:text-gray-300">Services</a>
                 {% endif %}
-                
-                {# ⭐ Cart Link Redirects Logged-out users to customer login ⭐ #}
-                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" 
-                    class="hover:text-gray-300 relative flex items-center space-x-1">
+
+                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" class="hover:text-gray-300 relative flex items-center space-x-1">
                     <i class="fas fa-shopping-cart text-lg"></i>
                     <span>Cart</span>
                     <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">
                         {% if user.is_authenticated %}{{ cartItems|default:0 }}{% else %}0{% endif %}
                     </span>
                 </a>
-                
-                {# --- DYNAMIC LOGIN/LOGOUT BUTTON BLOCK (FIXED for allauth) --- #}
+
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'account_email' %}" class="text-sm text-gray-400 hover:text-white">Hello, **{{ request.user.username }}**</a>
-                    
-                    {# FIX: Use the correct allauth logout URL name 'account_logout' #}
                     <form action="{% url 'account_logout' %}" method="post" class="inline flex-shrink-0">
                         {% csrf_token %}
-                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200 flex-shrink-0">
-                            Logout
-                        </button>
+                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200 flex-shrink-0">Logout</button>
                     </form>
-                    
                 {% else %}
-                    {# FIX: Use the correct allauth login URL name 'account_login' #}
                     <a href="{% url 'account_login' %}" class="bg-gray-300 text-gray-800 hover:bg-gray-400 px-3 py-1 rounded transition duration-200">Sign in</a>
                 {% endif %}
-                {# --- END DYNAMIC LOGIN/LOGOUT BUTTON BLOCK --- #}
-
             </div>
         </nav>
+
+        {# Mobile menu (hidden by default) #}
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-800 text-white w-full">
+            <div class="px-4 pt-4 pb-4 space-y-2">
+                <a href="{% url 'home' %}" class="block py-2 hover:text-gray-300">Home</a>
+                <a href="{% url 'store:store' %}" class="block py-2 hover:text-gray-300">Products</a>
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'services:add_service_request' %}" class="block py-2 hover:text-gray-300">Services</a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="block py-2 hover:text-gray-300">Services</a>
+                {% endif %}
+                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" class="block py-2 hover:text-gray-300">Cart ({{ cartItems|default:0 }})</a>
+                {% if request.user.is_authenticated %}
+                    <div class="pt-2 border-t border-gray-700">
+                        <a href="{% url 'account_email' %}" class="block py-2 text-sm text-gray-300">Hello, {{ request.user.username }}</a>
+                        <form action="{% url 'account_logout' %}" method="post" class="py-2">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left text-sm text-red-400">Logout</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="block py-2 bg-gray-300 text-gray-800 rounded px-2">Sign in</a>
+                {% endif %}
+            </div>
+        </div>
     </header>
 
     <main class="container mx-auto px-4 py-8 flex-grow">
@@ -141,6 +155,22 @@
     </script>
     
     <script type="text/javascript" src="{% static 'store/js/cart.js' %}"></script>
+
+        <script>
+            // Mobile nav toggle
+            document.addEventListener('DOMContentLoaded', function(){
+                var btn = document.getElementById('nav-toggle');
+                var menu = document.getElementById('mobile-menu');
+                if (!btn || !menu) return;
+                btn.addEventListener('click', function(){
+                    if (menu.classList.contains('hidden')) {
+                        menu.classList.remove('hidden');
+                    } else {
+                        menu.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
 
 </body>
 </html>
