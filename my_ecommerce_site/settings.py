@@ -80,6 +80,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Provide safe static/cloudinary URLs so templates avoid
+                # calling template tags inside filters (which causes parse
+                # errors when written like "...|default:static('...')").
+                'store.context_processors.static_cloudinary_urls',
             ],
         },
     },
