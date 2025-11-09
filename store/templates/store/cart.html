@@ -7,10 +7,6 @@
             <h1 class="text-2xl font-bold">Your Shopping Cart</h1>
             <div class="flex items-center space-x-3">
                 <a href="{% url 'store:store' %}" class="text-sm text-gray-600 hover:text-gray-900">← Continue Shopping</a>
-                {% if order.get_cart_items > 0 %}
-                    <button data-product="" data-action="clear" class="update-cart inline-flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">Clear Cart</button>
-                {% endif %}
-                <a href="{% url 'store:checkout' %}" class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">Proceed to Checkout</a>
             </div>
         </div>
 
