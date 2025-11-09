@@ -13,8 +13,18 @@
     
     <title>My Shop - {% block title %}{% endblock title %}</title>
     
-    {# This block is for non-critical, extra head content from child templates #}
-    {% block extra_head %}{% endblock extra_head %} 
+        {# Prevent horizontal overflow on small screens and make media responsive #}
+        <style>
+            /* Ensure no horizontal scrollbar caused by overflow */
+            html, body { overflow-x: hidden; }
+            /* Make images, videos and iframes scale down on small screens */
+            img, video, iframe { max-width: 100%; height: auto; }
+            /* Ensure long words or unbroken strings wrap */
+            .break-words { word-break: break-word; }
+        </style>
+
+        {# This block is for non-critical, extra head content from child templates #}
+        {% block extra_head %}{% endblock extra_head %} 
     
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
