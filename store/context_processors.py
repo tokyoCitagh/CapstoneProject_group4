@@ -1,3 +1,29 @@
+import os
+from django.templatetags.static import static
+
+
+def static_cloudinary_urls(request):
+    """Provide safe static/cloudinary URLs to templates.
+
+    This context processor prefers explicit STATIC_CLOUDINARY_* environment
+    variables (set during deployment). If they're not present it falls back
+    to the local `{% static %}` paths so templates never need to call
+    template tags inside filters (which causes TemplateSyntaxError).
+    """
+    # Read any Cloudinary-provided static URLs from environment (deployment)
+    imj1 = os.environ.get('STATIC_CLOUDINARY_IMJ1_URL')
+    imjlogo = os.environ.get('STATIC_CLOUDINARY_IMJLOGO_URL')
+
+    # Safe fallbacks using django's static helper
+    safe_imj1 = imj1 if imj1 else static('images/imj1.jpg')
+    safe_imjlogo = imjlogo if imjlogo else static('images/imjlogo.webp')
+
+    return {
+        'STATIC_CLOUDINARY_IMJ1_URL': imj1,
+        'STATIC_CLOUDINARY_IMJLOGO_URL': imjlogo,
+        'SAFE_STATIC_CLOUDINARY_IMJ1_URL': safe_imj1,
+        'SAFE_STATIC_CLOUDINARY_IMJLOGO_URL': safe_imjlogo,
+    }
 # store/context_processors.py
 
 from .models import Order, Customer
