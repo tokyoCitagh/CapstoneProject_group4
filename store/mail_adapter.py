@@ -1,5 +1,8 @@
 from allauth.account.adapter import DefaultAccountAdapter
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CeleryAccountAdapter(DefaultAccountAdapter):
@@ -16,11 +19,14 @@ class CeleryAccountAdapter(DefaultAccountAdapter):
                 from .tasks import send_mail_task
 
                 # enqueue background task
+                logger.info(f"Enqueueing mail task for {email} (template: {template_prefix})")
                 send_mail_task.delay(template_prefix, email, context)
+                logger.info(f"Mail task enqueued successfully for {email}")
                 return
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, fall back to default behaviour
-            pass
+            logger.warning(f"Failed to enqueue mail task: {type(e).__name__}: {e}. Falling back to synchronous send.")
 
         # Default synchronous send
+        logger.info(f"Sending mail synchronously for {email} (template: {template_prefix})")
         super().send_mail(template_prefix, email, context)
