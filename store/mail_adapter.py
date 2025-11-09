@@ -24,7 +24,10 @@ class CeleryAccountAdapter(DefaultAccountAdapter):
 
                 # enqueue background task
                 logger.info(f"Enqueueing mail task for {email} (template: {template_prefix})")
-                send_mail_task.delay(template_prefix, email, serializable_context)
+                send_mail_task.apply_async(
+                    args=[template_prefix, email, serializable_context],
+                    queue='default'
+                )
                 logger.info(f"Mail task enqueued successfully for {email}")
                 return
         except Exception as e:
