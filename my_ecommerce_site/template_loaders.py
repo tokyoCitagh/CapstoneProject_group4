@@ -3,9 +3,10 @@ from django.conf import settings
 from django.template.loaders.filesystem import Loader as FilesystemLoader
 from django.template.loaders.app_directories import Loader as AppDirectoriesLoader
 
-
-_DEFAULT_STATIC_RE = re.compile(r"default:static\(\s*(['\"])(?P<path>[^'\"]+)\1\s*\)")
-
+_DEFAULT_STATIC_RE = re.compile(
+    r"default\s*:\s*static\(\s*(['\"])(?P<path>[^'\"]+)\1\s*\)",
+    flags=re.IGNORECASE | re.MULTILINE,
+)
 
 def _replace_default_static(source: str) -> str:
     """Replace occurrences of default:static('path') with a literal string
