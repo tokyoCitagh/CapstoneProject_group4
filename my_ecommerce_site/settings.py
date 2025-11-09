@@ -47,8 +47,13 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+# Temporary maintenance mode: enable to serve a minimal maintenance page
+# while we restore a healthy template build in production.  This is a
+# short-lived setting and should be reverted once the site is healthy.
+MAINTENANCE_MODE = True
+
 MIDDLEWARE = [
-    'my_ecommerce_site.maintenance.MaintenanceMiddleware',
+    'my_ecommerce_site.maintenance_middleware.MaintenanceMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
