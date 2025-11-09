@@ -31,6 +31,8 @@ portal_urlpatterns = [
     path('products/add/', store_views.add_product, name='add_product'), 
     path('products/edit/<int:pk>/', store_views.edit_product, name='edit_product'),
     path('products/delete/<int:pk>/', store_views.delete_product, name='delete_product'),
+     path('orders/', store_views.orders_list, name='orders_list'),
+     path('orders/<int:pk>/', store_views.order_detail, name='order_detail'),
     path('log/all/', store_views.all_activity_log_view, name='all_activity_log'),
     path('service_requests/chat/<int:pk>/', services_views.staff_service_request_chat, name='staff_chat'),
 

@@ -438,6 +438,33 @@ def inventory_dashboard(request):
     }
     return render(request, 'store/inventory_dashboard.html', context)
 
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def orders_list(request):
+    """Portal view: list orders for staff."""
+    # List all orders, most recent first
+    orders = Order.objects.select_related('customer').order_by('-date_ordered')
+    context = {
+        'orders': orders,
+        'page_title': 'Orders',
+    }
+    return render(request, 'store/orders_list.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def order_detail(request, pk):
+    """Portal view: show a single order and its items."""
+    order = get_object_or_404(Order, pk=pk)
+    items = order.orderitem_set.select_related('product').all()
+    context = {
+        'order': order,
+        'items': items,
+        'page_title': f'Order #{order.pk}',
+    }
+    return render(request, 'store/order_detail.html', context)
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def add_product(request):
