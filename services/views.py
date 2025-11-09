@@ -255,13 +255,19 @@ def inventory_dashboard(request):
     
     latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10] 
 
+    # Add orders context similar to store.views.inventory_dashboard
+    all_orders_count = Order.objects.count()
+    recent_orders = Order.objects.order_by('-date_ordered')[:5]
+
     context = {
         'product_sales': product_sales,
         'page_title': 'Inventory Dashboard',
         'latest_activities': latest_activities,
-        'total_products': total_products, 
+        'total_products': total_products,
         'low_stock_count': low_stock_count,
         'pending_orders_count': pending_orders_count,
+        'all_orders_count': all_orders_count,
+        'recent_orders': recent_orders,
     }
     return render(request, 'store/inventory_dashboard.html', context)
 
