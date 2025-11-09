@@ -34,9 +34,9 @@
 
             {# Logo + mobile toggle #}
             <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
-                <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                <a href="{% url 'home' %}" class="flex items-center space-x-2 min-w-0">
                     <img src="{{ SAFE_STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
-                    <span class="text-2xl font-bold tracking-wide hidden sm:inline">Image Electronics</span>
+                    <span class="text-lg font-bold tracking-wide truncate max-w-xs ml-2">Image Electronics</span>
                 </a>
 
                 <button id="nav-toggle" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
