@@ -1,0 +1,3 @@
+EMERGENCY MAINTENANCE ENABLED
+This file is used by the WSGI bootstrap to enable a temporary 503 maintenance page.
+Remove this file and redeploy to restore normal operation.
