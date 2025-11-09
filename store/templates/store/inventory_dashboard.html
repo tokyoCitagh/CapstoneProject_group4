@@ -17,7 +17,7 @@
     </a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
     
     {# 1. Total Products (Using the new total_products variable) #}
     <div class="bg-white overflow-hidden shadow rounded-lg p-5 border border-gray-200">
@@ -41,6 +41,17 @@
         <p class="text-sm font-medium text-gray-500 truncate">Pending Orders</p>
         <p class="mt-1 text-3xl font-semibold text-indigo-600">
             {{ pending_orders_count }}
+        </p>
+    </div>
+
+    {# 4. All Orders (New) #}
+    <div class="bg-white overflow-hidden shadow rounded-lg p-5 border border-gray-200">
+        <p class="text-sm font-medium text-gray-500 truncate">All Orders</p>
+        <p class="mt-1 text-3xl font-semibold text-gray-900">
+            {{ all_orders_count }}
+        </p>
+        <p class="mt-2 text-sm text-gray-500">
+            <a href="/admin/" class="text-indigo-600 hover:text-indigo-900">View orders</a>
         </p>
     </div>
 </div>
