@@ -95,6 +95,13 @@ TEMPLATES = [
                 # errors when written like "...|default:static('...')").
                 'store.context_processors.static_cloudinary_urls',
             ],
+            # Register some template tag modules as builtins so filters like
+            # `cloud_url` are available without an explicit `{% load ... %}`
+            # in every template. This prevents TemplateSyntaxError when a
+            # template forgets to load the helper library.
+            'builtins': [
+                'store.templatetags.cloudinary_helpers',
+            ],
         },
     },
 ]
