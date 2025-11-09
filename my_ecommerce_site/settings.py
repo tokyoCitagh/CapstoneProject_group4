@@ -351,6 +351,11 @@ else:
     CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
+# Celery serialization settings
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
 # Whether to run Celery tasks eagerly (useful for local dev / debugging)
 CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=False, cast=bool)
 
