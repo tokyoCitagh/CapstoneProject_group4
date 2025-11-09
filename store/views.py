@@ -7,6 +7,7 @@ from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse_lazy 
 from django.utils import timezone 
+from django.utils.dateparse import parse_datetime
 # Ensure these are imported:
 from django.contrib.auth import logout as auth_logout, authenticate, login 
 import json 
@@ -443,11 +444,36 @@ def inventory_dashboard(request):
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def orders_list(request):
     """Portal view: list orders for staff."""
-    # List all orders, most recent first
+    # Filtering: keyword search (q) and optional date range (start_date, end_date)
     orders = Order.objects.select_related('customer').order_by('-date_ordered')
+
+    q = request.GET.get('q', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    if q:
+        from django.db.models import Q
+        filters = Q(customer__name__icontains=q) | Q(transaction_id__icontains=q) | Q(pk__iexact=q) | Q(orderitem__product__name__icontains=q)
+        orders = orders.filter(filters).distinct()
+
+    # Date filters expect YYYY-MM-DD
+    try:
+        if start_date:
+            sd = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
+            orders = orders.filter(date_ordered__date__gte=sd)
+        if end_date:
+            ed = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
+            orders = orders.filter(date_ordered__date__lte=ed)
+    except Exception:
+        # Ignore parse errors and continue with unfiltered dates
+        pass
+
     context = {
         'orders': orders,
         'page_title': 'Orders',
+        'q': q,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'store/orders_list.html', context)
 
@@ -457,11 +483,61 @@ def orders_list(request):
 def order_detail(request, pk):
     """Portal view: show a single order and its items."""
     order = get_object_or_404(Order, pk=pk)
+
+    # Handle staff updates: change status and expected_delivery
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        expected_delivery_raw = request.POST.get('expected_delivery')
+        changed = False
+
+        if status and status != order.status:
+            old = order.status
+            order.status = status
+            changed = True
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='ORDER_STATUS_UPDATED',
+                description=f"Order {order.pk} status changed from {old} to {status}",
+                object_id=order.pk,
+                object_repr=str(order),
+            )
+
+        if expected_delivery_raw:
+            # expected_delivery_raw likely comes in as YYYY-MM-DDTHH:MM from datetime-local input
+            dt = None
+            try:
+                # Try Django's parse_datetime first
+                dt = parse_datetime(expected_delivery_raw)
+                if dt is None:
+                    # Fallback parse without seconds
+                    dt = timezone.datetime.strptime(expected_delivery_raw, '%Y-%m-%dT%H:%M')
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt, timezone.get_current_timezone())
+                order.expected_delivery = dt
+                changed = True
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action_type='ORDER_EXPECTED_DELIVERY_UPDATED',
+                    description=f"Order {order.pk} expected delivery set to {order.expected_delivery}",
+                    object_id=order.pk,
+                    object_repr=str(order),
+                )
+            except Exception:
+                # ignore parse errors and continue
+                pass
+
+        if changed:
+            order.save()
+
+        return redirect('portal:order_detail', pk=order.pk)
+
     items = order.orderitem_set.select_related('product').all()
     context = {
         'order': order,
         'items': items,
         'page_title': f'Order #{order.pk}',
+        # expose choices for form rendering
+        'status_choices': Order.STATUS_CHOICES if hasattr(Order, 'STATUS_CHOICES') else [],
     }
     return render(request, 'store/order_detail.html', context)
 

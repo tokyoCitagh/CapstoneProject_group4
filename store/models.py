@@ -87,6 +87,23 @@ class Order(models.Model):
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True)
+    # NEW: More expressive order status and optional expected delivery datetime
+    STATUS_PENDING = 'PENDING'
+    STATUS_PROCESSING = 'PROCESSING'
+    STATUS_SHIPPED = 'SHIPPED'
+    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_CANCELLED = 'CANCELLED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_PROCESSING, 'Processing'),
+        (STATUS_SHIPPED, 'Shipped'),
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    expected_delivery = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
