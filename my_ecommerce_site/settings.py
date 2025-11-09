@@ -47,10 +47,9 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-# Temporary maintenance mode: enable to serve a minimal maintenance page
-# while we restore a healthy template build in production.  This is a
-# short-lived setting and should be reverted once the site is healthy.
-MAINTENANCE_MODE = True
+# Maintenance mode: controlled via environment so we can toggle without
+# changing code during production troubleshooting. Default to False.
+MAINTENANCE_MODE = config('MAINTENANCE_MODE', default=False, cast=bool)
 
 MIDDLEWARE = [
     'my_ecommerce_site.maintenance_middleware.MaintenanceMiddleware',
