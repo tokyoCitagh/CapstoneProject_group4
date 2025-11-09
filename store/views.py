@@ -494,22 +494,65 @@ def edit_product(request, pk):
             except Exception:
                 prev_names = set()
 
-            updated_product = form.save() 
-            image_formset.save()
+            updated_product = form.save()
+            # Save formset and capture saved instances so we can post-process uploads
+            try:
+                saved_images = image_formset.save()
+            except TypeError:
+                # Some Django versions return None; fall back to querying by new names
+                saved_images = None
 
             # Log newly added images and their storage URLs (best-effort)
             try:
                 from django.core.files.storage import default_storage
                 new_names = set(updated_product.images.values_list('image', flat=True))
                 added = new_names - prev_names
+                logger = logging.getLogger('store.uploads')
+
+                # Prefer processing saved_images (returned by formset.save()) when available
+                if saved_images is not None:
+                    candidates = saved_images
+                else:
+                    # Fallback: query the ProductImage rows that match the added names
+                    candidates = updated_product.images.filter(image__in=list(added))
+
                 if added:
-                    logger = logging.getLogger('store.uploads')
-                    for name in added:
+                    for pi in candidates:
                         try:
-                            url = default_storage.url(name)
+                            name = pi.image.name
+                            try:
+                                url = default_storage.url(name)
+                            except Exception:
+                                url = None
+                            logger.info("New image saved for product %s: %s url=%s", updated_product.pk, name, url)
+                            # If runtime used local FileSystemStorage but Cloudinary is enabled,
+                            # attempt a best-effort upload to Cloudinary and update the DB entry.
+                            try:
+                                from django.conf import settings
+                                if getattr(settings, 'USE_CLOUDINARY', False):
+                                    from django.core.files.storage import FileSystemStorage
+                                    if isinstance(default_storage, FileSystemStorage):
+                                        try:
+                                            local_path = default_storage.path(name)
+                                        except Exception:
+                                            local_path = None
+
+                                        if local_path:
+                                            try:
+                                                import cloudinary.uploader
+                                                res = cloudinary.uploader.upload(local_path, public_id=name.rsplit('.', 1)[0], overwrite=True)
+                                                public_id = res.get('public_id')
+                                                fmt = res.get('format')
+                                                new_name = f"{public_id}.{fmt}" if fmt else public_id
+                                                pi.image.name = new_name
+                                                pi.save()
+                                                logger.info("Re-uploaded local image to Cloudinary and updated ProductImage %s -> %s", name, new_name)
+                                            except Exception:
+                                                logger.exception("Failed to upload local file %s to Cloudinary", local_path)
+                            except Exception:
+                                logger.exception("Cloudinary migration attempt failed for %s", name)
                         except Exception:
-                            url = None
-                        logger.info("New image saved for product %s: %s url=%s", updated_product.pk, name, url)
+                            logger.exception("Error processing saved image candidate for product %s", updated_product.pk)
                 else:
                     logging.getLogger('store.uploads').info("No new images detected after save for product %s", updated_product.pk)
             except Exception:
