@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum 
 from django.db.models import Q 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.forms import inlineformset_factory 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse_lazy 
@@ -175,6 +175,16 @@ def custom_email_list_view(request):
 def home_view(request):
     """The main landing page for the site."""
     data = cartData(request) 
+    # Temporary hotfix: if running in production (DEBUG=False) bypass template
+    # rendering to avoid fatal TemplateSyntaxError during emergency deploys.
+    from django.conf import settings
+    if not getattr(settings, 'DEBUG', False):
+        return HttpResponse(
+            "<h1>Site temporarily unavailable</h1><p>Applying emergency hotfix — please try again shortly.</p>",
+            content_type='text/html',
+            status=503,
+        )
+
     context = {'cartItems': data['cartItems']} 
     return render(request, 'store/home.html', context)
 
