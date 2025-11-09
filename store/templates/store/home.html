@@ -25,9 +25,7 @@
 
         {# --- HERO IMAGE SECTION: Using imj1.jpg --- #}
         <div class="max-w-4xl mx-auto relative -mt-8 mb-12 rounded-lg overflow-hidden shadow-2xl transform hover:scale-102 transition duration-500 ease-in-out">
-            {# Use a SAFE URL provided by the context processor which will prefer
-               the Cloudinary URL if present, otherwise the static fallback. #}
-            <img src="{{ SAFE_STATIC_CLOUDINARY_IMJ1_URL }}" alt="Image Electronics Hero Image" class="w-full h-auto object-cover max-h-96">
+                <img src="{{ SAFE_STATIC_CLOUDINARY_IMJ1_URL }}" alt="Image Electronics Hero Image" class="w-full h-auto object-cover max-h-96">
             <div class="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div> 
             <div class="absolute bottom-6 left-6 text-white text-3xl font-bold">Cutting-Edge Technology</div>
         </div>
