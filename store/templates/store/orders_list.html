@@ -1,0 +1,58 @@
+{% extends 'base_portal.html' %}
+{% load humanize %}
+
+{% block title %}Orders{% endblock %}
+
+{% block main_content %}
+<div class="px-4 py-8 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Orders</h1>
+    <a href="{% url 'portal:inventory_dashboard' %}" class="text-sm text-indigo-600">← Back to Dashboard</a>
+  </div>
+
+  <div class="bg-white shadow rounded-lg border border-gray-200">
+    <div class="p-4">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for order in orders %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ order.pk }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.customer.name if order.customer else 'Guest' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.get_cart_items }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GHC {{ order.get_cart_total|floatformat:2 }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if order.complete %}
+                  <span class="text-sm inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-800">Completed</span>
+                {% else %}
+                  <span class="text-sm inline-flex items-center px-2 py-1 rounded bg-yellow-100 text-yellow-800">Pending</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.date_ordered|naturaltime }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{% url 'portal:order_detail' pk=order.pk %}" class="text-indigo-600 hover:text-indigo-900">View</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No orders found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

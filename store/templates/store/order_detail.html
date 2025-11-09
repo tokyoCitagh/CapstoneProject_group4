@@ -1,0 +1,46 @@
+{% extends 'base_portal.html' %}
+
+{% block title %}Order #{{ order.pk }}{% endblock %}
+
+{% block main_content %}
+<div class="px-4 py-8 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Order #{{ order.pk }}</h1>
+    <a href="{% url 'portal:orders_list' %}" class="text-sm text-indigo-600">← Back to Orders</a>
+  </div>
+
+  <div class="bg-white shadow rounded-lg border border-gray-200 p-6">
+    <div class="mb-4">
+      <p><strong>Customer:</strong> {{ order.customer.name if order.customer else 'Guest' }}</p>
+      <p><strong>Date:</strong> {{ order.date_ordered }}</p>
+      <p><strong>Status:</strong> {% if order.complete %}Completed{% else %}Pending{% endif %}</p>
+    </div>
+
+    <h3 class="text-lg font-semibold mb-2">Items</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for item in items %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.product.name if item.product else 'Deleted product' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.quantity }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GHC {{ item.product.selling_price|floatformat:2 if item.product else '0.00' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-right">
+      <p class="text-lg font-semibold">Total: GHC {{ order.get_cart_total|floatformat:2 }}</p>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

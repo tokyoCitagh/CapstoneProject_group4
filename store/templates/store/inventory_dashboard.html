@@ -50,8 +50,8 @@
         <p class="mt-1 text-3xl font-semibold text-gray-900">
             {{ all_orders_count }}
         </p>
-        <p class="mt-2 text-sm text-gray-500">
-            <a href="/admin/" class="text-indigo-600 hover:text-indigo-900">View orders</a>
+            <p class="mt-2 text-sm text-gray-500">
+            <a href="{% url 'portal:orders_list' %}" class="text-indigo-600 hover:text-indigo-900">View orders</a>
         </p>
     </div>
 </div>
