@@ -175,10 +175,12 @@ def custom_email_list_view(request):
 def home_view(request):
     """The main landing page for the site."""
     data = cartData(request) 
-    # Temporary hotfix: if running in production (DEBUG=False) bypass template
-    # rendering to avoid fatal TemplateSyntaxError during emergency deploys.
+    # Temporary hotfix: only show the emergency maintenance page when the
+    # deployment owner explicitly enables it via `MAINTENANCE_MODE` env var.
+    # This avoids accidentally returning a 503 for all visitors when DEBUG
+    # is False in production.
     from django.conf import settings
-    if not getattr(settings, 'DEBUG', False):
+    if (not getattr(settings, 'DEBUG', False)) and getattr(settings, 'MAINTENANCE_MODE', False):
         return HttpResponse(
             "<h1>Site temporarily unavailable</h1><p>Applying emergency hotfix — please try again shortly.</p>",
             content_type='text/html',
