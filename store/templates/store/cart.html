@@ -1,129 +1,92 @@
-{% extends 'store/base.html' %} 
+{% extends 'store/base.html' %}
 {% load static %}
 
 {% block content %}
-    <div class="container my-4">
-        <div class="row">
-            <div class="col-lg-12">
-                <h2 class="mb-4 display-6">Your Shopping Cart</h2>
-                
-                {# Cart Summary Card #}
-                <div class="card mb-4 shadow-lg border-0 rounded-lg">
-                    <div class="card-body bg-white p-4">
-                        <a class="btn btn-outline-secondary mb-3" href="{% url 'store:store' %}">&#x2190; Continue Shopping</a>
-                        
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-2">
-                            <h5 class="mb-2 mb-md-0">Items: <strong class="text-primary">{{order.get_cart_items}}</strong></h5>
-                            <h5 class="mb-2 mb-md-0">Total: <strong class="text-success">GHC {{order.get_cart_total|floatformat:2}}</strong></h5>
-                            
-                            <div class="d-flex mt-3 mt-md-0">
-                                {% if order.get_cart_items > 0 %}
-                                    <button 
-                                        data-product="" 
-                                        data-action="clear" 
-                                        class="btn btn-danger me-2 update-cart btn-lg px-4 shadow-sm border border-dark border-2"
-                                    >Clear Cart</button>
-                                {% endif %}
-                                <a class="btn btn-primary btn-lg px-4 shadow-sm border border-dark border-2" href="{% url 'store:checkout' %}">Proceed to Checkout</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="max-w-6xl mx-auto py-8">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold">Your Shopping Cart</h1>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'store:store' %}" class="text-sm text-gray-600 hover:text-gray-900">← Continue Shopping</a>
+                {% if order.get_cart_items > 0 %}
+                    <button data-product="" data-action="clear" class="update-cart inline-flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">Clear Cart</button>
+                {% endif %}
+                <a href="{% url 'store:checkout' %}" class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">Proceed to Checkout</a>
+            </div>
+        </div>
 
-                {# Cart Items Card #}
-                <div class="card shadow-lg border-0 rounded-lg">
-                    <div class="card-body p-0">
-                        
-                        {# Header Row #}
-                        <div class="row bg-light text-dark py-3 border-bottom font-weight-bold d-none d-md-flex text-uppercase small">
-                            <div class="col-md-4 ps-4">Item</div>
-                            <div class="col-md-2">Price</div>
-                            <div class="col-md-2 text-center">Quantity</div>
-                            <div class="col-md-2 text-center">Subtotal</div>
-                            <div class="col-md-2 text-center">Remove</div>
-                        </div>
-
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-4">
+                {% if items %}
+                    <div class="space-y-4">
                         {% for item in items %}
-                            {# CRITICAL FIX: Only render if the product still exists (prevents 400 Bad Request) #}
                             {% if item.product %}
-                                <div class="row py-4 align-items-center border-bottom">
-                                    
-                                    {# Item Details #}
-                                    <div class="col-12 col-md-4 d-flex align-items-center ps-4">
+                                <div class="flex bg-white shadow rounded-lg p-4 items-center">
+                                    <div class="w-20 h-20 flex-shrink-0 mr-4">
                                         {% with primary_img=item.product.primary_image %}
-                                            <img 
-                                                src="{% if primary_img %}{{ primary_img.image|cloud_url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
-                                                alt="{{ item.product.name }}" 
-                                                class="img-thumbnail me-3 rounded-md" 
-                                                style="max-width: 80px; height: 80px; object-fit: cover;">
+                                            <img src="{% if primary_img %}{{ primary_img.image|cloud_url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" alt="{{ item.product.name }}" class="w-full h-full object-cover rounded">
                                         {% endwith %}
-                                        <div>
-                                            <p class="mb-0 fw-bold">{{ item.product.name }}</p>
+                                    </div>
+
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-gray-900 truncate">{{ item.product.name }}</p>
+                                        <p class="text-sm text-gray-500">GHC {{ item.product.selling_price|floatformat:2 }}</p>
+                                    </div>
+
+                                    <div class="flex items-center space-x-4 mx-4">
+                                        <button data-product="{{ item.product.id }}" data-action="remove" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200">-</button>
+                                        <div class="px-3 py-1 bg-gray-50 rounded text-sm font-medium">{{ item.quantity }}</div>
+                                        <button data-product="{{ item.product.id }}" data-action="add" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200">+</button>
+                                    </div>
+
+                                    <div class="text-right w-36">
+                                        <div class="text-sm text-gray-500">Subtotal</div>
+                                        <div class="font-semibold text-green-700">GHC {{ item.get_total|floatformat:2 }}</div>
+                                        <div class="mt-2">
+                                            <button data-product="{{ item.product.id }}" data-action="delete" class="update-cart text-sm text-red-600 hover:underline">Remove</button>
                                         </div>
-                                    </div>
-
-                                    {# Price #}
-                                    <div class="col-4 col-md-2 mt-2 mt-md-0 ps-4 ps-md-0 text-muted small d-md-block">
-                                        <span class="d-md-none fw-bold">Price: </span>
-                                        GHC {{ item.product.selling_price|floatformat:2 }}
-                                    </div>
-                                    
-                                    {# Quantity Controls (Updated to Solid Buttons) #}
-                                    <div class="col-4 col-md-2 text-center mt-2 mt-md-0 d-flex justify-content-center align-items-center">
-                                        <div class="d-flex align-items-stretch" role="group">
-                                            <button 
-                                                data-product="{{ item.product.id }}" 
-                                                data-action="remove" 
-                                                class="btn btn-primary btn-sm update-cart rounded-0 rounded-start shadow-sm"
-                                                title="Decrease Quantity"
-                                            >-</button>
-                                            <span class="px-3 py-1 border-top border-bottom border-dark text-dark fw-bold bg-light d-flex align-items-center justify-content-center" style="min-width: 40px;">
-                                                {{ item.quantity }}
-                                            </span>
-                                            <button 
-                                                data-product="{{ item.product.id }}" 
-                                                data-action="add" 
-                                                class="btn btn-primary btn-sm update-cart rounded-0 rounded-end shadow-sm"
-                                                title="Increase Quantity"
-                                            >+</button>
-                                        </div>
-                                    </div>
-
-                                    {# Total #}
-                                    <div class="col-4 col-md-2 text-center mt-2 mt-md-0 text-success fw-bold">
-                                        <span class="d-md-none fw-bold text-dark">Total: </span>
-                                        GHC {{ item.get_total|floatformat:2 }}
-                                    </div>
-
-                                    {# Full Delete Button (Updated for prominence) #}
-                                    <div class="col-12 col-md-2 text-center mt-2 mt-md-0">
-                                        <button 
-                                            data-product="{{ item.product.id }}" 
-                                            data-action="delete" 
-                                            class="btn btn-danger update-cart btn-sm shadow-sm w-75"
-                                            title="Remove Item Completely"
-                                        >Remove</button>
                                     </div>
                                 </div>
                             {% endif %}
-                        {% empty %}
-                        <div class="alert alert-info text-center p-5" role="alert">
-                            <h4 class="alert-heading">Your cart is empty!</h4>
-                            <p>You haven't added any products yet.</p>
-                            <a href="{% url 'store:store' %}" class="btn btn-primary mt-3">Start shopping now</a>
-                        </div>
                         {% endfor %}
                     </div>
-                </div>
-                
-                {# Note to help user with data cleanup (only shown if total is high but items are zero after filtering) #}
-                {% if order.get_cart_items == 0 and order.get_cart_total > 0 %}
-                <div class="alert alert-warning mt-4 text-center">
-                    <i class="fas fa-exclamation-triangle me-2"></i> 
-                    We found a small discrepancy. If your total is non-zero but the cart is empty, you may have corrupted data. Please check your Django Admin to clear old OrderItems.
-                </div>
+                {% else %}
+                    <div class="bg-white shadow rounded-lg p-8 text-center">
+                        <h3 class="text-lg font-semibold">Your cart is empty</h3>
+                        <p class="text-sm text-gray-500 mt-2">Browse our products and add items to your cart.</p>
+                        <a href="{% url 'store:store' %}" class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded">Start shopping</a>
+                    </div>
                 {% endif %}
             </div>
+
+            <aside class="bg-white shadow rounded-lg p-4">
+                <h3 class="text-lg font-semibold mb-3">Order Summary</h3>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <div>Items</div>
+                    <div>{{ order.get_cart_items }}</div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600 mt-2">
+                    <div>Subtotal</div>
+                    <div>GHC {{ order.get_cart_total|floatformat:2 }}</div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600 mt-2">
+                    <div>Shipping</div>
+                    <div class="text-green-600">GHC 0.00</div>
+                </div>
+
+                <div class="border-t mt-4 pt-4">
+                    <div class="flex justify-between items-center">
+                        <div class="text-lg font-bold">Grand Total</div>
+                        <div class="text-xl font-bold text-indigo-600">GHC {{ order.get_cart_total|floatformat:2 }}</div>
+                    </div>
+
+                    <div class="mt-4 space-y-2">
+                        <a href="{% url 'store:checkout' %}" class="block text-center px-4 py-2 bg-indigo-600 text-white rounded">Proceed to Checkout</a>
+                        {% if order.get_cart_items > 0 %}
+                            <button data-product="" data-action="clear" class="update-cart w-full text-center px-4 py-2 border rounded text-sm">Clear Cart</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
 {% endblock content %}
