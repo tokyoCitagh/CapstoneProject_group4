@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from allauth.account.adapter import DefaultAccountAdapter
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, name='store.tasks.send_mail_task')
 def send_mail_task(self, template_prefix: str, email: str, context: dict) -> None:
     """Background task that uses the default allauth adapter to send email.
 
@@ -15,13 +15,20 @@ def send_mail_task(self, template_prefix: str, email: str, context: dict) -> Non
     The context has been serialized by CeleryAccountAdapter, so we need to
     reconstruct any model instances before passing to the email renderer.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[CELERY WORKER] Processing mail task for {email}, template: {template_prefix}")
+    
     try:
         # Reconstruct model instances from serialized context
         reconstructed_context = _reconstruct_context(context)
+        logger.info(f"[CELERY WORKER] Context reconstructed, calling adapter to send mail...")
         DefaultAccountAdapter().send_mail(template_prefix, email, reconstructed_context)
+        logger.info(f"[CELERY WORKER] Mail sent successfully to {email}")
     except Exception as exc:
         # Failures are logged by the worker; do not re-raise to avoid retries
         # if you prefer retries remove the except or re-raise.
+        logger.error(f"[CELERY WORKER] send_mail_task failed: {exc}", exc_info=True)
         print(f"send_mail_task failed: {exc}")
 
 
