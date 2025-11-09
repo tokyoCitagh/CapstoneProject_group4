@@ -141,7 +141,15 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # Allow overriding STATIC_ROOT from environment to handle platform-specific
 # container working-dir differences (some deploys use /app as project root).
 _static_root_env = os.environ.get('STATIC_ROOT')
-if _static_root_env:
+# If the deploy needs collectstatic to run at container startup (for
+# platforms where build-time collectstatic isn't available), set
+# FORCE_COLLECTSTATIC_AT_STARTUP=true and we will collect into a
+# writable tmp directory. Otherwise, default to the project `staticfiles`
+# directory so collectstatic at build-time (recommended) will populate it.
+if os.environ.get('FORCE_COLLECTSTATIC_AT_STARTUP', '').lower() in ('1', 'true', 'yes'):
+    # Use a writable tmp dir for runtime collection
+    STATIC_ROOT = Path(os.environ.get('STATIC_ROOT', '/tmp/staticfiles'))
+elif _static_root_env:
     STATIC_ROOT = Path(_static_root_env)
 else:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
