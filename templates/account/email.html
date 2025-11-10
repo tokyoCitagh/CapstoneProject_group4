@@ -78,6 +78,18 @@
                         <div style="font-size: 1rem; font-weight: 500; color: #1f2937;">
                             {{ emailaddress.email }}
                         </div>
+                        
+                        {# Verify Email Button for Unverified Emails #}
+                        {% if not emailaddress.verified %}
+                        <form method="post" action="{% url 'account_email' %}" style="margin-top: 8px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action_send" value="">
+                            <input type="hidden" name="email" value="{{ emailaddress.email }}">
+                            <button type="submit" style="background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s;">
+                                <i class="fas fa-paper-plane" style="margin-right: 4px;"></i> {% trans "Send Verification Email" %}
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                     
                     {# Status Badges #}
