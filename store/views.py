@@ -155,7 +155,32 @@ def custom_email_list_view(request):
     """
     Custom view to list user emails, fetching objects directly to ensure 
     'date_created' is available for display in the simplified 'email.html' template.
+    Handles sending verification emails when requested.
     """
+    from allauth.account.utils import send_email_confirmation
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    
+    # Handle POST request for sending verification email
+    if request.method == 'POST':
+        action = request.POST.get('action_send')
+        email = request.POST.get('email')
+        
+        if action is not None and email:  # action_send will be empty string when submitted
+            try:
+                # Get the EmailAddress object
+                email_address = EmailAddress.objects.get(user=request.user, email=email)
+                
+                # Send verification email
+                send_email_confirmation(request, request.user, signup=False, email=email)
+                
+                # Redirect to verification sent page
+                return redirect('account_email_verification_sent')
+                
+            except EmailAddress.DoesNotExist:
+                messages.error(request, f"Email address {email} not found.")
+            except Exception as e:
+                messages.error(request, f"Error sending verification email: {str(e)}")
     
     # Fetch all EmailAddress objects related to the logged-in user
     emailaddresses = EmailAddress.objects.filter(user=request.user).order_by('primary', 'verified')
