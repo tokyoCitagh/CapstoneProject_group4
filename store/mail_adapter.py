@@ -12,29 +12,14 @@ class CeleryAccountAdapter(DefaultAccountAdapter):
     """
 
     def send_mail(self, template_prefix, email, context):
-        # Defer to a Celery task if the broker is configured
-        try:
-            if getattr(settings, 'CELERY_BROKER_URL', None):
-                # Import here to avoid import-time dependency when Celery not used
-                from .tasks import send_mail_task
-
-                # Serialize context to make it JSON-safe for Celery
-                # Extract only the data needed for email templates
-                serializable_context = self._make_context_serializable(context)
-
-                # enqueue background task
-                logger.info(f"Enqueueing mail task for {email} (template: {template_prefix})")
-                send_mail_task.apply_async(
-                    args=[template_prefix, email, serializable_context],
-                    queue='default'
-                )
-                logger.info(f"Mail task enqueued successfully for {email}")
-                return
-        except Exception as e:
-            # If anything goes wrong, fall back to default behaviour
-            logger.warning(f"Failed to enqueue mail task: {type(e).__name__}: {e}. Falling back to synchronous send.")
-
-        # Default synchronous send
+        # Store email in session for display on password reset done page
+        request = context.get('request')
+        if request and hasattr(request, 'session'):
+            request.session['password_reset_email'] = email
+        
+        # TEMPORARY FIX: Railway worker containers cannot reach external SMTP servers
+        # Send emails synchronously from web service instead of using Celery
+        # TODO: Switch to API-based email service (Brevo API, SendGrid, etc.) for production
         logger.info(f"Sending mail synchronously for {email} (template: {template_prefix})")
         super().send_mail(template_prefix, email, context)
     
