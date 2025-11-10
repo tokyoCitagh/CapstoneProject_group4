@@ -16,8 +16,11 @@ class CeleryAccountAdapter(DefaultAccountAdapter):
         Override to remove the [domain] prefix from email subjects.
         By default, allauth adds [site.domain] to all email subjects.
         """
+        logger.info(f"format_email_subject called with: '{subject}'")
         # Just return the subject without any prefix
-        return subject
+        cleaned = subject
+        logger.info(f"format_email_subject returning: '{cleaned}'")
+        return cleaned
 
     def send_mail(self, template_prefix, email, context):
         # Store email in session for display on password reset done page
