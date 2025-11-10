@@ -49,6 +49,8 @@ class BrevoAPIBackend(BaseEmailBackend):
         num_sent = 0
         for message in email_messages:
             try:
+                logger.info(f"Brevo backend received subject: '{message.subject}'")
+                
                 # Prepare email data for Brevo API
                 send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
                     sender={"email": message.from_email},
