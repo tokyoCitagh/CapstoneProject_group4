@@ -289,6 +289,7 @@ def cart_view(request):
 
 def checkout_view(request):
     """Displays the user's checkout page."""
+    from django.conf import settings
     data = cartData(request) 
     
     if request.user.is_authenticated:
@@ -304,7 +305,12 @@ def checkout_view(request):
         items = data['items']
         order = data['order']
         
-    context = {'items': items, 'order': order, 'cartItems': data['cartItems']} 
+    context = {
+        'items': items, 
+        'order': order, 
+        'cartItems': data['cartItems'],
+        'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY
+    } 
     return render(request, 'store/checkout.html', context) 
 
 
@@ -370,33 +376,64 @@ def update_item(request):
 
 
 def process_order(request):
-    """Handles the final submission of an order from the checkout page."""
+    """Handles the final submission of an order from the checkout page with Paystack payment verification."""
+    import requests
+    from django.conf import settings
     
-    transaction_id = timezone.now().timestamp() 
     data = json.loads(request.body)
     
     if request.user.is_authenticated:
         customer = get_customer_or_create(request)
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         
-        # --- 1. Security Check ---
+        # --- 1. Security Check: Verify Total ---
         total = float(data['form']['total'])
-        # Check against the server-calculated total
         if round(total, 2) != round(order.get_cart_total, 2):
              print(f"SECURITY ALERT: Total mismatch! Client: {total}, Server: {order.get_cart_total}")
-             return JsonResponse('Total mismatch', safe=False, status=400)
+             return JsonResponse({'error': 'Total mismatch'}, status=400)
+        
+        # --- 2. Verify Paystack Payment ---
+        payment_reference = data.get('payment_reference')
+        if payment_reference:
+            # Verify payment with Paystack API
+            headers = {
+                'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+                'Content-Type': 'application/json'
+            }
+            verify_url = f'https://api.paystack.co/transaction/verify/{payment_reference}'
+            
+            try:
+                response = requests.get(verify_url, headers=headers)
+                payment_data = response.json()
+                
+                if not payment_data.get('status') or payment_data['data']['status'] != 'success':
+                    return JsonResponse({'error': 'Payment verification failed'}, status=400)
+                
+                # Check if amount matches (Paystack returns in kobo/pesewas)
+                paid_amount = payment_data['data']['amount'] / 100
+                if round(paid_amount, 2) != round(total, 2):
+                    return JsonResponse({'error': 'Payment amount mismatch'}, status=400)
+                    
+                # Store payment reference as transaction ID
+                transaction_id = payment_reference
+                
+            except Exception as e:
+                print(f"Paystack verification error: {e}")
+                return JsonResponse({'error': 'Payment verification failed'}, status=400)
+        else:
+            # Fallback to timestamp if no payment reference (for testing)
+            transaction_id = str(timezone.now().timestamp())
              
-        # --- 2. Finalize Order ---
+        # --- 3. Finalize Order ---
         order.transaction_id = transaction_id
         order.complete = True
         order.save()
         
-        # --- 3. Deduct Stock and Log Sales ---
+        # --- 4. Deduct Stock and Log Sales ---
         for item in order.orderitem_set.all():
             item.product.stock_quantity -= item.quantity
             item.product.save()
             
-            # Log the successful sale/stock deduction 
             ActivityLog.objects.create(
                 user=request.user,
                 action_type='ORDER_COMPLETED',
@@ -405,7 +442,7 @@ def process_order(request):
                 object_repr=item.product.name
             )
         
-        # --- 4. Save Shipping Address (if shipping is required) ---
+        # --- 5. Save Shipping Address ---
         if order.shipping:
             ShippingAddress.objects.create(
                 customer=customer,
@@ -416,12 +453,15 @@ def process_order(request):
                 zipcode=data['shipping']['zipcode'],
                 country=data['shipping']['country'],
             )
-            
-        return JsonResponse('Payment submitted and Order Completed.', safe=False)
+        
+        return JsonResponse({
+            'message': 'Payment confirmed and order completed',
+            'order_id': order.id,
+            'transaction_id': transaction_id
+        })
 
     else:
-        # Handle anonymous user checkout (not implemented here)
-        return JsonResponse('User not logged in. Anonymous checkout is not yet implemented.', safe=False, status=403)
+        return JsonResponse({'error': 'User not logged in'}, status=403)
 
 
 # -------------------------------------------------------------------------------------
