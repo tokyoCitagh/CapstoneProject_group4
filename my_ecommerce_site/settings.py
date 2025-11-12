@@ -205,12 +205,23 @@ if USE_CLOUDINARY:
         # Fail softly here; Cloudinary client will raise if used without proper config later
         pass
 
-    # Use Cloudinary for uploaded media
+    # Use Cloudinary for uploaded media (Django 5.2+ uses STORAGES setting)
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
+    # Configure STORAGES for Django 5.2+
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
 
     # Optionally use Cloudinary for static files
     if config('USE_CLOUDINARY_FOR_STATIC', default=False, cast=bool):
         STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+        STORAGES['staticfiles']['BACKEND'] = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
         # When using Cloudinary for static, you can optionally set a custom domain
         CLOUDINARY_STATIC_URL = config('CLOUDINARY_STATIC_URL', default=None)
         if CLOUDINARY_STATIC_URL:
@@ -237,12 +248,23 @@ else:
             'CacheControl': 'max-age=86400',
         }
 
-        # Use S3 for uploaded media files
+        # Use S3 for uploaded media files (Django 5.2+ uses STORAGES setting)
         DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+        
+        # Configure STORAGES for Django 5.2+
+        STORAGES = {
+            'default': {
+                'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+            },
+            'staticfiles': {
+                'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+            },
+        }
 
         # Optionally use S3 for static files as well
         if config('USE_S3_FOR_STATIC', default=False, cast=bool):
             STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+            STORAGES['staticfiles']['BACKEND'] = 'storages.backends.s3boto3.S3StaticStorage'
             if AWS_S3_CUSTOM_DOMAIN:
                 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
                 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
@@ -256,9 +278,19 @@ else:
             else:
                 MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/media/'
     else:
-        # Local filesystem for media (development)
+        # Local filesystem for media (development) - Django 5.2+ STORAGES setting
         MEDIA_URL = '/media/'
         MEDIA_ROOT = BASE_DIR / 'media'
+        
+        # Configure STORAGES for local development
+        STORAGES = {
+            'default': {
+                'BACKEND': 'django.core.files.storage.FileSystemStorage',
+            },
+            'staticfiles': {
+                'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+            },
+        }
 
 
 # =============================================================
