@@ -102,25 +102,100 @@
         </div>
     </div>
 
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
     <script>
+        const csrftoken = '{{ csrf_token }}';
+        const totalAmount = {{ order.get_cart_total|floatformat:2 }};
+        const paystackPublicKey = '{{ paystack_public_key }}';
+        
         function togglePaymentButton() {
             const address = document.getElementById('address')?.value;
             const city = document.getElementById('city')?.value;
             const state = document.getElementById('state')?.value;
             const paymentButton = document.getElementById('make-payment');
-            const total = '{{ order.get_cart_total|floatformat:2 }}';
 
             if (address && city && state) {
                 paymentButton.disabled = false;
                 paymentButton.classList.remove('bg-gray-300');
-                paymentButton.classList.add('bg-indigo-600','text-white');
-                paymentButton.innerHTML = `Pay GHC ${total} & Place Order`;
+                paymentButton.classList.add('bg-indigo-600','text-white','hover:bg-indigo-700');
+                paymentButton.innerHTML = `Pay GHC ${totalAmount.toFixed(2)} & Place Order`;
+                paymentButton.onclick = (e) => {
+                    e.preventDefault();
+                    initiatePaystackPayment();
+                };
             } else {
                 paymentButton.disabled = true;
-                paymentButton.classList.remove('bg-indigo-600','text-white');
+                paymentButton.classList.remove('bg-indigo-600','text-white','hover:bg-indigo-700');
                 paymentButton.classList.add('bg-gray-300');
                 paymentButton.innerHTML = 'Fill required fields to enable payment';
             }
+        }
+
+        function getShippingInfo() {
+            return {
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipcode: document.getElementById('zipcode').value || '',
+                country: 'Ghana'
+            };
+        }
+
+        function initiatePaystackPayment() {
+            const handler = PaystackPop.setup({
+                key: paystackPublicKey,
+                email: '{{ request.user.email }}',
+                amount: totalAmount * 100, // Paystack expects amount in kobo (pesewas)
+                currency: 'GHS',
+                ref: 'ORD-' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Customer Name",
+                            variable_name: "customer_name",
+                            value: "{{ request.user.get_full_name|default:request.user.username }}"
+                        }
+                    ]
+                },
+                callback: function(response) {
+                    // Payment successful
+                    verifyAndCompleteOrder(response.reference);
+                },
+                onClose: function() {
+                    alert('Payment window closed. Your order has not been placed.');
+                }
+            });
+            handler.openIframe();
+        }
+
+        function verifyAndCompleteOrder(reference) {
+            const shipping = getShippingInfo();
+            
+            fetch('/store/process_order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    'form': {
+                        'total': totalAmount
+                    },
+                    'shipping': shipping,
+                    'payment_reference': reference
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Payment confirmed! Order #' + data.order_id + ' has been placed successfully.');
+                window.location.href = '/store/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an issue confirming your payment. Please contact support with reference: ' + reference);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', togglePaymentButton);

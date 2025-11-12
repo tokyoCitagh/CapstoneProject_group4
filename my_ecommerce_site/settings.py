@@ -379,6 +379,10 @@ EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)  # SMTP connection
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
+# ===== PAYSTACK PAYMENT CONFIGURATION =====
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='pk_test_2256ce683d518f8dd2e113f43f6470c61fe70a7c')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='sk_test_981e3a7c43aaa455c65c8f80c6fff8a0af8860b4')
+
 # Celery / Redis configuration (for background tasks)
 # Provide REDIS_URL in Railway variables (e.g. redis://:<password>@<host>:<port>/0)
 REDIS_URL = config('REDIS_URL', default='')
