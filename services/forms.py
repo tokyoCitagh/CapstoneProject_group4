@@ -41,7 +41,7 @@ AttachmentFormSet = inlineformset_factory(
     form=ServiceAttachmentForm, 
     # Only 'file' is used, matching the model and form
     fields=('file',), 
-    extra=1, 
+    extra=4,  # Show 4 file input fields by default
     max_num=4, 
     can_delete=False, 
 )
