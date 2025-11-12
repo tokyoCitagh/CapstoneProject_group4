@@ -221,22 +221,38 @@ def home_view(request):
 def store_view(request):
     """The main user-facing shop page - grouped by categories."""
     from .models import Category
-    from django.db.models import Count
+    from django.db.models import Count, Q
     data = cartData(request) 
     
-    # Get only categories that have at least one product, ordered by display_order
-    categories = Category.objects.annotate(
-        product_count=Count('products')
-    ).filter(product_count__gt=0).order_by('display_order', 'name').prefetch_related('products')
+    # Get search query from URL parameters
+    search_query = request.GET.get('search', '').strip()
     
-    # Get products without any category
-    uncategorized_products = Product.objects.filter(categories__isnull=True)
+    if search_query:
+        # If searching, show all matching products (not grouped by category)
+        products = Product.objects.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+        context = {
+            'products': products,
+            'search_query': search_query,
+            'cartItems': data['cartItems']
+        }
+    else:
+        # Normal view: Get only categories that have at least one product, ordered by display_order
+        categories = Category.objects.annotate(
+            product_count=Count('products')
+        ).filter(product_count__gt=0).order_by('display_order', 'name').prefetch_related('products')
+        
+        # Get products without any category
+        uncategorized_products = Product.objects.filter(categories__isnull=True)
+        
+        context = {
+            'categories': categories,
+            'uncategorized_products': uncategorized_products,
+            'cartItems': data['cartItems']
+        }
     
-    context = {
-        'categories': categories,
-        'uncategorized_products': uncategorized_products,
-        'cartItems': data['cartItems']
-    } 
     return render(request, 'store/store_front.html', context) 
 
 def product_detail_view(request, pk):
