@@ -156,15 +156,16 @@
                 {% endfor %}
 
                 <div class="flex flex-col border p-4 rounded-lg bg-gray-50">
-                    <label class="mb-2 font-semibold text-gray-700">Attachment (Max 4 images)</label>
+                    <label class="mb-4 font-semibold text-gray-700">Attachments (Upload up to 4 images)</label>
                     
                     {{ formset.management_form }}
                     
-                    <div id="formset-container" class="flex flex-wrap gap-4 items-start">
+                    <div id="formset-container" class="space-y-4">
                         {% for form_field in formset %}
-                            <div id="attachment-form-{{ forloop.counter0 }}" class="attachment-form-item flex-1 min-w-0 my-2">
+                            <div id="attachment-form-{{ forloop.counter0 }}" class="attachment-form-item">
                                 {% for hidden in form_field.hidden_fields %}{{ hidden }}{% endfor %}
                                 
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Image {{ forloop.counter }}</label>
                                 {{ form_field.file }} 
                                 
                                 <div id="preview-{{ form_field.file.id_for_label }}" class="mt-2"></div>
