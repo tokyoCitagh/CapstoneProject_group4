@@ -50,17 +50,29 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             <div class="flex flex-col items-center space-y-1">
+                                {% if not forloop.first %}
                                 <a href="{% url 'portal:move_category_up' category.pk %}" 
                                    class="text-gray-600 hover:text-indigo-600" 
                                    title="Move up">
                                     <i class="fas fa-arrow-up"></i>
                                 </a>
+                                {% else %}
+                                <span class="text-gray-300 invisible">
+                                    <i class="fas fa-arrow-up"></i>
+                                </span>
+                                {% endif %}
                                 <span class="text-sm font-medium text-gray-700">{{ forloop.counter }}</span>
+                                {% if not forloop.last %}
                                 <a href="{% url 'portal:move_category_down' category.pk %}" 
                                    class="text-gray-600 hover:text-indigo-600" 
                                    title="Move down">
                                     <i class="fas fa-arrow-down"></i>
                                 </a>
+                                {% else %}
+                                <span class="text-gray-300 invisible">
+                                    <i class="fas fa-arrow-down"></i>
+                                </span>
+                                {% endif %}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
