@@ -448,7 +448,7 @@ def delete_product(request, pk):
 def category_list(request):
     """View to list all categories"""
     from .models import Category
-    categories = Category.objects.all().order_by('name')
+    categories = Category.objects.all().order_by('display_order', 'name')
     
     context = {
         'categories': categories,
