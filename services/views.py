@@ -465,7 +465,7 @@ def customer_service_request_chat(request, pk):
     )
     
     if request.method == 'POST':
-        message_text = request.POST.get('message')
+        message_text = request.POST.get('message_text')
         if message_text:
             QuoteMessage.objects.create(
                 request=service_request,
