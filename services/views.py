@@ -409,15 +409,15 @@ def add_service_request(request):
     
     if request.method == 'POST':
         form = ServiceRequestForm(request.POST) 
-        attachment_formset = AttachmentFormSet(request.POST, request.FILES)
+        formset = AttachmentFormSet(request.POST, request.FILES)
 
-        if form.is_valid() and attachment_formset.is_valid():
+        if form.is_valid() and formset.is_valid():
             new_request = form.save(commit=False)
             new_request.customer = customer
             new_request.save()
             
-            attachment_formset.instance = new_request 
-            attachment_formset.save()
+            formset.instance = new_request 
+            formset.save()
             
             messages.success(request, 'Your service request has been submitted! We will respond shortly.')
             return redirect('services:customer_requests_list') # Redirect to the customer list
@@ -426,11 +426,11 @@ def add_service_request(request):
             
     else:
         form = ServiceRequestForm()
-        attachment_formset = AttachmentFormSet()
+        formset = AttachmentFormSet()
         
     context = {
         'form': form,
-        'attachment_formset': attachment_formset,
+        'formset': formset,
         'page_title': 'Submit Service Request',
         'cartItems': data['cartItems'],
     }
