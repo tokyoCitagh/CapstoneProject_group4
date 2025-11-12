@@ -37,6 +37,8 @@ portal_urlpatterns = [
     path('categories/add/', store_views.add_category, name='add_category'),
     path('categories/edit/<int:pk>/', store_views.edit_category, name='edit_category'),
     path('categories/delete/<int:pk>/', store_views.delete_category, name='delete_category'),
+    path('categories/<int:pk>/move-up/', store_views.move_category_up, name='move_category_up'),
+    path('categories/<int:pk>/move-down/', store_views.move_category_down, name='move_category_down'),
     
     path('orders/', store_views.orders_list, name='orders_list'),
     path('orders/<int:pk>/', store_views.order_detail, name='order_detail'),

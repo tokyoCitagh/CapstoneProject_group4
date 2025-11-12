@@ -219,10 +219,21 @@ def home_view(request):
 
 
 def store_view(request):
-    """The main user-facing shop page."""
+    """The main user-facing shop page - grouped by categories."""
+    from .models import Category
     data = cartData(request) 
-    products = Product.objects.all()
-    context = {'products': products, 'cartItems': data['cartItems']} 
+    
+    # Get all categories ordered by display_order
+    categories = Category.objects.prefetch_related('products').all()
+    
+    # Get products without any category
+    uncategorized_products = Product.objects.filter(categories__isnull=True)
+    
+    context = {
+        'categories': categories,
+        'uncategorized_products': uncategorized_products,
+        'cartItems': data['cartItems']
+    } 
     return render(request, 'store/store_front.html', context) 
 
 def product_detail_view(request, pk):
@@ -529,6 +540,58 @@ def delete_category(request, pk):
         )
         
         return redirect('portal:category_list')
+    
+    return redirect('portal:category_list')
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def move_category_up(request, pk):
+    """Move category up in display order (decrease display_order)"""
+    from .models import Category
+    
+    category = get_object_or_404(Category, pk=pk)
+    
+    # Find the category with the next lower display_order
+    previous_category = Category.objects.filter(
+        display_order__lt=category.display_order
+    ).order_by('-display_order').first()
+    
+    if previous_category:
+        # Swap display_order values
+        category.display_order, previous_category.display_order = previous_category.display_order, category.display_order
+        category.save()
+        previous_category.save()
+        
+        messages.success(request, f"Moved '{category.name}' up in the display order.")
+    else:
+        messages.info(request, f"'{category.name}' is already first.")
+    
+    return redirect('portal:category_list')
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def move_category_down(request, pk):
+    """Move category down in display order (increase display_order)"""
+    from .models import Category
+    
+    category = get_object_or_404(Category, pk=pk)
+    
+    # Find the category with the next higher display_order
+    next_category = Category.objects.filter(
+        display_order__gt=category.display_order
+    ).order_by('display_order').first()
+    
+    if next_category:
+        # Swap display_order values
+        category.display_order, next_category.display_order = next_category.display_order, category.display_order
+        category.save()
+        next_category.save()
+        
+        messages.success(request, f"Moved '{category.name}' down in the display order.")
+    else:
+        messages.info(request, f"'{category.name}' is already last.")
     
     return redirect('portal:category_list')
 
