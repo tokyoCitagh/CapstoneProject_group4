@@ -555,16 +555,24 @@ def move_category_up(request, pk):
     
     category = get_object_or_404(Category, pk=pk)
     
-    # Find the category with the next lower display_order
-    previous_category = Category.objects.filter(
-        display_order__lt=category.display_order
-    ).order_by('-display_order').first()
+    # Get all categories in current order
+    categories = list(Category.objects.all().order_by('display_order', 'name'))
     
-    if previous_category:
-        # Swap display_order values
-        category.display_order, previous_category.display_order = previous_category.display_order, category.display_order
-        category.save()
-        previous_category.save()
+    # Normalize display_order values to be sequential (0, 1, 2, 3...)
+    for i, cat in enumerate(categories):
+        if cat.display_order != i:
+            cat.display_order = i
+            cat.save()
+    
+    # Find current category's position
+    current_index = next((i for i, cat in enumerate(categories) if cat.pk == category.pk), None)
+    
+    if current_index is not None and current_index > 0:
+        # Swap with previous category
+        categories[current_index].display_order, categories[current_index - 1].display_order = \
+            categories[current_index - 1].display_order, categories[current_index].display_order
+        categories[current_index].save()
+        categories[current_index - 1].save()
         
         messages.success(request, f"Moved '{category.name}' up in the display order.")
     else:
@@ -581,16 +589,24 @@ def move_category_down(request, pk):
     
     category = get_object_or_404(Category, pk=pk)
     
-    # Find the category with the next higher display_order
-    next_category = Category.objects.filter(
-        display_order__gt=category.display_order
-    ).order_by('display_order').first()
+    # Get all categories in current order
+    categories = list(Category.objects.all().order_by('display_order', 'name'))
     
-    if next_category:
-        # Swap display_order values
-        category.display_order, next_category.display_order = next_category.display_order, category.display_order
-        category.save()
-        next_category.save()
+    # Normalize display_order values to be sequential (0, 1, 2, 3...)
+    for i, cat in enumerate(categories):
+        if cat.display_order != i:
+            cat.display_order = i
+            cat.save()
+    
+    # Find current category's position
+    current_index = next((i for i, cat in enumerate(categories) if cat.pk == category.pk), None)
+    
+    if current_index is not None and current_index < len(categories) - 1:
+        # Swap with next category
+        categories[current_index].display_order, categories[current_index + 1].display_order = \
+            categories[current_index + 1].display_order, categories[current_index].display_order
+        categories[current_index].save()
+        categories[current_index + 1].save()
         
         messages.success(request, f"Moved '{category.name}' down in the display order.")
     else:
