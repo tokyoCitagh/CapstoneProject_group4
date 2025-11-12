@@ -229,10 +229,7 @@ def store_view(request):
     
     if search_query:
         # If searching, show all matching products (not grouped by category)
-        products = Product.objects.filter(
-            Q(name__icontains=search_query) | 
-            Q(description__icontains=search_query)
-        )
+        products = Product.objects.filter(name__icontains=search_query)
         context = {
             'products': products,
             'search_query': search_query,
