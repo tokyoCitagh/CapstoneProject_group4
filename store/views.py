@@ -646,10 +646,20 @@ def inventory_dashboard(request):
     # Pending Orders (Orders not complete)
     pending_orders_count = Order.objects.filter(complete=False).count()
     
-    # --- TOP SELLING PRODUCTS ---
+    # --- TOP SELLING PRODUCTS WITH SEARCH ---
+    # Get search query from URL parameters
+    product_search = request.GET.get('product_search', '').strip()
+    
     product_sales = Product.objects.annotate(
         total_sold=Sum('orderitem__quantity')
-    ).order_by('-total_sold') 
+    )
+    
+    # Apply search filter if query exists
+    if product_search:
+        product_sales = product_sales.filter(name__icontains=product_search)
+    
+    # Order by total_sold descending (nulls treated as 0)
+    product_sales = product_sales.order_by('-total_sold', '-id')
     
     # --- ACTIVITY LOG ---
     latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10] 
@@ -660,6 +670,7 @@ def inventory_dashboard(request):
 
     context = {
         'product_sales': product_sales,
+        'product_search': product_search,
         'page_title': 'Inventory Dashboard',
         'latest_activities': latest_activities,
         'total_products': total_products, 
