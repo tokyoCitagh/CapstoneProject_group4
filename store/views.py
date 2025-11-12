@@ -937,3 +937,35 @@ def staff_service_request_chat(request, pk):
         'STATUS_CHOICES': status_choices, 
     }
     return render(request, 'services/service_request_chat_staff.html', context)
+
+
+# -------------------------------------------------------------------------------------
+# POLICY PAGES
+# -------------------------------------------------------------------------------------
+
+def privacy_policy_view(request):
+    """Privacy Policy page."""
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
+    return render(request, 'store/privacy_policy.html', context)
+
+
+def terms_conditions_view(request):
+    """Terms & Conditions page."""
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
+    return render(request, 'store/terms_conditions.html', context)
+
+
+def shipping_info_view(request):
+    """Shipping Information page."""
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
+    return render(request, 'store/shipping_info.html', context)
+
+
+def about_us_view(request):
+    """About Us page."""
+    data = cartData(request)
+    context = {'cartItems': data['cartItems']}
+    return render(request, 'store/about_us.html', context)
