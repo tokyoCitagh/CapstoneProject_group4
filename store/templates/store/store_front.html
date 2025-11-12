@@ -9,6 +9,44 @@
 
     <h2 class="text-center text-3xl font-semibold mb-6">Welcome to the Store</h2>
     
+    <!-- Search Bar -->
+    <div class="max-w-2xl mx-auto mb-8">
+        <form method="GET" action="{% url 'store:store' %}" class="flex gap-2">
+            <input 
+                type="text" 
+                name="search" 
+                value="{{ search_query|default:'' }}"
+                placeholder="Search for products..." 
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <button 
+                type="submit" 
+                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+            >
+                Search
+            </button>
+            {% if search_query %}
+            <a 
+                href="{% url 'store:store' %}" 
+                class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200 font-medium"
+            >
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if search_query %}
+    <div class="mb-6 text-center">
+        <p class="text-lg text-gray-700">
+            Search results for: <strong>"{{ search_query }}"</strong>
+            {% if products %}
+                ({{ products.count }} product{{ products.count|pluralize }} found)
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+    
     <style>
         .product-grid {
             display: grid;
@@ -68,6 +106,50 @@
         }
     </style>
 
+    {% if search_query %}
+        {# Display search results #}
+        {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                
+                <a href="{% url 'store:product_detail' pk=product.id %}" class="product-link">
+                
+                    {% with primary_img=product.primary_image %}
+                        {% if primary_img %}
+                            <img src="{{ primary_img.image|cloud_url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.jpg' %}" alt="No Image Available">
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <h3>{{ product.name }}</h3>
+                    
+                    <div class="price-info">
+                        {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">GHC{{ product.price|floatformat:2 }}</span>
+                            <span class="discount-price">GHC{{ product.discount_price|floatformat:2 }}</span>
+                        {% else %}
+                            <strong>GHC{{ product.price|floatformat:2 }}</strong>
+                        {% endif %}
+                    </div>
+                    
+                </a> 
+                <button data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
+                
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <p class="text-xl text-gray-600">No products found matching your search.</p>
+            <a href="{% url 'store:store' %}" class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                View All Products
+            </a>
+        </div>
+        {% endif %}
+    {% else %}
+        {# Display normal categorized view #}
     {% for category in categories %}
         {% if category.products.exists %}
         <div class="category-section mb-12">
@@ -156,5 +238,7 @@
     {% if not categories and not uncategorized_products.exists %}
     <p class="text-center text-gray-600">No products are currently available in the store.</p>
     {% endif %}
+    
+    {% endif %} {# End of search_query check #}
     
 {% endblock %}
