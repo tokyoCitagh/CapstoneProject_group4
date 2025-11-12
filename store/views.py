@@ -579,10 +579,6 @@ def move_category_up(request, pk):
             categories[current_index - 1].display_order, categories[current_index].display_order
         categories[current_index].save()
         categories[current_index - 1].save()
-        
-        messages.success(request, f"Moved '{category.name}' up in the display order.")
-    else:
-        messages.info(request, f"'{category.name}' is already first.")
     
     return redirect('portal:category_list')
 
@@ -619,10 +615,6 @@ def move_category_down(request, pk):
             categories[current_index + 1].display_order, categories[current_index].display_order
         categories[current_index].save()
         categories[current_index + 1].save()
-        
-        messages.success(request, f"Moved '{category.name}' down in the display order.")
-    else:
-        messages.info(request, f"'{category.name}' is already last.")
     
     return redirect('portal:category_list')
 
