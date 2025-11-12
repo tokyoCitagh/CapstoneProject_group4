@@ -1,21 +1,21 @@
 {% extends "store/base.html" %}
 {% load static %}
 {% load service_utils %}
-{% block title %}Chat: Request #{{ request.id }}{% endblock %} 
+{% block title %}Chat: Request #{{ service_request.id }}{% endblock %} 
 
 {% block content %}
 <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl border border-gray-200">
-    <h2 class="text-3xl font-bold text-gray-800 mb-2">Service Request #{{ request.id }}</h2>
-    <p class="text-xl text-indigo-600 mb-4">{{ request.service_type }}</p>
+    <h2 class="text-3xl font-bold text-gray-800 mb-2">Service Request #{{ service_request.id }}</h2>
+    <p class="text-xl text-indigo-600 mb-4">{{ service_request.service_type }}</p>
 
     <div class="grid grid-cols-2 gap-4 text-sm mb-6 pb-4 border-b">
-        <div><strong>Customer:</strong> {{ request.customer.name|default:"N/A" }} ({{ request.customer.email|default:"N/A" }})</div>
+        <div><strong>Customer:</strong> {{ service_request.customer.name|default:"N/A" }} ({{ service_request.customer.email|default:"N/A" }})</div>
         <div><strong>Status:</strong> <span class="font-bold 
-            {% if request.status == 'PENDING' %}text-red-500{% elif request.status == 'QUOTED' %}text-yellow-600{% else %}text-green-600{% endif %}">
-            {{ request.status }}
+            {% if service_request.status == 'PENDING' %}text-red-500{% elif service_request.status == 'QUOTED' %}text-yellow-600{% else %}text-green-600{% endif %}">
+            {{ service_request.status }}
         </span></div>
-        <div class="col-span-2"><strong>Initial Description:</strong> {{ request.description }}</div>
-        {% for attachment in request.attachments.all %}
+        <div class="col-span-2"><strong>Initial Description:</strong> {{ service_request.description }}</div>
+        {% for attachment in service_request.attachments.all %}
         <div class="col-span-2">
             <strong>Attachment {{ forloop.counter }}:</strong> 
             <a href="{{ attachment.file.url }}" target="_blank" class="text-indigo-500 hover:text-indigo-700 underline">View File ({{ attachment.file.name|split:'/'|last }})</a>
