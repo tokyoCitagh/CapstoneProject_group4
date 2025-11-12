@@ -221,10 +221,13 @@ def home_view(request):
 def store_view(request):
     """The main user-facing shop page - grouped by categories."""
     from .models import Category
+    from django.db.models import Count
     data = cartData(request) 
     
-    # Get all categories ordered by display_order
-    categories = Category.objects.prefetch_related('products').all()
+    # Get only categories that have at least one product, ordered by display_order
+    categories = Category.objects.annotate(
+        product_count=Count('products')
+    ).filter(product_count__gt=0).prefetch_related('products')
     
     # Get products without any category
     uncategorized_products = Product.objects.filter(categories__isnull=True)
