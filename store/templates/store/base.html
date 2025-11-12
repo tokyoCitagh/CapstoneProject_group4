@@ -120,29 +120,60 @@
         {% endblock content %}
     </main>
 
-    {# --- UPDATED FOOTER SECTION --- #}
-    <footer class="mt-10 p-6 bg-gray-800 text-gray-400 border-t border-gray-700">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center md:items-start space-y-4 md:space-y-0">
-            
-            <div class="text-center md:text-left">
-                <h4 class="text-lg font-semibold text-white mb-2">Image Electronics</h4>
-                <p class="text-sm">&copy; 2025 My E-commerce Site</p>
+    {# --- PROFESSIONAL FOOTER SECTION --- #}
+    <footer class="bg-gray-800 text-gray-300 mt-auto">
+        <div class="container mx-auto px-6 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                <!-- Column 1: Company Info & Socials -->
+                <div class="space-y-4">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                        <img src="{{ SAFE_STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                        <span class="text-xl font-bold text-white">Image Electronics</span>
+                    </a>
+                    <p class="text-sm text-gray-400">Your trusted source for quality electronics and expert services in Ghana.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'home' %}" class="hover:text-white hover:underline">Home</a></li>
+                        <li><a href="{% url 'store:store' %}" class="hover:text-white hover:underline">Products</a></li>
+                        <li><a href="{% url 'services:add_service_request' %}" class="hover:text-white hover:underline">Request a Service</a></li>
+                        <li><a href="#" class="hover:text-white hover:underline">About Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Our Policies -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Our Policies</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white hover:underline">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white hover:underline">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-white hover:underline">Shipping Information</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Contact Us -->
+                <address class="not-italic">
+                    <h4 class="text-lg font-semibold text-white mb-4">Contact & Location</h4>
+                    <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Santa Maria, Accra, Ghana</p>
+                    <p class="mb-2"><i class="fas fa-envelope mr-2"></i><a href="mailto:imageelectronicsgh@yahoo.com" class="hover:text-white">imageelectronicsgh@yahoo.com</a></p>
+                    <p><i class="fas fa-phone mr-2"></i>+233 (XX) XXX-XXXX</p>
+                </address>
             </div>
-            
-            {# ⭐ IMPROVEMENT: Wrapped contact info in <address> tag for semantic HTML ⭐ #}
-            <address class="text-center md:text-left not-italic">
-                <h4 class="text-lg font-semibold text-white mb-2">Contact & Location 📍</h4>
-                <p class="text-sm">
-                    **Address:** Santa Maria, Ghana (Area Code 00233)
-                </p>
-                <p class="text-sm">
-                    **Email:** <a href="mailto:imageelectronicsgh@yahoo.com" class="hover:text-white underline">imageelectronicsgh@yahoo.com</a>
-                </p>
-            </address>
-            
+            <div class="mt-8 pt-6 border-t border-gray-700 text-center text-sm text-gray-500">
+                &copy; {% now "Y" %} Image Electronics. All Rights Reserved.
+            </div>
         </div>
     </footer>
-    {# --- END UPDATED FOOTER SECTION --- #}
 
     <script type="text/javascript">
         // 1. Define the 'user' status for cart.js
