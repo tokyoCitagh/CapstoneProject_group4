@@ -559,10 +559,16 @@ def move_category_up(request, pk):
     categories = list(Category.objects.all().order_by('display_order', 'name'))
     
     # Normalize display_order values to be sequential (0, 1, 2, 3...)
+    needs_normalization = False
     for i, cat in enumerate(categories):
         if cat.display_order != i:
             cat.display_order = i
             cat.save()
+            needs_normalization = True
+    
+    # Reload categories after normalization to get fresh display_order values
+    if needs_normalization:
+        categories = list(Category.objects.all().order_by('display_order', 'name'))
     
     # Find current category's position
     current_index = next((i for i, cat in enumerate(categories) if cat.pk == category.pk), None)
@@ -593,10 +599,16 @@ def move_category_down(request, pk):
     categories = list(Category.objects.all().order_by('display_order', 'name'))
     
     # Normalize display_order values to be sequential (0, 1, 2, 3...)
+    needs_normalization = False
     for i, cat in enumerate(categories):
         if cat.display_order != i:
             cat.display_order = i
             cat.save()
+            needs_normalization = True
+    
+    # Reload categories after normalization to get fresh display_order values
+    if needs_normalization:
+        categories = list(Category.objects.all().order_by('display_order', 'name'))
     
     # Find current category's position
     current_index = next((i for i, cat in enumerate(categories) if cat.pk == category.pk), None)
