@@ -31,6 +31,20 @@ class Customer(models.Model):
     def __str__(self):
         return self.name if self.name else 'Guest Customer'
 
+# NEW MODEL: Category for organizing products
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 # 2. Product Model: The items you sell
 class Product(models.Model):
     name = models.CharField(max_length=200, null=True)
@@ -48,6 +62,9 @@ class Product(models.Model):
     # --- ADDED: Inventory Stock Field ---
     stock_quantity = models.IntegerField(default=0)
     # ------------------------------------
+    
+    # Many-to-Many relationship with Category
+    categories = models.ManyToManyField(Category, blank=True, related_name='products')
 
     def __str__(self):
         return self.name

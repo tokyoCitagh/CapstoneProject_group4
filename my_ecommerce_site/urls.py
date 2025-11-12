@@ -31,8 +31,15 @@ portal_urlpatterns = [
     path('products/add/', store_views.add_product, name='add_product'), 
     path('products/edit/<int:pk>/', store_views.edit_product, name='edit_product'),
     path('products/delete/<int:pk>/', store_views.delete_product, name='delete_product'),
-     path('orders/', store_views.orders_list, name='orders_list'),
-     path('orders/<int:pk>/', store_views.order_detail, name='order_detail'),
+    
+    # Category Management URLs
+    path('categories/', store_views.category_list, name='category_list'),
+    path('categories/add/', store_views.add_category, name='add_category'),
+    path('categories/edit/<int:pk>/', store_views.edit_category, name='edit_category'),
+    path('categories/delete/<int:pk>/', store_views.delete_category, name='delete_category'),
+    
+    path('orders/', store_views.orders_list, name='orders_list'),
+    path('orders/<int:pk>/', store_views.order_detail, name='order_detail'),
     path('log/all/', store_views.all_activity_log_view, name='all_activity_log'),
     path('service_requests/chat/<int:pk>/', services_views.staff_service_request_chat, name='staff_chat'),
 
