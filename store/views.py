@@ -426,6 +426,113 @@ def delete_product(request, pk):
     return redirect('portal:edit_product', pk=pk) 
 
 
+# =====================================
+# CATEGORY MANAGEMENT VIEWS
+# =====================================
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def category_list(request):
+    """View to list all categories"""
+    from .models import Category
+    categories = Category.objects.all().order_by('name')
+    
+    context = {
+        'categories': categories,
+    }
+    return render(request, 'store/portal/category_list.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def add_category(request):
+    """View to add a new category"""
+    from .forms import CategoryForm
+    
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save()
+            
+            # Log the activity
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='CATEGORY_ADDED',
+                description=f"New category '{category.name}' was created.",
+                object_id=category.pk,
+                object_repr=category.name
+            )
+            
+            return redirect('portal:category_list')
+    else:
+        form = CategoryForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'store/portal/add_category.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def edit_category(request, pk):
+    """View to edit an existing category"""
+    from .models import Category
+    from .forms import CategoryForm
+    
+    category = get_object_or_404(Category, pk=pk)
+    
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            category = form.save()
+            
+            # Log the activity
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='CATEGORY_UPDATED',
+                description=f"Category '{category.name}' was updated.",
+                object_id=category.pk,
+                object_repr=category.name
+            )
+            
+            return redirect('portal:category_list')
+    else:
+        form = CategoryForm(instance=category)
+    
+    context = {
+        'form': form,
+        'category': category,
+    }
+    return render(request, 'store/portal/edit_category.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def delete_category(request, pk):
+    """View to delete a category"""
+    from .models import Category
+    
+    category = get_object_or_404(Category, pk=pk)
+    category_name = category.name
+    category_id = category.pk
+    
+    if request.method == 'POST':
+        category.delete()
+        
+        # Log the activity
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type='CATEGORY_DELETED',
+            description=f"Category '{category_name}' (ID: {category_id}) was permanently deleted.",
+            object_id=category_id,
+            object_repr=category_name
+        )
+        
+        return redirect('portal:category_list')
+    
+    return redirect('portal:category_list')
+
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def inventory_dashboard(request):

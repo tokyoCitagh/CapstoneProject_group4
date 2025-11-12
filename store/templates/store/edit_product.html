@@ -176,6 +176,14 @@
                     </div>
                 </div>
                 
+                {# Categories field with checkboxes #}
+                <div class="form-row" style="align-items: flex-start;">
+                    {{ form.categories.label_tag }}
+                    <div style="flex-grow: 1; max-width: 350px; border: 1px solid #ccc; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto; background: #fafafa;">
+                        {{ form.categories }}
+                    </div>
+                </div>
+                
                 {# Add description field if it exists #}
                 {% if form.description %}
                 <div class="form-row" style="align-items: flex-start; border-bottom: none;">

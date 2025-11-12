@@ -66,6 +66,14 @@
                                 Product Management
                             </a>
                             
+                            {# Category Management Link #}
+                            <a href="{% url 'portal:category_list' %}" 
+                               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md 
+                               {% if 'category' in request.resolver_match.url_name %}bg-indigo-700 text-white shadow-inner{% else %}text-indigo-200 hover:bg-indigo-700 hover:text-white{% endif %}">
+                                <i class="fas fa-tags mr-3 text-lg opacity-80"></i>
+                                Category Management
+                            </a>
+                            
                             {# Service Requests Link - FIX: Added 'portal:' namespace #}
                             <a href="{% url 'portal:staff_requests_list' %}" 
                                class="group flex items-center px-2 py-2 text-sm font-medium rounded-md 

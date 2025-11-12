@@ -65,17 +65,19 @@ class ProductForm(forms.ModelForm):
     """
     class Meta:
         model = Product
-        fields = ['name', 'price', 'discount_price', 'stock_quantity', 'digital'] 
+        fields = ['name', 'price', 'discount_price', 'stock_quantity', 'digital', 'categories'] 
         labels = {
             'name': 'Product Name',
             'price': 'Price (GHC)',
             'discount_price': 'Discount Price (GHC)',
             'stock_quantity': 'Stock Quantity Remaining',
             'digital': 'Is this a digital product?',
+            'categories': 'Categories',
         }
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
-            'stock_quantity': forms.NumberInput(attrs={'min': 0, 'step': 1}), 
+            'stock_quantity': forms.NumberInput(attrs={'min': 0, 'step': 1}),
+            'categories': forms.CheckboxSelectMultiple(),
         }
 
 # -------------------------------------------------------------------
@@ -91,3 +93,34 @@ class ProductImageForm(forms.ModelForm):
         labels = {
             'image': 'Product Image File',
         }
+
+# -------------------------------------------------------------------
+# 4. CategoryForm Definition
+# -------------------------------------------------------------------
+from .models import Category
+from django.utils.text import slugify
+
+class CategoryForm(forms.ModelForm):
+    """
+    Form for creating and editing product categories.
+    """
+    class Meta:
+        model = Category
+        fields = ['name', 'description']
+        labels = {
+            'name': 'Category Name',
+            'description': 'Description (Optional)',
+        }
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Brief description of this category'}),
+            'name': forms.TextInput(attrs={'placeholder': 'e.g., Cameras, Lenses, Accessories'}),
+        }
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Auto-generate slug from name if not provided
+        if not instance.slug:
+            instance.slug = slugify(instance.name)
+        if commit:
+            instance.save()
+        return instance
