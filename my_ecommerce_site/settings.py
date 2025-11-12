@@ -161,7 +161,8 @@ elif _static_root_env:
 else:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Use WhiteNoise storage backend for compressed static files on Railway
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Using CompressedStaticFilesStorage instead of Manifest version to avoid manifest errors
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -214,7 +215,9 @@ if USE_CLOUDINARY:
             'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
         },
         'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+            # Use CompressedStaticFilesStorage instead of Manifest version
+            # to avoid errors when manifest is incomplete or missing
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
         },
     }
 
@@ -257,7 +260,7 @@ else:
                 'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
             },
             'staticfiles': {
-                'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+                'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
             },
         }
 
@@ -288,7 +291,7 @@ else:
                 'BACKEND': 'django.core.files.storage.FileSystemStorage',
             },
             'staticfiles': {
-                'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+                'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
             },
         }
 
