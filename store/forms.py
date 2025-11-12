@@ -104,6 +104,14 @@ class CategoryForm(forms.ModelForm):
     """
     Form for creating and editing product categories.
     """
+    products = forms.ModelMultipleChoiceField(
+        queryset=Product.objects.all(),
+        widget=forms.CheckboxSelectMultiple(),
+        required=False,
+        label='Assign Products to this Category',
+        help_text='Select which products belong to this category'
+    )
+    
     class Meta:
         model = Category
         fields = ['name', 'description']
@@ -116,6 +124,12 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'placeholder': 'e.g., Cameras, Lenses, Accessories'}),
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Pre-populate the products field with current category products when editing
+        if self.instance.pk:
+            self.fields['products'].initial = self.instance.products.all()
+    
     def save(self, commit=True):
         instance = super().save(commit=False)
         # Auto-generate slug from name if not provided
@@ -123,4 +137,7 @@ class CategoryForm(forms.ModelForm):
             instance.slug = slugify(instance.name)
         if commit:
             instance.save()
+            # Save the many-to-many relationship
+            instance.products.set(self.cleaned_data['products'])
+            self.save_m2m()
         return instance
