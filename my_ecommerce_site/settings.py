@@ -381,8 +381,8 @@ SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # ===== PAYSTACK PAYMENT CONFIGURATION =====
 # Add these to your .env file and Railway environment variables
-PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
-PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
 
 # Celery / Redis configuration (for background tasks)
 # Provide REDIS_URL in Railway variables (e.g. redis://:<password>@<host>:<port>/0)
