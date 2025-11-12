@@ -68,38 +68,93 @@
         }
     </style>
 
-    <div class="product-grid">
-        {% for product in products %}
-        <div class="product-card">
+    {% for category in categories %}
+        {% if category.products.exists %}
+        <div class="category-section mb-12">
+            <div class="category-header mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">{{ category.name }}</h2>
+                {% if category.description %}
+                    <p class="text-gray-600 mt-2">{{ category.description }}</p>
+                {% endif %}
+            </div>
             
-            <a href="{% url 'store:product_detail' pk=product.id %}" class="product-link">
-            
-                {% with primary_img=product.primary_image %}
-                    {% if primary_img %}
-                        <img src="{{ primary_img.image|cloud_url }}" alt="{{ product.name }}">
-                    {% else %}
-                        <img src="{% static 'images/placeholder.jpg' %}" alt="No Image Available">
-                    {% endif %}
-                {% endwith %}
-                
-                <h3>{{ product.name }}</h3>
-                
-                <div class="price-info">
-                    {% if product.discount_price and product.discount_price < product.price %}
-                        <span class="original-price">GHC{{ product.price|floatformat:2 }}</span>
-                        <span class="discount-price">GHC{{ product.discount_price|floatformat:2 }}</span>
-                    {% else %}
-                        <strong>GHC{{ product.price|floatformat:2 }}</strong>
-                    {% endif %}
+            <div class="product-grid">
+                {% for product in category.products.all %}
+                <div class="product-card">
+                    
+                    <a href="{% url 'store:product_detail' pk=product.id %}" class="product-link">
+                    
+                        {% with primary_img=product.primary_image %}
+                            {% if primary_img %}
+                                <img src="{{ primary_img.image|cloud_url }}" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="{% static 'images/placeholder.jpg' %}" alt="No Image Available">
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <h3>{{ product.name }}</h3>
+                        
+                        <div class="price-info">
+                            {% if product.discount_price and product.discount_price < product.price %}
+                                <span class="original-price">GHC{{ product.price|floatformat:2 }}</span>
+                                <span class="discount-price">GHC{{ product.discount_price|floatformat:2 }}</span>
+                            {% else %}
+                                <strong>GHC{{ product.price|floatformat:2 }}</strong>
+                            {% endif %}
+                        </div>
+                        
+                    </a> 
+                    <button data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
+                    
                 </div>
-                
-            </a> 
-            <button data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
-            
+                {% endfor %}
+            </div>
         </div>
-        {% empty %}
-        <p class="text-center">No products are currently available in the store.</p>
-        {% endfor %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if uncategorized_products.exists %}
+    <div class="category-section mb-12">
+        <div class="category-header mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Other Products</h2>
+        </div>
+        
+        <div class="product-grid">
+            {% for product in uncategorized_products %}
+            <div class="product-card">
+                
+                <a href="{% url 'store:product_detail' pk=product.id %}" class="product-link">
+                
+                    {% with primary_img=product.primary_image %}
+                        {% if primary_img %}
+                            <img src="{{ primary_img.image|cloud_url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.jpg' %}" alt="No Image Available">
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <h3>{{ product.name }}</h3>
+                    
+                    <div class="price-info">
+                        {% if product.discount_price and product.discount_price < product.price %}
+                            <span class="original-price">GHC{{ product.price|floatformat:2 }}</span>
+                            <span class="discount-price">GHC{{ product.discount_price|floatformat:2 }}</span>
+                        {% else %}
+                            <strong>GHC{{ product.price|floatformat:2 }}</strong>
+                        {% endif %}
+                    </div>
+                    
+                </a> 
+                <button data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
+                
+            </div>
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
+    
+    {% if not categories and not uncategorized_products.exists %}
+    <p class="text-center text-gray-600">No products are currently available in the store.</p>
+    {% endif %}
     
 {% endblock %}
