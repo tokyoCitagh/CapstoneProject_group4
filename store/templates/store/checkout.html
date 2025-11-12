@@ -190,7 +190,7 @@
             .then(response => response.json())
             .then(data => {
                 alert('Payment confirmed! Order #' + data.order_id + ' has been placed successfully.');
-                window.location.href = '/store/';
+                window.location.href = '/store/orders/';
             })
             .catch(error => {
                 console.error('Error:', error);

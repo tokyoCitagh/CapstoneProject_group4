@@ -287,6 +287,30 @@ def cart_view(request):
     return render(request, 'store/cart.html', context)
 
 
+@login_required
+def orders_view(request):
+    """Displays the user's order history - requires login."""
+    customer = get_customer_or_create(request)
+    
+    if not customer:
+        messages.error(request, 'Unable to retrieve customer profile.')
+        return redirect('store:home')
+    
+    # Get all completed orders for this customer, newest first
+    orders = Order.objects.filter(
+        customer=customer, 
+        complete=True
+    ).order_by('-date_ordered').prefetch_related('orderitem_set__product__images')
+    
+    data = cartData(request)
+    
+    context = {
+        'orders': orders,
+        'cartItems': data['cartItems'],
+    }
+    return render(request, 'store/orders.html', context)
+
+
 def checkout_view(request):
     """Displays the user's checkout page."""
     from django.conf import settings

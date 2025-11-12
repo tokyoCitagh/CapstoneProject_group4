@@ -17,6 +17,9 @@ urlpatterns = [
     # Defines the URL name 'store:cart'
     path('cart/', views.cart_view, name='cart'), 
     
+    # Defines the URL name 'store:orders'
+    path('orders/', views.orders_view, name='orders'),
+    
     # Defines the URL name 'store:checkout'
     path('checkout/', views.checkout_view, name='checkout'), 
     
