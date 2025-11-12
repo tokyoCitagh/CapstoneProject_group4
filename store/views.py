@@ -227,7 +227,7 @@ def store_view(request):
     # Get only categories that have at least one product, ordered by display_order
     categories = Category.objects.annotate(
         product_count=Count('products')
-    ).filter(product_count__gt=0).prefetch_related('products')
+    ).filter(product_count__gt=0).order_by('display_order', 'name').prefetch_related('products')
     
     # Get products without any category
     uncategorized_products = Product.objects.filter(categories__isnull=True)
