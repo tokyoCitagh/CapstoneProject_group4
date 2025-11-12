@@ -147,7 +147,7 @@
                         <li><a href="{% url 'home' %}" class="hover:text-white hover:underline">Home</a></li>
                         <li><a href="{% url 'store:store' %}" class="hover:text-white hover:underline">Products</a></li>
                         <li><a href="{% url 'services:add_service_request' %}" class="hover:text-white hover:underline">Request a Service</a></li>
-                        <li><a href="#" class="hover:text-white hover:underline">About Us</a></li>
+                        <li><a href="{% url 'store:about_us' %}" class="hover:text-white hover:underline">About Us</a></li>
                     </ul>
                 </div>
 
@@ -155,9 +155,9 @@
                 <div>
                     <h4 class="text-lg font-semibold text-white mb-4">Our Policies</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-white hover:underline">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white hover:underline">Terms & Conditions</a></li>
-                        <li><a href="#" class="hover:text-white hover:underline">Shipping Information</a></li>
+                        <li><a href="{% url 'store:privacy_policy' %}" class="hover:text-white hover:underline">Privacy Policy</a></li>
+                        <li><a href="{% url 'store:terms_conditions' %}" class="hover:text-white hover:underline">Terms & Conditions</a></li>
+                        <li><a href="{% url 'store:shipping_info' %}" class="hover:text-white hover:underline">Shipping Information</a></li>
                     </ul>
                 </div>
 
