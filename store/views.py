@@ -716,16 +716,21 @@ def inventory_dashboard(request):
     # Get search query from URL parameters
     product_search = request.GET.get('product_search', '').strip()
     
+    # Calculate total sold from COMPLETED orders only
     product_sales = Product.objects.annotate(
-        total_sold=Sum('orderitem__quantity')
+        total_sold=Sum('orderitem__quantity', filter=Q(orderitem__order__complete=True))
     )
     
     # Apply search filter if query exists
     if product_search:
         product_sales = product_sales.filter(name__icontains=product_search)
     
-    # Order by total_sold descending (nulls treated as 0)
-    product_sales = product_sales.order_by('-total_sold', '-id')
+    # Order by total_sold descending (nulls treated as 0, place at end)
+    from django.db.models.functions import Coalesce
+    from django.db.models import Value
+    product_sales = product_sales.annotate(
+        sold_count=Coalesce('total_sold', Value(0))
+    ).order_by('-sold_count', '-id')
     
     # --- ACTIVITY LOG ---
     latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10] 
