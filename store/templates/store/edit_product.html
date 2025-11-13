@@ -176,11 +176,23 @@
                     </div>
                 </div>
                 
-                {# Categories field with checkboxes #}
+                {# Categories field with checkboxes - properly styled #}
                 <div class="form-row" style="align-items: flex-start;">
                     {{ form.categories.label_tag }}
                     <div style="flex-grow: 1; max-width: 350px; border: 1px solid #ccc; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto; background: #fafafa;">
-                        {{ form.categories }}
+                        {% for checkbox in form.categories %}
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <input type="checkbox" 
+                                   name="{{ checkbox.data.name }}" 
+                                   value="{{ checkbox.data.value }}" 
+                                   id="{{ checkbox.id_for_label }}"
+                                   {% if checkbox.data.selected %}checked{% endif %}
+                                   style="margin-right: 8px; width: 16px; height: 16px;">
+                            <label for="{{ checkbox.id_for_label }}" style="margin: 0; font-weight: normal; cursor: pointer;">
+                                {{ checkbox.choice_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 
