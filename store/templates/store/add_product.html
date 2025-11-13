@@ -28,7 +28,7 @@
                 {% for field in form %}
                     <div class="
                         {% if field.name == 'description' %}md:col-span-2{% endif %} 
-                        {% if field.name == 'category' %}md:col-span-2{% endif %}
+                        {% if field.name == 'categories' %}md:col-span-2{% endif %}
                     ">
                         
                         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
@@ -81,7 +81,7 @@
             </div>
             
             {# --- SUBMIT BUTTON --- #}
-            <div class="pt-5">
+            <div class="pt-8 mt-6 border-t border-gray-200">
                 <button type="submit" 
                         class="w-full inline-flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
                     <i class="fas fa-save mr-3"></i> Save Product to Inventory
