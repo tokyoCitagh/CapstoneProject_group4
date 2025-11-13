@@ -228,21 +228,21 @@ def store_view(request):
     search_query = request.GET.get('search', '').strip()
     
     if search_query:
-        # If searching, show all matching products (not grouped by category)
-        products = Product.objects.filter(name__icontains=search_query)
+        # If searching, show all matching products (not grouped by category) with stock > 0
+        products = Product.objects.filter(name__icontains=search_query, stock_quantity__gt=0)
         context = {
             'products': products,
             'search_query': search_query,
             'cartItems': data['cartItems']
         }
     else:
-        # Normal view: Get only categories that have at least one product, ordered by display_order
+        # Normal view: Get only categories that have at least one product with stock > 0
         categories = Category.objects.annotate(
-            product_count=Count('products')
+            product_count=Count('products', filter=Q(products__stock_quantity__gt=0))
         ).filter(product_count__gt=0).order_by('display_order', 'name').prefetch_related('products')
         
-        # Get products without any category
-        uncategorized_products = Product.objects.filter(categories__isnull=True)
+        # Get products without any category, but only if stock > 0
+        uncategorized_products = Product.objects.filter(categories__isnull=True, stock_quantity__gt=0)
         
         context = {
             'categories': categories,
@@ -380,6 +380,13 @@ def update_item(request):
         orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
 
         if action == 'add':
+            # Check if adding one more would exceed available stock
+            if orderItem.quantity + 1 > product.stock_quantity:
+                return JsonResponse({
+                    'message': f'Cannot add more. Only {product.stock_quantity} units available in stock.',
+                    'cartItems': cartData(request)['cartItems'],
+                    'error': 'insufficient_stock'
+                }, safe=False, status=400)
             orderItem.quantity += 1
         elif action == 'remove':
             orderItem.quantity -= 1
