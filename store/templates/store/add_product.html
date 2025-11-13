@@ -46,9 +46,21 @@
                                 <label for="{{ field.id_for_label }}" class="ml-2 text-sm text-gray-500">{{ field.help_text }}</label>
                             </div>
                         {% elif field.name == 'categories' %}
-                            {# Special handling for category checkboxes #}
-                            <div class="mt-2 space-y-2 border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50">
-                                {{ field }}
+                            {# Special handling for category checkboxes with proper styling #}
+                            <div class="mt-2 space-y-3 border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto bg-gray-50">
+                                {% for checkbox in field %}
+                                <div class="flex items-center">
+                                    <input type="checkbox" 
+                                           name="{{ checkbox.data.name }}" 
+                                           value="{{ checkbox.data.value }}" 
+                                           id="{{ checkbox.id_for_label }}"
+                                           {% if checkbox.data.selected %}checked{% endif %}
+                                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="{{ checkbox.id_for_label }}" class="ml-3 text-sm font-medium text-gray-700">
+                                        {{ checkbox.choice_label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
                             </div>
                             <p class="mt-1 text-sm text-gray-500">Select one or more categories for this product</p>
                         {% elif field.field.widget.input_type == 'textarea' %}
