@@ -105,8 +105,10 @@
     <details style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #fafafa;">
         <summary style="font-weight: bold; cursor: pointer; color: #333;">Show Request Details</summary>
         <div style="padding-top: 10px; font-size: 0.9em; line-height: 1.6;">
-            {# Use customer_name/contact_email from the request model directly #}
-            <p><strong>Customer:</strong> {{ service_request.customer_name|default:"N/A" }} ({{ service_request.contact_email|default:"N/A" }})</p> 
+            {# Use customer_name/contact_number from the request model directly #}
+            <p><strong>Customer:</strong> {{ service_request.customer_name|default:"N/A" }} 
+            {% if service_request.contact_number %}({{ service_request.contact_number }}){% elif service_request.contact_email %}({{ service_request.contact_email }}){% endif %}
+            </p> 
             <p><strong>Current Status:</strong> <span style="font-weight: bold; color: {% if service_request.status == 'PENDING' %}red{% elif service_request.status == 'QUOTED' %}orange{% else %}green{% endif %};">
                 {{ service_request.get_status_display }}
             </span></p>

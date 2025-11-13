@@ -9,16 +9,16 @@ class ServiceRequestForm(forms.ModelForm):
     class Meta:
         model = ServiceRequest
         # Uses fields confirmed in models.py
-        fields = ['customer_name', 'contact_email', 'service_type', 'description'] 
+        fields = ['customer_name', 'contact_number', 'service_type', 'description'] 
         widgets = {
             'customer_name': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'Your Full Name'}),
-            'contact_email': forms.EmailInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'name@example.com'}),
+            'contact_number': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': '+233 XX XXX XXXX'}),
             'service_type': forms.TextInput(attrs={'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'e.g., Camera Repair'}),
             'description': forms.Textarea(attrs={'rows': 4, 'class': 'border-2 border-black p-2 rounded-lg w-full', 'placeholder': 'Describe your service needs in detail...'}),
         }
         labels = {
             'customer_name': 'Your Name',
-            'contact_email': 'Contact Email',
+            'contact_number': 'Contact Number',
             'service_type': 'Service Requested',
         }
 
