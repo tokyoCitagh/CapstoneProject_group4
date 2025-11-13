@@ -61,7 +61,29 @@ class CustomUserCreationForm(UserCreationForm):
 # -------------------------------------------------------------------
 class ProductForm(forms.ModelForm):
     """
-    Form used for the Add Product and Edit Product administrative views.
+    Form used for the Add Product administrative view (without categories).
+    """
+    class Meta:
+        model = Product
+        fields = ['name', 'price', 'discount_price', 'stock_quantity', 'digital'] 
+        labels = {
+            'name': 'Product Name',
+            'price': 'Price (GHC)',
+            'discount_price': 'Discount Price (GHC)',
+            'stock_quantity': 'Stock Quantity Remaining',
+            'digital': 'Is this a digital product?',
+        }
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'stock_quantity': forms.NumberInput(attrs={'min': 0, 'step': 1}),
+        }
+
+# -------------------------------------------------------------------
+# 2b. ProductEditForm Definition (includes categories)
+# -------------------------------------------------------------------
+class ProductEditForm(forms.ModelForm):
+    """
+    Form used for the Edit Product administrative view (includes categories).
     """
     class Meta:
         model = Product
