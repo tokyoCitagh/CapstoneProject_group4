@@ -758,7 +758,8 @@ def inventory_dashboard(request):
 def orders_list(request):
     """Portal view: list orders for staff."""
     # Filtering: keyword search (q) and optional date range (start_date, end_date)
-    orders = Order.objects.select_related('customer').order_by('-date_ordered')
+    # Only show complete orders (exclude incomplete carts)
+    orders = Order.objects.filter(complete=True).select_related('customer').order_by('-date_ordered')
 
     q = request.GET.get('q', '').strip()
     start_date = request.GET.get('start_date', '').strip()
