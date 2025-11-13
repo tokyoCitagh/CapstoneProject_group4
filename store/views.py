@@ -314,13 +314,6 @@ def orders_view(request):
 def checkout_view(request):
     """Displays the user's checkout page."""
     from django.conf import settings
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    # Debug: Log the Paystack key value
-    logger.info(f"PAYSTACK_PUBLIC_KEY in checkout_view: '{settings.PAYSTACK_PUBLIC_KEY}'")
-    print(f"DEBUG: PAYSTACK_PUBLIC_KEY = '{settings.PAYSTACK_PUBLIC_KEY}'")
-    
     data = cartData(request) 
     
     if request.user.is_authenticated:

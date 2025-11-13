@@ -110,14 +110,6 @@
         const totalAmount = {{ order.get_cart_total|floatformat:2 }};
         const paystackPublicKey = '{{ paystack_public_key }}';
         
-        // Debug: Check if Paystack key is loaded
-        if (!paystackPublicKey || paystackPublicKey.trim() === '') {
-            console.error('Paystack Public Key is missing! Key:', paystackPublicKey);
-            alert('Payment system configuration error. Please contact support.');
-        } else {
-            console.log('Paystack key loaded successfully');
-        }
-        
         function togglePaymentButton() {
             const address = document.getElementById('address')?.value;
             const city = document.getElementById('city')?.value;
