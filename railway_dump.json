@@ -1,0 +1,1470 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$3rbGHPwQS5tPgPBSZM831N$xgVW0pJiGPAdW5YUc2IEPYSR4ZxHJtS42NbEAojTS8U=",
+    "last_login": "2025-11-08T15:55:09.988Z",
+    "is_superuser": false,
+    "username": "albertoos33",
+    "first_name": "",
+    "last_name": "",
+    "email": "lonartabigail@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-08T15:13:52.675Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$gzHGDs0zUOWTP4VCTxks1P$UtSI2HzV0afcAZSAZ5+OqcoJ37TzZQNYnfx+RuW75fk=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "smoketest_user_1762615145",
+    "first_name": "",
+    "last_name": "",
+    "email": "smoketest1762615145@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-08T15:19:06.490Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$Dpi9zTeR7n43n2p8QrA3zV$t0raVbRFQLqDsWJz/m7GCbjMkhelt+gAckwZ4WiIYEo=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "smoketest_user_1762615235",
+    "first_name": "",
+    "last_name": "",
+    "email": "smoketest1762615235@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-08T15:20:36.322Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$4GxWhJHTskZx0s2j9rHfmP$rV+mLWf2Os5jRLLesIy2UAjYs3tcj35b7bBexT06d+U=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "smoketest_user_railway",
+    "first_name": "",
+    "last_name": "",
+    "email": "smoketest_railway@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-08T15:24:04.726Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$QOLCcjeQ6mgHxgDsWuJG77$zbD3anPqXG+Fhd4Ws6u9z/7ldut0swtBdLjVMe/l0gw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "Albertoosrr",
+    "first_name": "",
+    "last_name": "",
+    "email": "lonartabigail@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-02T22:29:30.777Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$YQISXvnw9AELD353kBnCxy$CWvL5TuitDSV7NanZhI+3Lb6r3NKmyDXQZeJZjieKD8=",
+    "last_login": "2025-11-12T16:50:13.613Z",
+    "is_superuser": true,
+    "username": "Albertoos33",
+    "first_name": "",
+    "last_name": "",
+    "email": "maternalandchildrenh@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-11-07T00:51:51Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$PTNCfjrSpIqOflDzHZQWFK$5SpG4JU/HAow/klbt+w/VrXwunXkPhcNupSJObkg8J8=",
+    "last_login": "2025-11-07T13:32:43.608Z",
+    "is_superuser": false,
+    "username": "tokyo21",
+    "first_name": "",
+    "last_name": "",
+    "email": "pastorkonlaa@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-07T13:31:59.557Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$kLd3M2HJKVrTGdJOK6Q7sr$LM1XbO/zqD/LfS9//3lElqrL0fTjnpL5Zr+kb8xCKyE=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "Albertoos",
+    "first_name": "",
+    "last_name": "",
+    "email": "pastorkonlaa@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-11-08T13:48:23.712Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$C1T5z6N6GKbptQcNIw4N2S$09TuL1nmgO1MN4moFxM+lu/gPkArvt8J75JsFtvyV9s=",
+    "last_login": "2025-11-11T08:30:11.472Z",
+    "is_superuser": false,
+    "username": "forson",
+    "first_name": "",
+    "last_name": "",
+    "email": "kinforson605@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-11-11T08:28:54.648Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sites.site",
+  "fields": {
+    "domain": "web-production-20e5.up.railway.app",
+    "name": "Image Electronics"
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "albertoos33"
+    ],
+    "email": "lonartabigail@gmail.com",
+    "verified": false,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "smoketest_user_1762615145"
+    ],
+    "email": "smoketest1762615145@example.com",
+    "verified": false,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "smoketest_user_1762615235"
+    ],
+    "email": "smoketest1762615235@example.com",
+    "verified": false,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "smoketest_user_railway"
+    ],
+    "email": "smoketest_railway@example.com",
+    "verified": false,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "email": "maternalandchildrenh@gmail.com",
+    "verified": true,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "forson"
+    ],
+    "email": "kinforson605@gmail.com",
+    "verified": true,
+    "primary": true
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T08:44:41.602Z",
+    "action_type": "STAFF_LOGIN",
+    "description": "Successful staff login to the portal.",
+    "object_id": null,
+    "object_repr": null
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T11:32:37.561Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:37:48.841Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:43:44.468Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:48:45.337Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:49:28.831Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:49:30.595Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:49:32.425Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:50:53.102Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:50:55.549Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:50:57.450Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T12:54:08.717Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:00:56.233Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:03:14.244Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:15:32.643Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 16,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:15:57.374Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'test-cloud' were modified.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:16:48.640Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'rage camera 3' were modified.",
+    "object_id": 3,
+    "object_repr": "rage camera 3"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 18,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:17:27.071Z",
+    "action_type": "PRODUCT_DELETED",
+    "description": "Product 'test-cloud' (ID: 8) was permanently deleted from inventory.",
+    "object_id": 8,
+    "object_repr": "test-cloud"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 19,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:21:23.146Z",
+    "action_type": "PRODUCT_ADDED",
+    "description": "New product 'rage camera 12' (Price: GHC7000, Stock: 55) was added to inventory.",
+    "object_id": 10,
+    "object_repr": "rage camera 12"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:21:50.325Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'rage camera 12' were modified.",
+    "object_id": 10,
+    "object_repr": "rage camera 12"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 21,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:22:11.687Z",
+    "action_type": "PRODUCT_DELETED",
+    "description": "Product 'rage camera 12' (ID: 10) was permanently deleted from inventory.",
+    "object_id": 10,
+    "object_repr": "rage camera 12"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 22,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:51:06.534Z",
+    "action_type": "ORDER_STATUS_UPDATED",
+    "description": "Order 1 status changed from PENDING to PROCESSING",
+    "object_id": 1,
+    "object_repr": "1"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 23,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-09T13:52:16.928Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 1 expected delivery set to 2025-11-10 13:51:00+00:00",
+    "object_id": 1,
+    "object_repr": "1"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 24,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T18:38:10.179Z",
+    "action_type": "PRODUCT_UPDATED",
+    "description": "General details for product 'Fatino 5' were modified.",
+    "object_id": 5,
+    "object_repr": "Fatino 5"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 25,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T19:27:39.672Z",
+    "action_type": "CATEGORY_ADDED",
+    "description": "New category 'cameras' was created.",
+    "object_id": 1,
+    "object_repr": "cameras"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 26,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T19:28:14.724Z",
+    "action_type": "CATEGORY_UPDATED",
+    "description": "Category 'Cameras' was updated.",
+    "object_id": 1,
+    "object_repr": "Cameras"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 27,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T19:29:23.423Z",
+    "action_type": "CATEGORY_UPDATED",
+    "description": "Category 'Cameras' was updated.",
+    "object_id": 1,
+    "object_repr": "Cameras"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 28,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T19:41:48.341Z",
+    "action_type": "CATEGORY_ADDED",
+    "description": "New category 'Gears' was created.",
+    "object_id": 2,
+    "object_repr": "Gears"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 29,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T20:10:02.361Z",
+    "action_type": "CATEGORY_ADDED",
+    "description": "New category 'Lenses' was created.",
+    "object_id": 3,
+    "object_repr": "Lenses"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 30,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T20:10:51.230Z",
+    "action_type": "CATEGORY_UPDATED",
+    "description": "Category 'Gears' was updated.",
+    "object_id": 2,
+    "object_repr": "Gears"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 31,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T21:04:06.226Z",
+    "action_type": "CATEGORY_UPDATED",
+    "description": "Category 'Camera' was updated.",
+    "object_id": 1,
+    "object_repr": "Camera"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 32,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T22:00:45.070Z",
+    "action_type": "ORDER_STATUS_UPDATED",
+    "description": "Order 3 status changed from PENDING to SHIPPED",
+    "object_id": 3,
+    "object_repr": "3"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 33,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-12T22:01:40.233Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 3 expected delivery set to 2025-11-26 22:00:00+00:00",
+    "object_id": 3,
+    "object_repr": "3"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 34,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:07:09.608Z",
+    "action_type": "ORDER_COMPLETED",
+    "description": "Order 2 sold 1 units of 'rage camera 3'. Stock reduced to 39.",
+    "object_id": 3,
+    "object_repr": "rage camera 3"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 35,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:08:12.705Z",
+    "action_type": "ORDER_STATUS_UPDATED",
+    "description": "Order 4 status changed from PENDING to PROCESSING",
+    "object_id": 4,
+    "object_repr": "4"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 36,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:08:12.884Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 4 expected delivery set to 2025-11-16 00:08:00+00:00",
+    "object_id": 4,
+    "object_repr": "4"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 37,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:17:50.688Z",
+    "action_type": "ORDER_STATUS_UPDATED",
+    "description": "Order 2 status changed from PENDING to PROCESSING",
+    "object_id": 2,
+    "object_repr": "2"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 38,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:17:50.868Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 2 expected delivery set to 2025-11-16 00:17:00+00:00",
+    "object_id": 2,
+    "object_repr": "2"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 39,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:18:19.738Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 2 expected delivery set to 2025-11-16 00:17:00+00:00",
+    "object_id": 2,
+    "object_repr": "2"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 40,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:27:07.923Z",
+    "action_type": "ORDER_COMPLETED",
+    "description": "Order 4 sold 1 units of 'rage camera 3'. Stock reduced to 38.",
+    "object_id": 3,
+    "object_repr": "rage camera 3"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 41,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:27:08.483Z",
+    "action_type": "ORDER_COMPLETED",
+    "description": "Order 4 sold 1 units of 'rage camera k'. Stock reduced to -1.",
+    "object_id": 7,
+    "object_repr": "rage camera k"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 42,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T00:38:56.854Z",
+    "action_type": "ORDER_EXPECTED_DELIVERY_UPDATED",
+    "description": "Order 4 expected delivery set to 2025-11-17 00:38:00+00:00",
+    "object_id": 4,
+    "object_repr": "4"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 43,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T01:13:00.300Z",
+    "action_type": "STOCK_UPDATED",
+    "description": "Stock for 'rage camera k' changed from -1 to 19.",
+    "object_id": 7,
+    "object_repr": "rage camera k"
+  }
+},
+{
+  "model": "store.activitylog",
+  "pk": 44,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "action_time": "2025-11-13T01:13:57.142Z",
+    "action_type": "STOCK_UPDATED",
+    "description": "Stock for 'test2' changed from 0 to 3.",
+    "object_id": 9,
+    "object_repr": "test2"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "albertoos33"
+    ],
+    "name": "albertoos33",
+    "email": "lonartabigail@gmail.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "smoketest_user_1762615145"
+    ],
+    "name": "smoketest_user_1762615145",
+    "email": "smoketest1762615145@example.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "smoketest_user_1762615235"
+    ],
+    "name": "smoketest_user_1762615235",
+    "email": "smoketest1762615235@example.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "smoketest_user_railway"
+    ],
+    "name": "smoketest_user_railway",
+    "email": "smoketest_railway@example.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Albertoosrr"
+    ],
+    "name": "Albertoosrr",
+    "email": "lonartabigail@gmail.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Albertoos33"
+    ],
+    "name": "Albertoos33",
+    "email": "maternalandchildrenh@gmail.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "tokyo21"
+    ],
+    "name": "tokyo21",
+    "email": "pastorkonlaa@gmail.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Albertoos"
+    ],
+    "name": "Albertoos",
+    "email": "pastorkonlaa@gmail.com"
+  }
+},
+{
+  "model": "store.customer",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "forson"
+    ],
+    "name": "forson",
+    "email": "kinforson605@gmail.com"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 1,
+  "fields": {
+    "name": "Camera",
+    "slug": "cameras",
+    "description": "Check out our wide range of cameras",
+    "display_order": 0,
+    "created_at": "2025-11-12T19:27:38.755Z"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 2,
+  "fields": {
+    "name": "Gears",
+    "slug": "gears",
+    "description": "See our Exiting gears",
+    "display_order": 1,
+    "created_at": "2025-11-12T19:41:47.416Z"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 3,
+  "fields": {
+    "name": "Lenses",
+    "slug": "lenses",
+    "description": "See our beautiful lenses",
+    "display_order": 2,
+    "created_at": "2025-11-12T20:10:01.436Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 1,
+  "fields": {
+    "name": "rage camera",
+    "price": "10000.00",
+    "digital": true,
+    "discount_price": "699.00",
+    "stock_quantity": 100,
+    "categories": []
+  }
+},
+{
+  "model": "store.product",
+  "pk": 2,
+  "fields": {
+    "name": "maternal and children Hospital",
+    "price": "10000.00",
+    "digital": true,
+    "discount_price": "9000.00",
+    "stock_quantity": 10,
+    "categories": []
+  }
+},
+{
+  "model": "store.product",
+  "pk": 3,
+  "fields": {
+    "name": "rage camera 3",
+    "price": "3000.00",
+    "digital": true,
+    "discount_price": null,
+    "stock_quantity": 38,
+    "categories": [
+      1,
+      2,
+      3
+    ]
+  }
+},
+{
+  "model": "store.product",
+  "pk": 4,
+  "fields": {
+    "name": "rage camera 7",
+    "price": "5034.00",
+    "digital": true,
+    "discount_price": null,
+    "stock_quantity": 0,
+    "categories": []
+  }
+},
+{
+  "model": "store.product",
+  "pk": 5,
+  "fields": {
+    "name": "Fatino 5",
+    "price": "3432.00",
+    "digital": true,
+    "discount_price": null,
+    "stock_quantity": 1,
+    "categories": [
+      2
+    ]
+  }
+},
+{
+  "model": "store.product",
+  "pk": 6,
+  "fields": {
+    "name": "Fatino 1",
+    "price": "10000.00",
+    "digital": true,
+    "discount_price": "7000.00",
+    "stock_quantity": 4,
+    "categories": [
+      3
+    ]
+  }
+},
+{
+  "model": "store.product",
+  "pk": 7,
+  "fields": {
+    "name": "rage camera k",
+    "price": "100.00",
+    "digital": false,
+    "discount_price": "33.00",
+    "stock_quantity": 19,
+    "categories": [
+      1,
+      2
+    ]
+  }
+},
+{
+  "model": "store.product",
+  "pk": 9,
+  "fields": {
+    "name": "test2",
+    "price": "5.00",
+    "digital": false,
+    "discount_price": null,
+    "stock_quantity": 3,
+    "categories": [
+      3
+    ]
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 1,
+  "fields": {
+    "product": 2,
+    "image": "product_photos/product_photos/download_1",
+    "date_uploaded": "2025-11-08T20:33:39.792Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 2,
+  "fields": {
+    "product": 1,
+    "image": "product_photos/product_photos/68b93dc53edaa8f0ff1fca1c63946bbf",
+    "date_uploaded": "2025-11-08T20:33:40.133Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 3,
+  "fields": {
+    "product": 3,
+    "image": "product_photos/1aab1ca9031955e0bb5947f885fc6ef8_uvpBTLf.jpg",
+    "date_uploaded": "2025-11-08T20:33:40.468Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 4,
+  "fields": {
+    "product": 4,
+    "image": "product_photos/product_photos/1aab1ca9031955e0bb5947f885fc6ef8",
+    "date_uploaded": "2025-11-08T20:33:40.807Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 5,
+  "fields": {
+    "product": 5,
+    "image": "product_photos/product_photos/68b93dc53edaa8f0ff1fca1c63946bbf_uMBXch8",
+    "date_uploaded": "2025-11-08T20:33:41.119Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 6,
+  "fields": {
+    "product": 6,
+    "image": "product_photos/product_photos/images",
+    "date_uploaded": "2025-11-08T20:33:41.467Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 7,
+  "fields": {
+    "product": 7,
+    "image": "product_photos/product_photos/56dcc5b9f74b30e452692fc9a89e25b8",
+    "date_uploaded": "2025-11-08T20:33:41.780Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 9,
+  "fields": {
+    "product": 9,
+    "image": "site_static/l7yf6ug5unorgcjjwngm.jpg",
+    "date_uploaded": "2025-11-08T20:33:42.467Z"
+  }
+},
+{
+  "model": "store.productimage",
+  "pk": 14,
+  "fields": {
+    "product": 5,
+    "image": "product_photos/82963c2fa56c54d4d7e16b4c7861c369_gelgej",
+    "date_uploaded": "2025-11-12T18:38:09.816Z"
+  }
+},
+{
+  "model": "store.order",
+  "pk": 1,
+  "fields": {
+    "customer": 1,
+    "date_ordered": "2025-11-08T15:55:10.534Z",
+    "complete": false,
+    "transaction_id": null,
+    "status": "PROCESSING",
+    "expected_delivery": "2025-11-10T13:51:00Z"
+  }
+},
+{
+  "model": "store.order",
+  "pk": 2,
+  "fields": {
+    "customer": 6,
+    "date_ordered": "2025-11-09T14:09:23.993Z",
+    "complete": true,
+    "transaction_id": "ORD-483359802",
+    "status": "PROCESSING",
+    "expected_delivery": "2025-11-16T00:17:00Z"
+  }
+},
+{
+  "model": "store.order",
+  "pk": 3,
+  "fields": {
+    "customer": 9,
+    "date_ordered": "2025-11-11T08:30:14.457Z",
+    "complete": false,
+    "transaction_id": null,
+    "status": "SHIPPED",
+    "expected_delivery": "2025-11-26T22:00:00Z"
+  }
+},
+{
+  "model": "store.order",
+  "pk": 4,
+  "fields": {
+    "customer": 6,
+    "date_ordered": "2025-11-13T00:07:15.166Z",
+    "complete": true,
+    "transaction_id": "ORD-235131317",
+    "status": "PROCESSING",
+    "expected_delivery": "2025-11-17T00:38:00Z"
+  }
+},
+{
+  "model": "store.order",
+  "pk": 5,
+  "fields": {
+    "customer": 6,
+    "date_ordered": "2025-11-13T00:27:12.263Z",
+    "complete": false,
+    "transaction_id": null,
+    "status": "PENDING",
+    "expected_delivery": null
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 1,
+  "fields": {
+    "product": 4,
+    "order": 1,
+    "quantity": 1,
+    "date_added": "2025-11-09T12:26:38.424Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 2,
+  "fields": {
+    "product": 2,
+    "order": 1,
+    "quantity": 1,
+    "date_added": "2025-11-09T12:26:48.189Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 3,
+  "fields": {
+    "product": 1,
+    "order": 3,
+    "quantity": 2,
+    "date_added": "2025-11-11T08:30:38.717Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 4,
+  "fields": {
+    "product": 2,
+    "order": 3,
+    "quantity": 1,
+    "date_added": "2025-11-11T08:30:43.878Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 5,
+  "fields": {
+    "product": 4,
+    "order": 3,
+    "quantity": 1,
+    "date_added": "2025-11-11T08:30:46.822Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 6,
+  "fields": {
+    "product": 7,
+    "order": 3,
+    "quantity": 2,
+    "date_added": "2025-11-11T08:37:03.117Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 7,
+  "fields": {
+    "product": 9,
+    "order": 3,
+    "quantity": 1,
+    "date_added": "2025-11-11T08:37:49.956Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 8,
+  "fields": {
+    "product": 6,
+    "order": 3,
+    "quantity": 9,
+    "date_added": "2025-11-11T08:38:09.658Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 9,
+  "fields": {
+    "product": 3,
+    "order": 2,
+    "quantity": 1,
+    "date_added": "2025-11-12T22:02:23.846Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 10,
+  "fields": {
+    "product": 3,
+    "order": 4,
+    "quantity": 1,
+    "date_added": "2025-11-13T00:25:24.776Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 11,
+  "fields": {
+    "product": 7,
+    "order": 4,
+    "quantity": 1,
+    "date_added": "2025-11-13T00:25:26.992Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 12,
+  "fields": {
+    "product": 3,
+    "order": 5,
+    "quantity": 2,
+    "date_added": "2025-11-13T01:14:43.897Z"
+  }
+},
+{
+  "model": "store.orderitem",
+  "pk": 13,
+  "fields": {
+    "product": 5,
+    "order": 5,
+    "quantity": 1,
+    "date_added": "2025-11-13T01:24:35.276Z"
+  }
+},
+{
+  "model": "store.shippingaddress",
+  "pk": 1,
+  "fields": {
+    "customer": 6,
+    "order": 4,
+    "address": "asokore, mampong",
+    "city": "Accra",
+    "state": "Ga",
+    "zipcode": "",
+    "country": "Ghana",
+    "date_added": "2025-11-13T00:27:09.226Z"
+  }
+},
+{
+  "model": "services.servicerequest",
+  "pk": 1,
+  "fields": {
+    "customer": 6,
+    "customer_name": "Albertoos",
+    "contact_email": "pastorkonlaa@gmail.com",
+    "service_type": "camera repair",
+    "description": "my gear is spoilt very bad",
+    "date_requested": "2025-11-12T17:41:16.567Z",
+    "status": "PENDING"
+  }
+},
+{
+  "model": "services.servicerequest",
+  "pk": 2,
+  "fields": {
+    "customer": 6,
+    "customer_name": "Albertoos",
+    "contact_email": "pastorkonlaa@gmail.com",
+    "service_type": "my camera 4 altra is spoilt",
+    "description": "it fell down",
+    "date_requested": "2025-11-12T17:55:36.798Z",
+    "status": "IN_PROGRESS"
+  }
+},
+{
+  "model": "services.servicerequest",
+  "pk": 3,
+  "fields": {
+    "customer": 6,
+    "customer_name": "Albertoos sam",
+    "contact_email": "pastorkonlaa@gmail.com",
+    "service_type": "camera repair",
+    "description": "it fell down from a car",
+    "date_requested": "2025-11-12T18:17:07.314Z",
+    "status": "PENDING"
+  }
+},
+{
+  "model": "services.serviceattachment",
+  "pk": 5,
+  "fields": {
+    "request": 3,
+    "file": "service_attachments/6fadf9969d3d2d2819fe3063738b4d96_xm3hbq"
+  }
+},
+{
+  "model": "services.serviceattachment",
+  "pk": 6,
+  "fields": {
+    "request": 3,
+    "file": "service_attachments/1aab1ca9031955e0bb5947f885fc6ef8_fhekko"
+  }
+},
+{
+  "model": "services.quotemessage",
+  "pk": 1,
+  "fields": {
+    "request": 2,
+    "user": [
+      "Albertoos33"
+    ],
+    "sender": "CUSTOMER",
+    "message": "hello\r\n",
+    "timestamp": "2025-11-12T18:14:27.335Z"
+  }
+},
+{
+  "model": "services.quotemessage",
+  "pk": 2,
+  "fields": {
+    "request": 2,
+    "user": [
+      "Albertoos33"
+    ],
+    "sender": "CUSTOMER",
+    "message": "hello\r\n",
+    "timestamp": "2025-11-12T18:14:30.919Z"
+  }
+},
+{
+  "model": "services.quotemessage",
+  "pk": 3,
+  "fields": {
+    "request": 2,
+    "user": [
+      "Albertoos33"
+    ],
+    "sender": "ADMIN",
+    "message": "we good\r\n",
+    "timestamp": "2025-11-12T18:15:40.568Z"
+  }
+}
+]
