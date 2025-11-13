@@ -451,6 +451,8 @@ def process_order(request):
         # --- 3. Finalize Order ---
         order.transaction_id = transaction_id
         order.complete = True
+        # Clear any existing expected_delivery - admin will set it later if needed
+        order.expected_delivery = None
         order.save()
         
         # --- 4. Deduct Stock and Log Sales ---
