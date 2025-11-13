@@ -17,7 +17,7 @@ import logging
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
 from store.utils import cartData 
-from store.forms import ProductForm 
+from store.forms import ProductForm, ProductEditForm 
 from services.models import ServiceRequest, QuoteMessage, ServiceAttachment 
 from services.forms import ServiceRequestForm, AttachmentFormSet 
 # FIX: Import standard Django AuthenticationForm
@@ -887,7 +887,7 @@ def edit_product(request, pk):
     original_stock = product.stock_quantity 
     
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
+        form = ProductEditForm(request.POST, request.FILES, instance=product)
         image_formset = ImageFormSet(request.POST, request.FILES, instance=product)
 
         # Diagnostic logging: record incoming files and which storage backend is active.
@@ -1027,7 +1027,7 @@ def edit_product(request, pk):
             
             return redirect('portal:inventory_dashboard') 
     else:
-        form = ProductForm(instance=product)
+        form = ProductEditForm(instance=product)
         image_formset = ImageFormSet(instance=product) 
         
     context = {
