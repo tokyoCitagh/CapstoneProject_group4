@@ -492,11 +492,59 @@ def customer_service_request_chat(request, pk):
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def staff_requests_list(request):
-    """Displays a list of all Service Requests for staff review."""
+    """Displays a list of all Service Requests for staff review with search and filters."""
+    from django.db.models import Q
+    
     requests = ServiceRequest.objects.all().order_by('-date_requested')
+    
+    # Get search parameters
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+    
+    # Apply search query (search in service_type, customer_name, description)
+    if search_query:
+        requests = requests.filter(
+            Q(service_type__icontains=search_query) |
+            Q(customer_name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(id__icontains=search_query)
+        )
+    
+    # Apply status filter
+    if status_filter:
+        requests = requests.filter(status=status_filter)
+    
+    # Apply date range filters
+    if start_date:
+        from django.utils import timezone
+        try:
+            start_dt = timezone.datetime.strptime(start_date, '%Y-%m-%d')
+            start_dt = timezone.make_aware(start_dt, timezone.get_current_timezone())
+            requests = requests.filter(date_requested__gte=start_dt)
+        except ValueError:
+            pass  # Ignore invalid date format
+    
+    if end_date:
+        from django.utils import timezone
+        try:
+            end_dt = timezone.datetime.strptime(end_date, '%Y-%m-%d')
+            # Set to end of day
+            end_dt = end_dt.replace(hour=23, minute=59, second=59)
+            end_dt = timezone.make_aware(end_dt, timezone.get_current_timezone())
+            requests = requests.filter(date_requested__lte=end_dt)
+        except ValueError:
+            pass  # Ignore invalid date format
+    
     context = {
         'page_title': 'Service Requests List',
         'requests': requests,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'start_date': start_date,
+        'end_date': end_date,
+        'status_choices': ServiceRequest.STATUS_CHOICES,
     }
     return render(request, 'services/requests_list.html', context)
 
