@@ -462,7 +462,7 @@ def process_order(request):
             
             ActivityLog.objects.create(
                 user=request.user,
-                action_type='ORDER_COMPLETED',
+                action_type='SALE',
                 description=f"Order {order.id} sold {item.quantity} units of '{item.product.name}'. Stock reduced to {item.product.stock_quantity}.",
                 object_id=item.product.pk,
                 object_repr=item.product.name
@@ -735,9 +735,9 @@ def inventory_dashboard(request):
     # --- ACTIVITY LOG ---
     latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10] 
 
-    # All orders and a short recent-orders list for the dashboard
-    all_orders_count = Order.objects.count()
-    recent_orders = Order.objects.order_by('-date_ordered')[:5]
+    # All orders (only completed orders) and a short recent-orders list for the dashboard
+    all_orders_count = Order.objects.filter(complete=True).count()
+    recent_orders = Order.objects.filter(complete=True).order_by('-date_ordered')[:5]
 
     context = {
         'product_sales': product_sales,
