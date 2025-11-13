@@ -494,6 +494,7 @@ def customer_service_request_chat(request, pk):
 def staff_requests_list(request):
     """Displays a list of all Service Requests for staff review with search and filters."""
     from django.db.models import Q
+    from .models import STATUS_CHOICES
     
     requests = ServiceRequest.objects.all().order_by('-date_requested')
     
@@ -544,7 +545,7 @@ def staff_requests_list(request):
         'status_filter': status_filter,
         'start_date': start_date,
         'end_date': end_date,
-        'status_choices': ServiceRequest.STATUS_CHOICES,
+        'status_choices': STATUS_CHOICES,
     }
     return render(request, 'services/requests_list.html', context)
 
