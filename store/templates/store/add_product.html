@@ -47,22 +47,22 @@
                             </div>
                         {% elif field.name == 'categories' %}
                             {# Special handling for category checkboxes with proper styling #}
-                            <div class="mt-2 space-y-3 border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto bg-gray-50">
+                            <div class="mt-2 space-y-3 border-2 border-gray-400 rounded-lg p-5 min-h-[120px] max-h-64 overflow-y-auto bg-white shadow-sm">
                                 {% for checkbox in field %}
-                                <div class="flex items-center">
+                                <div class="flex items-center py-2">
                                     <input type="checkbox" 
                                            name="{{ checkbox.data.name }}" 
                                            value="{{ checkbox.data.value }}" 
                                            id="{{ checkbox.id_for_label }}"
                                            {% if checkbox.data.selected %}checked{% endif %}
-                                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <label for="{{ checkbox.id_for_label }}" class="ml-3 text-sm font-medium text-gray-700">
+                                           class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                                    <label for="{{ checkbox.id_for_label }}" class="ml-3 text-base font-medium text-gray-800 cursor-pointer">
                                         {{ checkbox.choice_label }}
                                     </label>
                                 </div>
                                 {% endfor %}
                             </div>
-                            <p class="mt-1 text-sm text-gray-500">Select one or more categories for this product</p>
+                            <p class="mt-2 text-sm text-gray-600 font-medium">Select one or more categories for this product</p>
                         {% elif field.field.widget.input_type == 'textarea' %}
                             {# Textarea for Description #}
                             {% render_field field class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-3" rows="5" %}
@@ -81,9 +81,9 @@
             </div>
             
             {# --- SUBMIT BUTTON --- #}
-            <div class="pt-8 mt-6 border-t border-gray-200">
+            <div class="pt-10 mt-8 border-t-2 border-gray-300">
                 <button type="submit" 
-                        class="w-full inline-flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                        class="w-full inline-flex justify-center py-4 px-6 border border-transparent rounded-lg shadow-lg text-lg font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
                     <i class="fas fa-save mr-3"></i> Save Product to Inventory
                 </button>
             </div>
