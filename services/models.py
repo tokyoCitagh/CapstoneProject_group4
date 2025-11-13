@@ -25,7 +25,8 @@ class ServiceRequest(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
     
     customer_name = models.CharField(max_length=200, help_text="Name of the person requesting the service.")
-    contact_email = models.EmailField(max_length=254, help_text="Email address for correspondence.")
+    contact_email = models.EmailField(max_length=254, help_text="Email address for correspondence.", blank=True, null=True)
+    contact_number = models.CharField(max_length=20, help_text="Phone number for contact.", blank=True, null=True)
     
     service_type = models.CharField(max_length=100, help_text="e.g., Camera Repair, Graphic Design, Printing")
     description = models.TextField()
