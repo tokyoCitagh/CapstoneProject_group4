@@ -166,6 +166,7 @@
             
             <div class="product-grid">
                 {% for product in category.products.all %}
+                    {% if product.stock_quantity > 0 %}
                 <div class="product-card">
                     
                     <a href="{% url 'store:product_detail' pk=product.id %}" class="product-link">
@@ -193,6 +194,7 @@
                     <button data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
                     
                 </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>

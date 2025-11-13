@@ -16,13 +16,28 @@ function updateUserOrder(productId, action){
         body: JSON.stringify({'productId': productId, 'action': action}) 
     })
     .then((response) => {
+        return response.json().then((data) => {
+            // Return both response and data for error handling
+            return { response, data };
+        });
+    })
+    .then(({ response, data }) => {
         if (!response.ok) {
-            // Include status in error for better debugging
+            // Handle stock insufficiency error
+            if (data.error === 'insufficient_stock') {
+                alert(data.message || 'Insufficient stock available.');
+                // Still update cart count if provided
+                if (data.cartItems !== undefined) {
+                    var cartTotalElement = document.getElementById('cart-total');
+                    if (cartTotalElement) {
+                        cartTotalElement.innerText = data.cartItems;
+                    }
+                }
+                return; // Stop further processing
+            }
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then((data) => {
+        
         console.log('Success:', data);
         
         // --- INSTANT UI UPDATE ---
