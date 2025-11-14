@@ -172,6 +172,41 @@
             background-color: #059669; /* Darker Green on Hover */
         }
         
+        /* TERMS & CONDITIONS CHECKBOX */
+        .terms-container {
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .checkbox-wrapper input[type="checkbox"] {
+            margin-top: 3px;
+            margin-right: 8px;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .checkbox-label {
+            font-size: 0.875rem;
+            color: #374151;
+            line-height: 1.4;
+        }
+        .checkbox-label a {
+            color: #4f46e5;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        .checkbox-label a:hover {
+            color: #3730a3;
+        }
+        
         /* FOOTER */
         .footer {
             background-color: #1f2937;
@@ -258,6 +293,22 @@
                 {% if redirect_field_value %}
                     <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                 {% endif %}
+
+                {# Terms & Conditions Checkboxes #}
+                <div class="terms-container">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="accept_terms" name="accept_terms" required>
+                        <label for="accept_terms" class="checkbox-label">
+                            I agree to the <a href="{% url 'store:terms_conditions' %}" target="_blank">Terms & Conditions</a>
+                        </label>
+                    </div>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="accept_privacy" name="accept_privacy" required>
+                        <label for="accept_privacy" class="checkbox-label">
+                            I have read and accept the <a href="{% url 'store:privacy_policy' %}" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+                </div>
 
                 <button type="submit" class="submit-button">
                     {% trans "Sign Up" %}
