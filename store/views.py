@@ -789,12 +789,41 @@ def orders_list(request):
         # Ignore parse errors and continue with unfiltered dates
         pass
 
+    # Calculate statistics for the filtered orders
+    from django.db.models import Sum, Count, Q
+    
+    total_orders = orders.count()
+    completed_orders = orders.filter(status='COMPLETED').count()
+    processing_orders = orders.filter(status='PROCESSING').count()
+    shipped_orders = orders.filter(status='SHIPPED').count()
+    pending_orders = orders.filter(status='PENDING').count()
+    
+    # Total products ordered (sum of all quantities)
+    total_products = orders.aggregate(
+        total=Sum('orderitem__quantity')
+    )['total'] or 0
+    
+    # Total revenue from filtered orders
+    total_revenue = sum(order.get_cart_total for order in orders)
+    
+    # Average order value
+    avg_order_value = total_revenue / total_orders if total_orders > 0 else 0
+
     context = {
         'orders': orders,
         'page_title': 'Orders',
         'q': q,
         'start_date': start_date,
         'end_date': end_date,
+        # Statistics
+        'total_orders': total_orders,
+        'completed_orders': completed_orders,
+        'processing_orders': processing_orders,
+        'shipped_orders': shipped_orders,
+        'pending_orders': pending_orders,
+        'total_products': total_products,
+        'total_revenue': total_revenue,
+        'avg_order_value': avg_order_value,
     }
     return render(request, 'store/orders_list.html', context)
 
