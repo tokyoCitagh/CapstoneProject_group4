@@ -65,7 +65,7 @@
         {% for a in latest_activities %}
         <li class="border-b pb-2">
           <div class="text-gray-700">{{ a.description }}</div>
-          <div class="text-xs text-gray-500">by {{ a.user.username if a.user }} · {{ a.action_time|naturaltime }}</div>
+          <div class="text-xs text-gray-500">by {% if a.user %}{{ a.user.username }}{% else %}System{% endif %} · {{ a.action_time|naturaltime }}</div>
         </li>
         {% empty %}
         <li class="text-gray-500">No activity yet.</li>
