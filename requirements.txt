@@ -25,6 +25,8 @@ django-cloudinary-storage>=0.3.0,<2.0
 celery==5.3.1
 redis==4.6.0
 
-
 # Email API (alternative to SMTP when SMTP ports are blocked)
 sib-api-v3-sdk==7.6.0
+
+# HTTP library for API requests (Paystack payment verification)
+requests==2.31.0

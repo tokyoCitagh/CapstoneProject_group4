@@ -36,6 +36,44 @@
     <p class="text-sm text-gray-500 mt-2">Average Order Value: GHC {{ avg_order_value|floatformat:2|intcomma }}</p>
   </div>
 
+  <div class="bg-white shadow rounded-lg border p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-3">Page Visits</h2>
+    <p class="text-sm text-gray-500">Total Visits (all pages): <strong>{{ total_visits }}</strong></p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div>
+        <h4 class="font-semibold">Top Pages</h4>
+        <ol class="list-decimal list-inside text-sm mt-2">
+          {% for p in top_pages %}
+            <li>{{ p.path }} — {{ p.count }} visits</li>
+          {% empty %}
+            <li class="text-gray-500">No data</li>
+          {% endfor %}
+        </ol>
+      </div>
+      <div>
+        <h4 class="font-semibold">Least Visited Pages</h4>
+        <ol class="list-decimal list-inside text-sm mt-2">
+          {% for p in least_pages %}
+            <li>{{ p.path }} — {{ p.count }} visits</li>
+          {% empty %}
+            <li class="text-gray-500">No data</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h4 class="font-semibold">Exit Pages (last page before session ended)</h4>
+      <ol class="list-decimal list-inside text-sm mt-2">
+        {% for path, cnt in exit_pages %}
+          <li>{{ path }} — {{ cnt }} exits</li>
+        {% empty %}
+          <li class="text-gray-500">No data</li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white shadow rounded-lg border p-4">
       <h3 class="font-semibold mb-3">Top Selling Products</h3>

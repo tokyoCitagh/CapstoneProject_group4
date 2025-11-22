@@ -13,6 +13,9 @@ from django.contrib.auth import logout as auth_logout, authenticate, login
 import json 
 from django.contrib import messages 
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import PageView
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
@@ -787,6 +790,31 @@ def portal_analytics(request):
 
     # Recent activity
     latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10]
+    # --- Page view metrics ---
+    try:
+        from django.db.models import Count, OuterRef, Subquery, Max
+
+        total_visits = PageView.objects.count()
+        top_pages = PageView.objects.values('path').annotate(count=Count('id')).order_by('-count')[:10]
+        least_pages = PageView.objects.values('path').annotate(count=Count('id')).order_by('count')[:10]
+
+        # Exit page: compute last page per session and aggregate
+        last_per_session = PageView.objects.filter(session_key=OuterRef('session_key')).order_by('-timestamp').values('path')[:1]
+        sessions = PageView.objects.values('session_key').distinct().annotate(last_path=Subquery(last_per_session))
+        # Build a dict of exit page counts
+        exit_counts = {}
+        for s in sessions:
+            lp = s.get('last_path')
+            if not lp:
+                continue
+            exit_counts[lp] = exit_counts.get(lp, 0) + 1
+        # sort exit pages
+        exit_pages = sorted(exit_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    except Exception:
+        total_visits = 0
+        top_pages = []
+        least_pages = []
+        exit_pages = []
 
     context = {
         'page_title': 'Analytics',
@@ -798,6 +826,11 @@ def portal_analytics(request):
         'avg_order_value': avg_order_value,
         'product_sales': product_sales,
         'latest_activities': latest_activities,
+        # page view metrics
+        'total_visits': total_visits,
+        'top_pages': top_pages,
+        'least_pages': least_pages,
+        'exit_pages': exit_pages,
     }
     return render(request, 'store/analytics.html', context)
 
