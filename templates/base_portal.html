@@ -91,6 +91,13 @@
                                 <div class="border-t border-indigo-700"></div>
                             </div>
 
+                            {# Analytics Link (new) - placed before Back to Shop #}
+                            <a href="{% url 'portal:analytics' %}" 
+                               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-indigo-200 hover:bg-indigo-700 hover:text-white">
+                                <i class="fas fa-chart-line mr-3 text-lg opacity-80"></i>
+                                Analytics
+                            </a>
+
                             {# Back to Shop Link #}
                             <a href="{% url 'store:store' %}" 
                                class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-indigo-200 hover:bg-indigo-700 hover:text-white">

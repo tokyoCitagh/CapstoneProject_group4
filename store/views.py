@@ -762,6 +762,48 @@ def inventory_dashboard(request):
 
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def portal_analytics(request):
+    """Portal view: analytics overview for staff (basic site metrics)."""
+    from django.db.models import Sum, Q
+
+    # Basic counts
+    total_products = Product.objects.count()
+    low_stock_count = Product.objects.filter(stock_quantity__lte=5).count()
+    total_orders = Order.objects.filter(complete=True).count()
+    pending_orders = Order.objects.filter(status=Order.STATUS_PENDING).count()
+
+    # Revenue and average order value (completed orders)
+    completed_orders_qs = Order.objects.filter(complete=True)
+    total_revenue = sum(o.get_cart_total for o in completed_orders_qs)
+    avg_order_value = total_revenue / completed_orders_qs.count() if completed_orders_qs.count() > 0 else 0
+
+    # Top selling products (by quantity sold in completed orders)
+    from django.db.models.functions import Coalesce
+    from django.db.models import Value
+
+    product_sales = Product.objects.annotate(
+        total_sold=Sum('orderitem__quantity', filter=Q(orderitem__order__complete=True))
+    ).annotate(sold_count=Coalesce('total_sold', Value(0))).order_by('-sold_count')[:10]
+
+    # Recent activity
+    latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10]
+
+    context = {
+        'page_title': 'Analytics',
+        'total_products': total_products,
+        'low_stock_count': low_stock_count,
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'total_revenue': total_revenue,
+        'avg_order_value': avg_order_value,
+        'product_sales': product_sales,
+        'latest_activities': latest_activities,
+    }
+    return render(request, 'store/analytics.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def orders_list(request):
     """Portal view: list orders for staff."""
     # Filtering: keyword search (q) and optional date range (start_date, end_date)

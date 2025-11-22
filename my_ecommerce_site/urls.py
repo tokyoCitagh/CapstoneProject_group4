@@ -21,6 +21,7 @@ portal_urlpatterns = [
          name='login'), # This name will now be accessed as 'portal:login'
     
     path('dashboard/inventory/', store_views.inventory_dashboard, name='inventory_dashboard'),
+     path('dashboard/analytics/', store_views.portal_analytics, name='analytics'),
     path('service_requests/', services_views.staff_requests_list, name="staff_requests_list"),
     
     # ... other portal views ...
