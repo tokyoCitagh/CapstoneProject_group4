@@ -794,22 +794,123 @@ def portal_analytics(request):
     try:
         from django.db.models import Count, OuterRef, Subquery, Max
 
-        total_visits = PageView.objects.count()
-        top_pages = PageView.objects.values('path').annotate(count=Count('id')).order_by('-count')[:10]
-        least_pages = PageView.objects.values('path').annotate(count=Count('id')).order_by('count')[:10]
+        # Consider frontend pages for analytics by excluding backend/admin/account/static/test paths.
+        # This captures home (`/`), product pages (`/product/...`), cart/checkout, services, etc.
+        pv_qs = PageView.objects.exclude(path__startswith='/portal').exclude(path__startswith='/admin')
+        pv_qs = pv_qs.exclude(path__startswith='/accounts').exclude(path__startswith='/static')
+        pv_qs = pv_qs.exclude(path__startswith='/media').exclude(path__startswith='/test-')
+        pv_qs = pv_qs.exclude(path__startswith='/favicon.ico')
 
-        # Exit page: compute last page per session and aggregate
-        last_per_session = PageView.objects.filter(session_key=OuterRef('session_key')).order_by('-timestamp').values('path')[:1]
-        sessions = PageView.objects.values('session_key').distinct().annotate(last_path=Subquery(last_per_session))
-        # Build a dict of exit page counts
+        total_visits = pv_qs.count()
+        top_qs = pv_qs.values('path').annotate(count=Count('id')).order_by('-count')
+        least_qs = pv_qs.values('path').annotate(count=Count('id')).order_by('count')
+
+        # Map raw paths to friendly names for admin readability
+        import re
+
+        def friendly_name(path):
+            if not path:
+                return 'Unknown'
+            # exact matches
+            if path == '/':
+                return 'Home'
+            # handle store-scoped cart/checkout/product paths first
+            if path.startswith('/store/cart') or path.startswith('/cart'):
+                return 'Cart'
+            if path.startswith('/store/checkout') or path.startswith('/checkout'):
+                return 'Checkout'
+            # product detail pages might be /product/<id>/ or /store/product/<id>/
+            if re.search(r'/product/\d+/?$', path) or re.search(r'/store/product/\d+/?$', path):
+                return 'Product Page'
+            if path == '/store/' or path.startswith('/store/'):
+                return 'Products'
+            if path.startswith('/product/'):
+                return 'Product Page'
+            if path.startswith('/services/add') or path.startswith('/services/request'):
+                return 'Request Service'
+            if path.startswith('/services'):
+                return 'Services'
+            if path.startswith('/orders'):
+                return 'Orders'
+            if path.startswith('/account') or path.startswith('/accounts'):
+                return 'Account'
+            # fall back to the last path segment prettified
+            seg = path.rstrip('/').split('/')[-1]
+            return seg.replace('-', ' ').title() if seg else path
+
+        # Replace path values with friendly names while aggregating counts for the same friendly label
+        from collections import OrderedDict, defaultdict
+
+        def aggregate_friendly(qs_iter):
+            acc = defaultdict(int)
+            for item in qs_iter:
+                name = friendly_name(item['path'])
+                acc[name] += item['count']
+            # preserve ordering from qs_iter unique names in order encountered
+            ordered = []
+            seen = set()
+            for item in qs_iter:
+                name = friendly_name(item['path'])
+                if name in seen:
+                    continue
+                seen.add(name)
+                ordered.append((name, acc[name]))
+            return [{'path': n, 'count': c} for n, c in ordered]
+
+        top_pages = aggregate_friendly(top_qs)
+        least_pages = aggregate_friendly(least_qs)
+
+        # Also provide full all-pages lists directly (desc and asc) for the template
+        all_desc = aggregate_friendly(top_qs)
+        all_asc = list(reversed(all_desc))
+
+        # Site visits: count unique sessions. For rows with a session_key use that.
+        # For any PageView rows without session_key, fall back to counting distinct IPs as anonymous visits.
+        session_visits = pv_qs.filter(session_key__isnull=False).values('session_key').distinct().count()
+        anon_visits = pv_qs.filter(session_key__isnull=True).values('ip_address').distinct().exclude(ip_address__isnull=True).count()
+        site_visits = session_visits + anon_visits
+
+        # Exit page: compute last page per session (within store pages) and aggregate
+        last_per_session = pv_qs.filter(session_key=OuterRef('session_key')).order_by('-timestamp').values('path')[:1]
+        sessions = pv_qs.values('session_key').distinct().annotate(last_path=Subquery(last_per_session))
+        # Build a dict of exit page counts, then map to friendly names
         exit_counts = {}
         for s in sessions:
             lp = s.get('last_path')
             if not lp:
                 continue
             exit_counts[lp] = exit_counts.get(lp, 0) + 1
-        # sort exit pages
-        exit_pages = sorted(exit_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        # sort exit pages (all of them) and map to friendly names
+        exit_pages_raw = sorted(exit_counts.items(), key=lambda x: x[1], reverse=True)
+        # Build a detailed list including raw path, friendly label and count for template use
+        exit_pages_detailed = [
+            {'path': path, 'friendly': friendly_name(path), 'count': cnt}
+            for path, cnt in exit_pages_raw
+        ]
+        # Backwards-compatible simple tuple list (friendly, count)
+        exit_pages = [(d['friendly'], d['count']) for d in exit_pages_detailed]
+
+        # Aggregate exit counts by friendly label so we can show a full friendly-ranked list
+        from collections import defaultdict
+        exit_counts_friendly = defaultdict(int)
+        for raw_path, cnt in exit_counts.items():
+            lbl = friendly_name(raw_path)
+            exit_counts_friendly[lbl] += cnt
+
+        # Determine the set of friendly labels to show. Start from pages we report in visits (all_desc)
+        friendly_labels = [item['path'] for item in all_desc]
+        # also include any friendly labels that appear only in exit data
+        for lbl in exit_counts_friendly.keys():
+            if lbl not in friendly_labels:
+                friendly_labels.append(lbl)
+
+        # Build friendly exit lists (include zero counts for labels with no exits)
+        exit_pages_friendly_desc = []
+        for lbl in friendly_labels:
+            exit_pages_friendly_desc.append({'name': lbl, 'count': exit_counts_friendly.get(lbl, 0)})
+        # sort descending by count
+        exit_pages_friendly_desc.sort(key=lambda x: x['count'], reverse=True)
+        exit_pages_friendly_asc = list(reversed(exit_pages_friendly_desc))
     except Exception:
         total_visits = 0
         top_pages = []
@@ -828,9 +929,13 @@ def portal_analytics(request):
         'latest_activities': latest_activities,
         # page view metrics
         'total_visits': total_visits,
+        'site_visits': site_visits,
         'top_pages': top_pages,
         'least_pages': least_pages,
+        'all_pages_desc': all_desc,
+        'all_pages_asc': all_asc,
         'exit_pages': exit_pages,
+        'exit_pages_detailed': exit_pages_detailed,
     }
     return render(request, 'store/analytics.html', context)
 
