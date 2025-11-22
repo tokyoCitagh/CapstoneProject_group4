@@ -802,6 +802,45 @@ def portal_analytics(request):
     return render(request, 'store/analytics.html', context)
 
 
+@csrf_exempt
+def record_page_view(request):
+    """Endpoint to record a page view from the frontend.
+
+    Expects POST JSON or form data with: path, title, duration (optional), referrer.
+    Uses session key (if available) and request.user when authenticated.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'detail': 'Method not allowed.'}, status=405)
+
+    try:
+        # Try to parse JSON body first
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8') or '{}')
+        else:
+            data = request.POST.dict()
+
+        path = data.get('path') or request.META.get('PATH_INFO')
+        title = data.get('title')
+        duration = data.get('duration')
+        referrer = data.get('referrer') or request.META.get('HTTP_REFERER')
+
+        pv = PageView.objects.create(
+            path=path or '/',
+            title=title,
+            user=request.user if request.user.is_authenticated else None,
+            session_key=request.session.session_key or None,
+            referrer=referrer,
+            ip_address=request.META.get('REMOTE_ADDR') or request.META.get('HTTP_X_FORWARDED_FOR'),
+            duration=float(duration) if duration not in (None, '') else None,
+        )
+
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.exception('Error recording page view: %s', e)
+        return JsonResponse({'status': 'error', 'detail': str(e)}, status=500)
+
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def orders_list(request):
@@ -833,6 +872,11 @@ def orders_list(request):
 
     # Calculate statistics for the filtered orders
     from django.db.models import Sum, Count, Q
+    from django.views.decorators.csrf import csrf_exempt
+    from django.http import JsonResponse
+    import json
+
+    from .models import PageView
     
     total_orders = orders.count()
     completed_orders = orders.filter(status='COMPLETED').count()

@@ -199,6 +199,52 @@
     
     <script type="text/javascript" src="{% static 'store/js/cart.js' %}"></script>
 
+    {# Page view tracking: send page view + unload duration to analytics endpoint #}
+    <script type="text/javascript">
+    (function(){
+        // Helper: get cookie value
+        function getCookie(name) {
+            let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return v ? v.pop() : '';
+        }
+
+        var startTime = Date.now();
+        var path = window.location.pathname + window.location.search;
+        var title = document.title;
+        var referrer = document.referrer || '';
+
+        function sendPayload(payload, useBeacon){
+            var url = '{% url "store:record_page_view" %}';
+            try{
+                if (useBeacon && navigator.sendBeacon) {
+                    var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+                    navigator.sendBeacon(url, blob);
+                    return;
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                }).catch(function(e){/* ignore */});
+            }catch(e){/* ignore */}
+        }
+
+        // Send initial pageview (duration unknown yet)
+        sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+
+        // On unload send duration (use sendBeacon when available)
+        window.addEventListener('beforeunload', function(){
+            var duration = (Date.now() - startTime) / 1000.0;
+            sendPayload({path: path, title: title, referrer: referrer, duration: duration}, true);
+        });
+    })();
+    </script>
+
         <script>
             // Mobile nav toggle
             document.addEventListener('DOMContentLoaded', function(){

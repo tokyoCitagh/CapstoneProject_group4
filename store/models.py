@@ -22,6 +22,29 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f"[{self.action_time.strftime('%Y-%m-%d %H:%M')}] {self.user.username if self.user else 'System'} - {self.action_type}"
 
+
+class PageView(models.Model):
+    """Tracks frontend page views for basic analytics.
+
+    Records path, title, user (optional), session_key, referrer, timestamp and optional duration (seconds).
+    """
+    path = models.CharField(max_length=1024)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    session_key = models.CharField(max_length=128, null=True, blank=True)
+    referrer = models.CharField(max_length=1024, null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    duration = models.FloatField(null=True, blank=True, help_text="Time on page in seconds")
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'Page View'
+        verbose_name_plural = 'Page Views'
+
+    def __str__(self):
+        return f"{self.path} @ {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+
 # 1. Customer Model: Extends Django's built-in User
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
