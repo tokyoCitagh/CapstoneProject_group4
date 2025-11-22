@@ -912,10 +912,20 @@ def portal_analytics(request):
         exit_pages_friendly_desc.sort(key=lambda x: x['count'], reverse=True)
         exit_pages_friendly_asc = list(reversed(exit_pages_friendly_desc))
     except Exception:
+        # On any error computing analytics, provide safe defaults so the template can render
         total_visits = 0
         top_pages = []
         least_pages = []
+        # page lists
+        all_desc = []
+        all_asc = []
+        # site visits
+        site_visits = 0
+        # exit page fallbacks
         exit_pages = []
+        exit_pages_detailed = []
+        exit_pages_friendly_desc = []
+        exit_pages_friendly_asc = []
 
     context = {
         'page_title': 'Analytics',
