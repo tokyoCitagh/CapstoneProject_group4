@@ -1,0 +1,78 @@
+{% extends 'base_portal.html' %}
+{% load humanize %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block main_content %}
+<div class="px-4 py-8 sm:px-6 lg:px-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Analytics</h1>
+    <a href="{% url 'portal:inventory_dashboard' %}" class="text-sm text-indigo-600">← Back to Dashboard</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white shadow rounded-lg border p-4">
+      <p class="text-sm text-gray-500">Total Products</p>
+      <p class="text-2xl font-semibold">{{ total_products }}</p>
+    </div>
+    <div class="bg-white shadow rounded-lg border p-4">
+      <p class="text-sm text-gray-500">Low Stock (≤5)</p>
+      <p class="text-2xl font-semibold">{{ low_stock_count }}</p>
+    </div>
+    <div class="bg-white shadow rounded-lg border p-4">
+      <p class="text-sm text-gray-500">Total Orders (Completed)</p>
+      <p class="text-2xl font-semibold">{{ total_orders }}</p>
+    </div>
+    <div class="bg-white shadow rounded-lg border p-4">
+      <p class="text-sm text-gray-500">Pending Orders</p>
+      <p class="text-2xl font-semibold">{{ pending_orders }}</p>
+    </div>
+  </div>
+
+  <div class="bg-white shadow rounded-lg border p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-3">Revenue</h2>
+    <p class="text-sm text-gray-500">Total Revenue (completed orders)</p>
+    <p class="text-2xl font-semibold">GHC {{ total_revenue|floatformat:2|intcomma }}</p>
+    <p class="text-sm text-gray-500 mt-2">Average Order Value: GHC {{ avg_order_value|floatformat:2|intcomma }}</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white shadow rounded-lg border p-4">
+      <h3 class="font-semibold mb-3">Top Selling Products</h3>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-xs text-gray-500">
+            <th>Product</th>
+            <th class="text-right">Sold</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in product_sales %}
+          <tr class="border-t">
+            <td class="py-2">{{ p.name }}</td>
+            <td class="py-2 text-right">{{ p.sold_count }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="2" class="py-2 text-gray-500">No sales yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white shadow rounded-lg border p-4">
+      <h3 class="font-semibold mb-3">Latest Activity</h3>
+      <ul class="text-sm space-y-3">
+        {% for a in latest_activities %}
+        <li class="border-b pb-2">
+          <div class="text-gray-700">{{ a.description }}</div>
+          <div class="text-xs text-gray-500">by {{ a.user.username if a.user }} · {{ a.action_time|naturaltime }}</div>
+        </li>
+        {% empty %}
+        <li class="text-gray-500">No activity yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock main_content %}
