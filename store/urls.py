@@ -34,4 +34,6 @@ urlpatterns = [
     path('terms-conditions/', views.terms_conditions_view, name='terms_conditions'),
     path('shipping-info/', views.shipping_info_view, name='shipping_info'),
     path('about-us/', views.about_us_view, name='about_us'),
+    # Analytics recording endpoint (AJAX)
+    path('analytics/record/', views.record_page_view, name='record_page_view'),
 ]
