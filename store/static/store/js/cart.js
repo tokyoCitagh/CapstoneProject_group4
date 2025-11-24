@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 mobileCount.innerText = Math.max(0, mobileVal - 1);
                             }
                         }
+                        // Also update any visible textual Cart(...) labels immediately
+                        try { updateAllCartDisplays(); } catch(e){}
                     } catch (uiErr) { console.debug('optimistic UI update failed', uiErr); }
 
                     updateUserOrder(productId, action);
@@ -224,5 +226,39 @@ function showCartDebug(cartItems){
         d.style.opacity = '1';
         // hide after 2s
         setTimeout(function(){ d.style.opacity = '0'; }, 2000);
+    }catch(e){/* ignore */}
+}
+
+// Update any remaining textual Cart labels across the page to reflect the new count.
+function updateAllCartDisplays(newCount){
+    try{
+        // If newCount not provided, read from #cart-total if available
+        if (typeof newCount === 'undefined' || newCount === null){
+            var ct = document.getElementById('cart-total');
+            newCount = ct ? (parseInt(ct.innerText.trim(),10) || 0) : null;
+        }
+        if (newCount === null) return;
+
+        // Update known IDs
+        var el = document.getElementById('cart-total'); if (el) el.innerText = newCount;
+        var el2 = document.getElementById('mobile-cart-count'); if (el2) el2.innerText = newCount;
+        var el3 = document.getElementById('mobile-menu-cart-count'); if (el3) el3.innerText = newCount;
+
+        // Update .cart-count and [data-cart-count]
+        document.querySelectorAll('.cart-count').forEach(function(e){ e.innerText = newCount; });
+        document.querySelectorAll('[data-cart-count]').forEach(function(e){ e.innerText = newCount; });
+
+        // Find any element whose visible text looks like "Cart" followed by digits or a parenthesized number
+        document.querySelectorAll('a,span,div').forEach(function(node){
+            try{
+                if (!node || !node.childNodes) return;
+                // Only consider nodes that contain the word 'Cart' (case-sensitive as used in templates)
+                var text = node.textContent || '';
+                if (text.indexOf('Cart') === -1) return;
+                // Replace patterns like 'Cart 12' or 'Cart (12)' or 'Cart ( 12 )'
+                var replaced = text.replace(/Cart\s*\(?\s*\d+\s*\)?/, 'Cart ('+newCount+')');
+                if (replaced !== text) node.textContent = replaced;
+            }catch(e){/* ignore per-node errors */}
+        });
     }catch(e){/* ignore */}
 }
