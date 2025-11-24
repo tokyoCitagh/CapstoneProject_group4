@@ -911,6 +911,27 @@ def portal_analytics(request):
         # sort descending by count
         exit_pages_friendly_desc.sort(key=lambda x: x['count'], reverse=True)
         exit_pages_friendly_asc = list(reversed(exit_pages_friendly_desc))
+        # Build a simple time-series for the last N days for charting
+        try:
+            from django.utils import timezone as dj_timezone
+            days = 30
+            today = dj_timezone.now().date()
+            labels = []
+            visits_values = []
+            sessions_values = []
+            for i in range(days - 1, -1, -1):
+                d = today - dj_timezone.timedelta(days=i)
+                labels.append(d.isoformat())
+                day_qs = pv_qs.filter(timestamp__date=d)
+                visits_values.append(day_qs.count())
+                # unique sessions for the day (session_key or distinct IP fallback)
+                day_session_keys = day_qs.filter(session_key__isnull=False).values_list('session_key', flat=True).distinct().count()
+                day_anon_ips = day_qs.filter(session_key__isnull=True).values_list('ip_address', flat=True).distinct().exclude(ip_address__isnull=True).count()
+                sessions_values.append(day_session_keys + day_anon_ips)
+        except Exception:
+            labels = []
+            visits_values = []
+            sessions_values = []
     except Exception:
         # On any error computing analytics, provide safe defaults so the template can render
         total_visits = 0
@@ -946,6 +967,10 @@ def portal_analytics(request):
         'all_pages_asc': all_asc,
         'exit_pages': exit_pages,
         'exit_pages_detailed': exit_pages_detailed,
+        # time series for charts (labels: ISO dates, values: ints)
+        'visits_timeseries_labels': labels,
+        'visits_timeseries_values': visits_values,
+        'sessions_timeseries_values': sessions_values,
     }
     return render(request, 'store/analytics.html', context)
 

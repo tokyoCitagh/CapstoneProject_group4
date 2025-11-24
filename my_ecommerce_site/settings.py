@@ -137,7 +137,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization (omitted for brevity)
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+# Set local timezone to Ghana (Accra) so order timestamps display in local time
+TIME_ZONE = 'Africa/Accra'
 USE_I18N = True
 USE_TZ = True
 

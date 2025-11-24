@@ -54,6 +54,138 @@
     {# Exit Pages section removed per request #}
   </div>
 
+  <div class="bg-white shadow rounded-lg border p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">Traffic Over Time</h2>
+      <div class="flex items-center space-x-3 text-sm">
+        <label class="inline-flex items-center space-x-2">
+          <input id="toggle-visits" type="checkbox" class="h-4 w-4" checked>
+          <span>Page Visits</span>
+        </label>
+        <label class="inline-flex items-center space-x-2">
+          <input id="toggle-sessions" type="checkbox" class="h-4 w-4" checked>
+          <span>Unique Sessions</span>
+        </label>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-4">Interactive line chart showing the last 30 days. Hover for details, click legend to toggle series.</p>
+
+    <div class="w-full">
+      <canvas id="pvChart" height="140"></canvas>
+    </div>
+
+    {# JSON data passed safely from the view #}
+    {{ visits_timeseries_labels|json_script:"pv_labels" }}
+    {{ visits_timeseries_values|json_script:"pv_values" }}
+    {{ sessions_timeseries_values|json_script:"pv_sessions" }}
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <script>
+      (function(){
+        const dbgElId = 'pv_debug';
+        function dbg(msg){
+          try{
+            const el = document.getElementById(dbgElId);
+            if(el) el.textContent += msg + '\n';
+            console.log(msg);
+          }catch(e){console.log('dbg fail',e)}
+        }
+
+        try {
+          const lblEl = document.getElementById('pv_labels');
+          const valEl = document.getElementById('pv_values');
+          const sesEl = document.getElementById('pv_sessions');
+
+          dbg('pv_labels element present: ' + !!lblEl);
+          dbg('pv_values element present: ' + !!valEl);
+          dbg('pv_sessions element present: ' + !!sesEl);
+
+          const labels = lblEl ? JSON.parse(lblEl.textContent || '[]') : [];
+          const visits = valEl ? JSON.parse(valEl.textContent || '[]') : [];
+          const sessions = sesEl ? JSON.parse(sesEl.textContent || '[]') : [];
+
+          dbg('labels length: ' + labels.length + ', visits length: ' + visits.length + ', sessions length: ' + sessions.length);
+
+          if(!labels.length || (!visits.length && !sessions.length)){
+            dbg('No timeseries data present; skipping chart render.');
+            return;
+          }
+
+          const canvas = document.getElementById('pvChart');
+          if(!canvas){ dbg('pvChart canvas not found'); return; }
+          const ctx = canvas.getContext('2d');
+
+          // create gradients
+          const gradA = ctx.createLinearGradient(0,0,0,200);
+          gradA.addColorStop(0, 'rgba(79,70,229,0.45)');
+          gradA.addColorStop(1, 'rgba(79,70,229,0.05)');
+
+          const gradB = ctx.createLinearGradient(0,0,0,200);
+          gradB.addColorStop(0, 'rgba(6,182,212,0.35)');
+          gradB.addColorStop(1, 'rgba(6,182,212,0.03)');
+
+          const data = {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Page Visits',
+                data: visits,
+                borderColor: '#4f46e5',
+                backgroundColor: gradA,
+                tension: 0.35,
+                pointRadius: 3,
+                fill: true,
+              },
+              {
+                label: 'Unique Sessions',
+                data: sessions,
+                borderColor: '#06b6d4',
+                backgroundColor: gradB,
+                tension: 0.35,
+                pointRadius: 3,
+                fill: true,
+              }
+            ]
+          };
+
+          const config = {
+            type: 'line',
+            data: data,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+              },
+              scales: {
+                x: { display: true, grid: { display: false } },
+                y: { beginAtZero: true, ticks: { precision:0 } }
+              }
+            }
+          };
+
+          const chart = new Chart(ctx, config);
+
+          // toggles
+          const t1 = document.getElementById('toggle-visits');
+          const t2 = document.getElementById('toggle-sessions');
+          if(t1) t1.addEventListener('change', function(e){ chart.setDatasetVisibility(0, e.target.checked); chart.update(); });
+          if(t2) t2.addEventListener('change', function(e){ chart.setDatasetVisibility(1, e.target.checked); chart.update(); });
+
+          dbg('Chart rendered successfully');
+
+        } catch (err) {
+          dbg('Chart render error: ' + String(err));
+          console.error('Chart render error', err);
+        }
+      })();
+    </script>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white shadow rounded-lg border p-4">
       <h3 class="font-semibold mb-3">Top Selling Products</h3>

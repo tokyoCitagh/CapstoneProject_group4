@@ -167,7 +167,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <span class="text-sm inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800">{{ order.get_status_display }}</span>
                 {% if order.expected_delivery %}
-                  <div class="text-xs text-gray-500 mt-1">ETA: {{ order.expected_delivery|date:"M. j, Y, P" }}</div>
+                  <div class="text-xs text-gray-500 mt-1">Expected Delivery: {{ order.expected_delivery|localtime|date:"l F d, Y" }}</div>
                 {% endif %}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.date_ordered|naturaltime }}</td>
