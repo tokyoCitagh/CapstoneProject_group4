@@ -1,26 +1,32 @@
-from .models import Order, Customer # ADDED Customer import
+from .models import Order, Customer
+
 
 def cartData(request):
-    """
-    Retrieves the total number of items in the active cart for the current user.
-    This function is used to populate the navigation bar counter in base.html.
+    """Return a consistent cart data dict with keys: 'items', 'order', 'cartItems'.
+
+    Views expect these keys for both authenticated and anonymous users.
+    For anonymous users we return an empty cart structure (sessions/cookies
+    handling can be added later).
     """
     if request.user.is_authenticated:
-        # Assuming the User model is linked to a Customer model (as per models.py)
         try:
-            # Safely get the customer linked to the current logged-in user
-            customer = request.user.customer 
-        except Customer.DoesNotExist: # Changed exception type to Customer.DoesNotExist
-            # If the user is logged in but has no Customer profile, return 0
-            return {'cartItems': 0}
+            customer = request.user.customer
+        except Customer.DoesNotExist:
+            # If user has no customer profile yet, return empty cart structure
+            return {
+                'items': [],
+                'order': {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False},
+                'cartItems': 0,
+            }
 
-        # Get or create the active, incomplete order (the cart)
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        
-        # Use the property defined on the Order model
+        items = order.orderitem_set.all()
         cartItems = order.get_cart_items
-    else:
-        # Simplified: Guest users start with 0 items (real implementation uses sessions/cookies)
-        cartItems = 0
+        return {'items': items, 'order': order, 'cartItems': cartItems}
 
-    return {'cartItems': cartItems}
+    # Anonymous / guest user: return empty cart placeholders
+    return {
+        'items': [],
+        'order': {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False},
+        'cartItems': 0,
+    }
