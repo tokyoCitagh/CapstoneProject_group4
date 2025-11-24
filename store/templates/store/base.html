@@ -200,6 +200,33 @@
     <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
 
     <script type="text/javascript">
+        // Temporary runtime loader: force clients to fetch the latest cart.js by appending a timestamp.
+        // This is a short-lived mitigation to overcome aggressive client caching on mobile browsers.
+        (function(){
+            try{
+                var scripts = document.querySelectorAll('script[src*="store/js/cart.js"]');
+                if (!scripts || !scripts.length) return;
+                scripts.forEach(function(s){
+                    try{
+                        if (s.dataset.__forced) return;
+                        var base = s.src.split('?')[0];
+                        var forcedSrc = base + '?v=' + Date.now();
+                        var ns = document.createElement('script');
+                        ns.type = 'text/javascript';
+                        ns.src = forcedSrc;
+                        ns.async = false;
+                        ns.dataset.__forced = '1';
+                        s.parentNode.insertBefore(ns, s.nextSibling);
+                        // Remove old script after new one loads to avoid double bindings
+                        ns.addEventListener('load', function(){ try { s.remove(); } catch(e){} });
+                        s.dataset.__forced = '1';
+                    }catch(e){ /* ignore per-script errors */ }
+                });
+            }catch(e){ /* ignore */ }
+        })();
+    </script>
+
+    <script type="text/javascript">
         (function(){
             // Runtime patch: ensure same-origin fetches include cookies by default.
             // This helps when an older static bundle lacking `credentials` is still being served.
