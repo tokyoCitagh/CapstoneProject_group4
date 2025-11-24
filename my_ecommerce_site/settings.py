@@ -161,9 +161,11 @@ elif _static_root_env:
     STATIC_ROOT = Path(_static_root_env)
 else:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
-# Use WhiteNoise storage backend for compressed static files on Railway
-# Using CompressedStaticFilesStorage instead of Manifest version to avoid manifest errors
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Use WhiteNoise storage backend for compressed static files on Railway.
+# For production we prefer the CompressedManifest storage so filenames are
+# content-hashed (cache-safe). This ensures browsers fetch new filenames
+# when file contents change and avoids the need for aggressive cache-busting.
+STATICFILES_STORAGE = config('STATICFILES_STORAGE', default='whitenoise.storage.CompressedManifestStaticFilesStorage')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
