@@ -197,7 +197,7 @@
         console.log('User Status:', user);
     </script>
     
-    <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={{ now "U" }}"></script>
+    <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
 
     {# Page view tracking: send page view + unload duration to analytics endpoint #}
     <!-- Mobile floating cart button (appears on small screens) -->
