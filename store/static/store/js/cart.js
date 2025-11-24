@@ -78,22 +78,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // -----------------------------
     
     updateBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e){ 
-            e.preventDefault(); // Stop default button/link action
-            
-            var productId = this.dataset.product;
-            var action = this.dataset.action; 
-            
-            console.log(`Button Clicked. Product ID: ${productId}, Action: ${action}`);
+        // Use pointer events to support mouse, touch and pen consistently on mobile
+        var lastHandled = 0;
 
-            // Check if user variable is globally defined and not AnonymousUser
-            // Assumes 'user' is correctly set in base.html 
-            if (typeof user !== 'undefined' && user !== 'AnonymousUser'){
-                updateUserOrder(productId, action);
-            } else {
-                // Replaced alert() with console warn message
-                console.warn("Authentication required: Please log in to update the cart.");
+        function handler(e){
+            try {
+                // Prevent duplicate handling (pointerdown + click)
+                var now = Date.now();
+                if (now - lastHandled < 500) {
+                    return;
+                }
+                lastHandled = now;
+
+                e.preventDefault(); // Stop default button/link action
+
+                var productId = btn.dataset.product;
+                var action = btn.dataset.action;
+
+                console.log(`Cart button activated. Product ID: ${productId}, Action: ${action}, event=${e.type}`);
+
+                if (typeof user !== 'undefined' && user !== 'AnonymousUser'){
+                    updateUserOrder(productId, action);
+                } else {
+                    console.warn('Authentication required: Please log in to update the cart.');
+                }
+            } catch (ex) {
+                console.error('Cart handler error', ex);
             }
-        });
+        }
+
+        // Prefer pointerdown for better mobile responsiveness; also listen to click as fallback
+        btn.addEventListener('pointerdown', handler);
+        btn.addEventListener('click', handler);
+        // Mark button for debugging
+        btn.setAttribute('data-listener', '1');
     });
 });
