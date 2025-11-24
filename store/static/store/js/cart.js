@@ -49,6 +49,14 @@ function updateUserOrder(productId, action){
             // sync mobile count too
             var mobileCountEl = document.getElementById('mobile-cart-count');
             if (mobileCountEl) mobileCountEl.innerText = data.cartItems;
+                // sync mobile menu cart count if present
+                var mobileMenuCount = document.getElementById('mobile-menu-cart-count');
+                if (mobileMenuCount) mobileMenuCount.innerText = data.cartItems;
+                // update any generic cart-count elements
+                try {
+                    document.querySelectorAll('.cart-count').forEach(function(el){ el.innerText = data.cartItems; });
+                    document.querySelectorAll('[data-cart-count]').forEach(function(el){ el.innerText = data.cartItems; });
+                } catch(e) { /* ignore */ }
             // show toast with confirmation
             showToast('Cart updated: ' + data.cartItems + ' item' + (data.cartItems === 1 ? '' : 's'));
         } 
