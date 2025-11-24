@@ -17,12 +17,7 @@ function updateUserOrder(productId, action){
         // Send the data as a JSON string
         body: JSON.stringify({'productId': productId, 'action': action}) 
     })
-    .then((response) => {
-        return response.json().then((data) => {
-            // Return both response and data for error handling
-            return { response, data };
-        });
-    })
+    .then((response) => response.json().then((data) => ({ response, data })))
     .then(({ response, data }) => {
         if (!response.ok) {
             // Handle stock insufficiency error
@@ -37,6 +32,8 @@ function updateUserOrder(productId, action){
                 }
                 return; // Stop further processing
             }
+            // show error toast
+            showToast('Could not update cart: ' + (data.message || response.status));
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
@@ -46,9 +43,14 @@ function updateUserOrder(productId, action){
         var cartTotalElement = document.getElementById('cart-total');
         
         if (cartTotalElement && data.cartItems !== undefined) {
-            // Update the cart counter instantly using the count returned by the Django view
+            // Update the cart counter using the authoritative count returned by the server
             cartTotalElement.innerText = data.cartItems;
             console.log('Cart count updated to:', data.cartItems);
+            // sync mobile count too
+            var mobileCountEl = document.getElementById('mobile-cart-count');
+            if (mobileCountEl) mobileCountEl.innerText = data.cartItems;
+            // show toast with confirmation
+            showToast('Cart updated: ' + data.cartItems + ' item' + (data.cartItems === 1 ? '' : 's'));
         } 
         // Also update mobile floating cart button if present
         try {
@@ -82,6 +84,7 @@ function updateUserOrder(productId, action){
         console.error('Fetch Error:', error);
         // Replaced alert() with console error message
         console.error('Could not update cart. Check the console for details or ensure user is logged in.');
+        showToast('Cart update failed. Try again.');
     });
 }
 
@@ -158,3 +161,20 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.setAttribute('data-listener', '1');
     });
 });
+
+// Toast helper (mobile)
+function showToast(msg, timeout) {
+    try {
+        timeout = timeout || 2200;
+        var wrap = document.getElementById('mobile-toast-inner');
+        if (!wrap) return;
+        wrap.textContent = msg;
+        wrap.classList.remove('hidden');
+        wrap.style.opacity = '1';
+        setTimeout(function(){
+            wrap.classList.add('hidden');
+        }, timeout);
+    } catch (e) {
+        console.debug('toast error', e);
+    }
+}
