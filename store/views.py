@@ -16,6 +16,7 @@ import logging
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import PageView
+logger = logging.getLogger(__name__)
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
@@ -347,10 +348,12 @@ def update_item(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
+        logger.info('update_item: invalid json from %s', request.META.get('REMOTE_ADDR'))
         return JsonResponse({'message': 'Invalid JSON body.'}, safe=False, status=400)
     
     productId = data.get('productId')
     action = data.get('action')
+    logger.info('update_item called: user=%s productId=%s action=%s', request.user, productId, action)
     
     if not action:
          return JsonResponse({'message': 'Missing action.'}, safe=False, status=400)
