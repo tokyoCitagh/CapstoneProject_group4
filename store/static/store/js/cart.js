@@ -48,6 +48,23 @@ function updateUserOrder(productId, action){
             cartTotalElement.innerText = data.cartItems;
             console.log('Cart count updated to:', data.cartItems);
         } 
+        // Also update mobile floating cart button if present
+        try {
+            var mobileCount = document.getElementById('mobile-cart-count');
+            var mobileBtnWrap = document.getElementById('mobile-floating-cart');
+            if (mobileCount && data.cartItems !== undefined) {
+                mobileCount.innerText = data.cartItems;
+            }
+            if (mobileBtnWrap) {
+                if ((data.cartItems || 0) > 0) {
+                    mobileBtnWrap.classList.remove('hidden');
+                } else {
+                    mobileBtnWrap.classList.add('hidden');
+                }
+            }
+        } catch (e) {
+            console.debug('mobile cart update skipped', e);
+        }
         
         // --- RELOAD LOGIC FOR CART PAGE ---
         // If the current path is /store/cart/, we must reload the page 
