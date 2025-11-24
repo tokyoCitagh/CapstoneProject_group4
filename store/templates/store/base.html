@@ -199,6 +199,30 @@
     
     <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
 
+    <script type="text/javascript">
+        (function(){
+            // Runtime patch: ensure same-origin fetches include cookies by default.
+            // This helps when an older static bundle lacking `credentials` is still being served.
+            try {
+                var _fetch = window.fetch;
+                if (!_fetch) return;
+                window.fetch = function(resource, init){
+                    try {
+                        var url = (typeof resource === 'string') ? resource : (resource && resource.url);
+                        var isSameOrigin = url && (url.indexOf('http') !== 0 || url.indexOf(window.location.origin) === 0);
+                        if (isSameOrigin) {
+                            init = init || {};
+                            if (!('credentials' in init)) {
+                                init.credentials = 'same-origin';
+                            }
+                        }
+                    } catch (e) { /* ignore */ }
+                    return _fetch.call(this, resource, init);
+                };
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+
     {# Page view tracking: send page view + unload duration to analytics endpoint #}
     <!-- Mobile floating cart button (appears on small screens) -->
     <div id="mobile-floating-cart" class="fixed bottom-6 right-4 z-50 md:hidden hidden">
