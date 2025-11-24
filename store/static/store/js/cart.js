@@ -7,10 +7,12 @@ function updateUserOrder(productId, action){
 
     fetch(url, {
         method: 'POST',
+        // Ensure cookies (session) are sent so Django recognizes the authenticated user
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
             // CRITICAL: Assumes 'csrftoken' is globally defined in base.html
-            'X-CSRFToken': csrftoken, 
+            'X-CSRFToken': csrftoken,
         },
         // Send the data as a JSON string
         body: JSON.stringify({'productId': productId, 'action': action}) 
