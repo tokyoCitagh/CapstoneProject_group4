@@ -77,6 +77,10 @@ function updateUserOrder(productId, action){
         if (window.location.pathname.includes('/store/cart/')) {
             window.location.reload();
         }
+        // show small debug badge (helps mobile debugging)
+        try {
+            showCartDebug(data && data.cartItems !== undefined ? data.cartItems : null);
+        } catch (e) { /* ignore */ }
         // --- END RELOAD LOGIC ---
 
     })
@@ -177,4 +181,40 @@ function showToast(msg, timeout) {
     } catch (e) {
         console.debug('toast error', e);
     }
+}
+
+// --- Debug badge helper (inserted dynamically) ---
+function ensureCartDebug(){
+    try{
+        var dbg = document.getElementById('cart-debug');
+        if (dbg) return dbg;
+        dbg = document.createElement('div');
+        dbg.id = 'cart-debug';
+        dbg.style.position = 'fixed';
+        dbg.style.top = '8px';
+        dbg.style.right = '8px';
+        dbg.style.zIndex = 99999;
+        dbg.style.background = 'rgba(0,0,0,0.7)';
+        dbg.style.color = '#fff';
+        dbg.style.padding = '6px 8px';
+        dbg.style.fontSize = '12px';
+        dbg.style.borderRadius = '6px';
+        dbg.style.pointerEvents = 'none';
+        dbg.style.opacity = '0';
+        dbg.style.transition = 'opacity 220ms ease';
+        document.body.appendChild(dbg);
+        return dbg;
+    }catch(e){ return null; }
+}
+
+function showCartDebug(cartItems){
+    try{
+        var d = ensureCartDebug();
+        if (!d) return;
+        var ts = new Date().toLocaleTimeString();
+        d.textContent = 'Cart updated: ' + (cartItems !== null ? cartItems + ' items' : 'ok') + ' @ ' + ts;
+        d.style.opacity = '1';
+        // hide after 2s
+        setTimeout(function(){ d.style.opacity = '0'; }, 2000);
+    }catch(e){/* ignore */}
 }
