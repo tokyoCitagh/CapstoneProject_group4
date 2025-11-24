@@ -260,5 +260,22 @@ function updateAllCartDisplays(newCount){
                 if (replaced !== text) node.textContent = replaced;
             }catch(e){/* ignore per-node errors */}
         });
+        // Also ensure the desktop nav cart anchor shows the count correctly by rebuilding its inner HTML
+        try{
+            var desktopCartAnchor = null;
+            document.querySelectorAll('a').forEach(function(a){
+                try{
+                    if (a.querySelector && a.querySelector('.fa-shopping-cart')) {
+                        desktopCartAnchor = a;
+                    }
+                }catch(e){}
+            });
+            if (desktopCartAnchor) {
+                // Build a safe inner structure: icon + text + span with id 'cart-total'
+                var icon = desktopCartAnchor.querySelector('.fa-shopping-cart');
+                var iconHtml = icon ? icon.outerHTML : '<i class="fas fa-shopping-cart text-lg"></i>';
+                desktopCartAnchor.innerHTML = iconHtml + ' <span>Cart</span> <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">' + newCount + '</span>';
+            }
+        }catch(e){/* ignore */}
     }catch(e){/* ignore */}
 }
