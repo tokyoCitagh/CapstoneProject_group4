@@ -117,6 +117,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Cart button activated. Product ID: ${productId}, Action: ${action}, event=${e.type}`);
 
                 if (typeof user !== 'undefined' && user !== 'AnonymousUser'){
+                    // Optimistic UI update: update counters immediately for better perceived responsiveness
+                    try {
+                        var cartTotalElement = document.getElementById('cart-total');
+                        var mobileCount = document.getElementById('mobile-cart-count');
+                        if (action === 'add') {
+                            if (cartTotalElement) {
+                                var headerVal = parseInt(cartTotalElement.innerText || '0', 10) || 0;
+                                cartTotalElement.innerText = headerVal + 1;
+                            }
+                            if (mobileCount) {
+                                var mobileVal = parseInt(mobileCount.innerText || '0', 10) || 0;
+                                mobileCount.innerText = mobileVal + 1;
+                            }
+                        } else if (action === 'remove') {
+                            if (cartTotalElement) {
+                                var headerVal = parseInt(cartTotalElement.innerText || '0', 10) || 0;
+                                cartTotalElement.innerText = Math.max(0, headerVal - 1);
+                            }
+                            if (mobileCount) {
+                                var mobileVal = parseInt(mobileCount.innerText || '0', 10) || 0;
+                                mobileCount.innerText = Math.max(0, mobileVal - 1);
+                            }
+                        }
+                    } catch (uiErr) { console.debug('optimistic UI update failed', uiErr); }
+
                     updateUserOrder(productId, action);
                 } else {
                     console.warn('Authentication required: Please log in to update the cart.');
