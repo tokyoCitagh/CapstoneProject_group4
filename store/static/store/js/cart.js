@@ -89,6 +89,8 @@ function updateUserOrder(productId, action){
         try {
             showCartDebug(data && data.cartItems !== undefined ? data.cartItems : null);
         } catch (e) { /* ignore */ }
+        // Refresh the server-rendered header so visible counts always match server state
+        try { refreshHeaderFromServer(); } catch (e) { console.debug('header refresh failed', e); }
         // --- END RELOAD LOGIC ---
 
     })
@@ -227,6 +229,26 @@ function showCartDebug(cartItems){
         // hide after 2s
         setTimeout(function(){ d.style.opacity = '0'; }, 2000);
     }catch(e){/* ignore */}
+}
+
+// Fetch the site's home page and replace the <header> element with the server-rendered header.
+// This ensures the header reflects authoritative server-side cart counts and navigation state.
+function refreshHeaderFromServer(){
+    try{
+        fetch('/', { credentials: 'same-origin' })
+            .then(function(resp){ if (!resp.ok) throw new Error('Failed to fetch header'); return resp.text(); })
+            .then(function(html){
+                try{
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newHeader = doc.querySelector('header');
+                    var curHeader = document.querySelector('header');
+                    if (newHeader && curHeader) {
+                        curHeader.innerHTML = newHeader.innerHTML;
+                    }
+                }catch(e){ console.debug('parse header failed', e); }
+            }).catch(function(e){ console.debug('refreshHeaderFromServer error', e); });
+    }catch(e){ /* ignore */ }
 }
 
 // Update any remaining textual Cart labels across the page to reflect the new count.
