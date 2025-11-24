@@ -29,9 +29,9 @@
                                     </div>
 
                                     <div class="flex items-center space-x-4 mx-4">
-                                        <button data-product="{{ item.product.id }}" data-action="remove" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200">-</button>
+                                        <button data-product="{{ item.product.id }}" data-action="remove" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200" onclick="(function(btn){try{var pid=btn.getAttribute('data-product');var act=btn.getAttribute('data-action');fetch('/store/update_item/',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({productId:pid,action:act})}).then(function(){if(window.innerWidth&&window.innerWidth<=640){setTimeout(function(){location.reload();},250);}else{return;} }).catch(function(){ if(window.innerWidth&&window.innerWidth<=640){location.reload();} });}catch(e){} })(this); return false;">-</button>
                                         <div class="px-3 py-1 bg-gray-50 rounded text-sm font-medium">{{ item.quantity }}</div>
-                                        <button data-product="{{ item.product.id }}" data-action="add" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200">+</button>
+                                        <button data-product="{{ item.product.id }}" data-action="add" class="update-cart inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded hover:bg-gray-200" onclick="(function(btn){try{var pid=btn.getAttribute('data-product');var act=btn.getAttribute('data-action');fetch('/store/update_item/',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({productId:pid,action:act})}).then(function(){if(window.innerWidth&&window.innerWidth<=640){setTimeout(function(){location.reload();},250);}else{return;} }).catch(function(){ if(window.innerWidth&&window.innerWidth<=640){location.reload();} });}catch(e){} })(this); return false;">+</button>
                                     </div>
 
                                     <div class="text-right w-36">

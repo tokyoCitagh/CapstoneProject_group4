@@ -77,6 +77,19 @@ function updateUserOrder(productId, action){
         } catch (e) {
             console.debug('mobile cart update skipped', e);
         }
+        // If server returned header_html, replace header immediately (avoids extra fetch)
+        try {
+            if (data.header_html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data.header_html, 'text/html');
+                var newHeader = doc.querySelector('header');
+                var curHeader = document.querySelector('header');
+                if (newHeader && curHeader) {
+                    curHeader.innerHTML = newHeader.innerHTML;
+                    try { initHeaderBehavior(); } catch (e) { console.debug('initHeaderBehavior after header_html failed', e); }
+                }
+            }
+        } catch (e) { console.debug('apply header_html failed', e); }
         
         // --- RELOAD LOGIC FOR CART PAGE ---
         // If the current path is /store/cart/, we must reload the page 
@@ -91,6 +104,12 @@ function updateUserOrder(productId, action){
         } catch (e) { /* ignore */ }
         // Refresh the server-rendered header so visible counts always match server state
         try { refreshHeaderFromServer(); } catch (e) { console.debug('header refresh failed', e); }
+        // On small screens, force a quick reload so the full page reflects server state
+        try {
+            if (window.innerWidth && window.innerWidth <= 640) {
+                setTimeout(function(){ window.location.reload(); }, 300);
+            }
+        } catch (e) { /* ignore */ }
         // --- END RELOAD LOGIC ---
 
     })
@@ -103,16 +122,16 @@ function updateUserOrder(productId, action){
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    
+// Initialize cart button listeners. Exposed so we can call it even if the script is injected after DOMContentLoaded.
+function initCartListeners(){
     // Select all buttons with the update-cart or add-to-cart class
     var updateBtns = document.querySelectorAll('.update-cart, .add-to-cart'); 
-    
+
     // --- FINAL DIAGNOSTIC LOGS ---
     console.log("--- cart.js listeners attached ---");
     console.log(`Found ${updateBtns.length} total cart buttons.`);
     // -----------------------------
-    
+
     updateBtns.forEach(function(btn) {
         // Use pointer events to support mouse, touch and pen consistently on mobile
         var lastHandled = 0;
@@ -126,12 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 lastHandled = now;
 
-                e.preventDefault(); // Stop default button/link action
+                try { if (e && e.preventDefault) e.preventDefault(); } catch(ignore){}
 
                 var productId = btn.dataset.product;
                 var action = btn.dataset.action;
 
-                console.log(`Cart button activated. Product ID: ${productId}, Action: ${action}, event=${e.type}`);
+                console.log(`Cart button activated. Product ID: ${productId}, Action: ${action}, event=${e && e.type}`);
 
                 if (typeof user !== 'undefined' && user !== 'AnonymousUser'){
                     // Optimistic UI update: update counters immediately for better perceived responsiveness
@@ -170,13 +189,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Prefer pointerdown for better mobile responsiveness; also listen to click as fallback
-        btn.addEventListener('pointerdown', handler);
-        btn.addEventListener('click', handler);
+        // Prefer pointerdown for better mobile responsiveness; also listen to click and touchstart as fallback
+        try { btn.addEventListener('pointerdown', handler); } catch(e){}
+        try { btn.addEventListener('touchstart', handler); } catch(e){}
+        try { btn.addEventListener('click', handler); } catch(e){}
         // Mark button for debugging
         btn.setAttribute('data-listener', '1');
     });
-});
+}
+
+// If the document is already loaded (script injected after DOMContentLoaded), run immediately.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCartListeners);
+} else {
+    // Already ready — initialize now so dynamically injected scripts bind correctly on mobile.
+    try { initCartListeners(); } catch(e){ console.debug('initCartListeners failed', e); }
+}
 
 // Toast helper (mobile)
 function showToast(msg, timeout) {
@@ -235,7 +263,9 @@ function showCartDebug(cartItems){
 // This ensures the header reflects authoritative server-side cart counts and navigation state.
 function refreshHeaderFromServer(){
     try{
-        fetch('/', { credentials: 'same-origin' })
+        // Append a cache-busting query param and set cache:'no-store' to avoid CDN/browser cached responses
+        var url = '/?cart_refresh=' + Date.now();
+        fetch(url, { credentials: 'same-origin', cache: 'no-store' })
             .then(function(resp){ if (!resp.ok) throw new Error('Failed to fetch header'); return resp.text(); })
             .then(function(html){
                 try{
@@ -245,10 +275,53 @@ function refreshHeaderFromServer(){
                     var curHeader = document.querySelector('header');
                     if (newHeader && curHeader) {
                         curHeader.innerHTML = newHeader.innerHTML;
+                        // Reinitialize header behavior (nav toggle, mobile cart click) since listeners were lost
+                        try { initHeaderBehavior(); } catch (e) { console.debug('initHeaderBehavior failed', e); }
                     }
                 }catch(e){ console.debug('parse header failed', e); }
             }).catch(function(e){ console.debug('refreshHeaderFromServer error', e); });
     }catch(e){ /* ignore */ }
+}
+
+// Reattach header-related event handlers after header is replaced dynamically
+function initHeaderBehavior(){
+    try{
+        // Mobile nav toggle
+        var btn = document.getElementById('nav-toggle');
+        var menu = document.getElementById('mobile-menu');
+        if (btn && menu) {
+            // remove existing handlers by cloning
+            var newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', function(){
+                if (menu.classList.contains('hidden')) menu.classList.remove('hidden'); else menu.classList.add('hidden');
+            });
+        }
+
+        // Mobile floating cart button click behavior
+        var mobileBtn = document.getElementById('mobile-cart-btn');
+        if (mobileBtn) {
+            var newMobileBtn = mobileBtn.cloneNode(true);
+            mobileBtn.parentNode.replaceChild(newMobileBtn, mobileBtn);
+            newMobileBtn.addEventListener('click', function(e){
+                if (typeof user !== 'undefined' && user !== 'AnonymousUser') {
+                    window.location.href = '/store/cart/';
+                } else {
+                    window.location.href = '/accounts/login/';
+                }
+            });
+        }
+
+        // Sync header cart count visibility from count element
+        try{
+            var headerCt = document.getElementById('cart-total');
+            var mobileWrap = document.getElementById('mobile-floating-cart');
+            if (headerCt && mobileWrap) {
+                var parsed = parseInt(headerCt.innerText || '0', 10) || 0;
+                if (parsed > 0) mobileWrap.classList.remove('hidden'); else mobileWrap.classList.add('hidden');
+            }
+        }catch(e){}
+    }catch(e){ console.debug('initHeaderBehavior overall failed', e); }
 }
 
 // Update any remaining textual Cart labels across the page to reflect the new count.
@@ -301,3 +374,21 @@ function updateAllCartDisplays(newCount){
         }catch(e){/* ignore */}
     }catch(e){/* ignore */}
 }
+
+// Show a transient visible badge when this script loads on the client.
+try{
+    (function(){
+        var dbg = ensureCartDebug();
+        if (dbg) {
+            var ts = new Date().toLocaleTimeString();
+            dbg.textContent = 'cart.js loaded @ ' + ts;
+            dbg.style.opacity = '1';
+            // Hide after 3s
+            setTimeout(function(){ dbg.style.opacity = '0'; }, 3000);
+        }
+    })();
+}catch(e){ console.debug('load-badge failed', e); }
+
+// Also ensure listeners + header behavior are initialized if this script arrived late
+try{ initCartListeners(); } catch(e){}
+try{ initHeaderBehavior(); } catch(e){}

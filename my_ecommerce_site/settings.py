@@ -53,6 +53,8 @@ MAINTENANCE_MODE = config('MAINTENANCE_MODE', default=False, cast=bool)
 
 MIDDLEWARE = [
     'my_ecommerce_site.maintenance_middleware.MaintenanceMiddleware',
+    # Emergency: force HTML revalidation so mobile clients pick up inline JS changes
+    'my_ecommerce_site.middleware.NoCacheHtmlMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

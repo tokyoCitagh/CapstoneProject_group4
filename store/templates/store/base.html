@@ -33,83 +33,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
-    <header class="bg-gray-800 text-white shadow-md">
-        <nav class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
-
-            {# Logo + mobile toggle #}
-            <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
-                <a href="{% url 'home' %}" class="flex items-center space-x-2 min-w-0">
-                    <img src="{{ SAFE_STATIC_CLOUDINARY_IMJLOGO_URL }}" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
-                    <span class="text-lg font-bold tracking-wide truncate max-w-xs ml-2">Image Electronics</span>
-                </a>
-
-                <button id="nav-toggle" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </div>
-
-            {# Desktop menu (visible md and up) #}
-            <div class="hidden md:flex md:items-center md:space-x-4">
-                <a href="{% url 'home' %}" class="hover:text-gray-300">Home</a>
-                <a href="{% url 'store:store' %}" class="hover:text-gray-300">Products</a>
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'services:add_service_request' %}" class="hover:text-gray-300">Services</a>
-                {% else %}
-                    <a href="{% url 'account_login' %}" class="hover:text-gray-300">Services</a>
-                {% endif %}
-                
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'store:orders' %}" class="hover:text-gray-300">Orders</a>
-                {% endif %}
-
-                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" class="hover:text-gray-300 relative flex items-center space-x-1">
-                    <i class="fas fa-shopping-cart text-lg"></i>
-                    <span>Cart</span>
-                    <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">
-                        {% if user.is_authenticated %}{{ cartItems|default:0 }}{% else %}0{% endif %}
-                    </span>
-                </a>
-
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'account_email' %}" class="text-sm text-gray-400 hover:text-white">Hello, **{{ request.user.username }}**</a>
-                    <form action="{% url 'account_logout' %}" method="post" class="inline flex-shrink-0">
-                        {% csrf_token %}
-                        <button type="submit" class="text-sm border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition duration-200 flex-shrink-0">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'account_login' %}" class="bg-gray-300 text-gray-800 hover:bg-gray-400 px-3 py-1 rounded transition duration-200">Sign in</a>
-                {% endif %}
-            </div>
-        </nav>
-
-        {# Mobile menu (hidden by default) #}
-        <div id="mobile-menu" class="md:hidden hidden bg-gray-800 text-white w-full">
-            <div class="px-4 pt-4 pb-4 space-y-2">
-                <a href="{% url 'home' %}" class="block py-2 hover:text-gray-300">Home</a>
-                <a href="{% url 'store:store' %}" class="block py-2 hover:text-gray-300">Products</a>
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'services:add_service_request' %}" class="block py-2 hover:text-gray-300">Services</a>
-                {% else %}
-                    <a href="{% url 'account_login' %}" class="block py-2 hover:text-gray-300">Services</a>
-                {% endif %}
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'store:orders' %}" class="block py-2 hover:text-gray-300">Orders</a>
-                {% endif %}
-                <a href="{% if request.user.is_authenticated %}{% url 'store:cart' %}{% else %}{% url 'account_login' %}{% endif %}" class="block py-2 hover:text-gray-300">Cart (<span id="mobile-menu-cart-count">{{ cartItems|default:0 }}</span>)</a>
-                {% if request.user.is_authenticated %}
-                    <div class="pt-2 border-t border-gray-700">
-                        <a href="{% url 'account_email' %}" class="block py-2 text-sm text-gray-300">Hello, {{ request.user.username }}</a>
-                        <form action="{% url 'account_logout' %}" method="post" class="py-2">
-                            {% csrf_token %}
-                            <button type="submit" class="w-full text-left text-sm text-red-400">Logout</button>
-                        </form>
-                    </div>
-                {% else %}
-                    <a href="{% url 'account_login' %}" class="block py-2 bg-gray-300 text-gray-800 rounded px-2">Sign in</a>
-                {% endif %}
-            </div>
-        </div>
-    </header>
+    {% include 'store/_header_fragment.html' %}
 
     <main class="container mx-auto px-4 py-8 flex-grow">
         {# Display Django messages (e.g., success messages from allauth) #}
@@ -197,6 +121,104 @@
         console.log('User Status:', user);
     </script>
     
+    <!-- Emergency inline cart handlers: quick fallback for mobile clients that may be running cached external JS -->
+    <script type="text/javascript">
+        (function(){
+            if (window.__inline_cart_installed) return; window.__inline_cart_installed = true;
+
+            function showInlineToast(msg, timeout){
+                timeout = timeout || 2200;
+                try{
+                    var wrap = document.getElementById('mobile-toast-inner');
+                    if (!wrap) return;
+                    wrap.textContent = msg;
+                    wrap.classList.remove('hidden');
+                    wrap.style.opacity = '1';
+                    setTimeout(function(){ wrap.classList.add('hidden'); }, timeout);
+                }catch(e){/* ignore */}
+            }
+
+            function applyHeaderHtml(html){
+                try{
+                    if (!html) return;
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newHeader = doc.querySelector('header');
+                    var curHeader = document.querySelector('header');
+                    if (newHeader && curHeader) {
+                        curHeader.innerHTML = newHeader.innerHTML;
+                    }
+                }catch(e){/* ignore */}
+            }
+
+            function safeParseJSON(text){ try { return JSON.parse(text); } catch(e){ return null; } }
+
+            function inlineUpdate(productId, action){
+                try{
+                    var url = '/store/update_item/';
+                    var body = JSON.stringify({productId: productId, action: action});
+                    fetch(url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {'Content-Type':'application/json','X-CSRFToken': csrftoken},
+                        body: body
+                    }).then(function(resp){
+                        return resp.text().then(function(text){ return {ok: resp.ok, status: resp.status, text: text}; });
+                    }).then(function(r){
+                        var data = safeParseJSON(r.text) || {};
+                        if (!r.ok) {
+                            if (data.error === 'insufficient_stock') {
+                                showInlineToast(data.message || 'Insufficient stock');
+                            } else {
+                                showInlineToast('Cart update failed: ' + (data.message || r.status));
+                            }
+                            return;
+                        }
+                        // update counts from response
+                        try{
+                            var count = data.cartItems !== undefined ? data.cartItems : null;
+                            if (count !== null) {
+                                var el = document.getElementById('cart-total'); if (el) el.innerText = count;
+                                var el2 = document.getElementById('mobile-cart-count'); if (el2) el2.innerText = count;
+                                var el3 = document.getElementById('mobile-menu-cart-count'); if (el3) el3.innerText = count;
+                            }
+                        }catch(e){}
+                        // apply header_html if present
+                        if (data.header_html) applyHeaderHtml(data.header_html);
+                        showInlineToast('Cart updated');
+                        // On small screens, reload the page so the full page reflects server state
+                        try { if (window.innerWidth && window.innerWidth <= 640) { setTimeout(function(){ window.location.reload(); }, 300); } } catch(e){}
+                    }).catch(function(e){ showInlineToast('Cart update failed'); });
+                }catch(e){ /* ignore */ }
+            }
+
+            function attachInline(){
+                try{
+                    var buttons = document.querySelectorAll('.add-to-cart, .update-cart');
+                    for (var i=0;i<buttons.length;i++){
+                        var b = buttons[i];
+                        if (b.dataset && b.dataset.inlineListener) continue;
+                        (function(btn){
+                            var handler = function(ev){
+                                try{ ev.preventDefault(); }catch(e){}
+                                var pid = btn.dataset.product || btn.getAttribute('data-product');
+                                var act = btn.dataset.action || btn.getAttribute('data-action');
+                                if (!act) return;
+                                btn.dataset.inlineListener = '1';
+                                inlineUpdate(pid, act);
+                            };
+                            try{ btn.addEventListener('pointerdown', handler); }catch(e){}
+                            try{ btn.addEventListener('touchstart', handler); }catch(e){}
+                            try{ btn.addEventListener('click', handler); }catch(e){}
+                        })(b);
+                    }
+                }catch(e){ /* ignore */ }
+            }
+
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachInline); else attachInline();
+        })();
+    </script>
+
     <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
 
     <script type="text/javascript">

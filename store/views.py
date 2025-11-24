@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import PageView
 logger = logging.getLogger(__name__)
+from django.template.loader import render_to_string
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
@@ -407,9 +408,88 @@ def update_item(request):
         updated_data = cartData(request) 
         new_cart_items = updated_data['cartItems']
         
-        return JsonResponse({'message': 'Item was updated', 'cartItems': new_cart_items}, safe=False)
+        # Render header fragment so client can immediately replace header HTML without a separate GET
+        try:
+            header_html = render_to_string('store/_header_fragment.html', {'cartItems': new_cart_items, 'request': request})
+        except Exception:
+            header_html = ''
+
+        # Log a concise summary of the response for debugging mobile behavior
+        try:
+            logger.info('update_item response: user=%s cartItems=%s header_html_len=%d', request.user, new_cart_items, len(header_html or ''))
+        except Exception:
+            pass
+
+        return JsonResponse({'message': 'Item was updated', 'cartItems': new_cart_items, 'header_html': header_html}, safe=False)
     
-    return JsonResponse({'message': 'User is not authenticated (requires cookie handling logic).'}, safe=False, status=403)
+    # Anonymous / guest cart handling using session storage
+    try:
+        # data was parsed earlier; reuse variables where possible
+        # ensure productId and action are available
+        productId = data.get('productId')
+        action = data.get('action')
+    except Exception:
+        return JsonResponse({'message': 'Invalid request.'}, safe=False, status=400)
+
+    # Use session to store a simple cart mapping: {productId: quantity}
+    cart = request.session.get('cart', {}) or {}
+
+    # Clear cart
+    if action == 'clear':
+        cart = {}
+        request.session['cart'] = cart
+        request.session.modified = True
+        cart_items = 0
+        try:
+            header_html = render_to_string('store/_header_fragment.html', {'cartItems': cart_items, 'request': request})
+        except Exception:
+            header_html = ''
+        return JsonResponse({'message': 'Cart successfully cleared.', 'cartItems': cart_items, 'header_html': header_html}, safe=False)
+
+    if not productId:
+        return JsonResponse({'message': 'Missing productId for add/remove/delete action.'}, safe=False, status=400)
+
+    try:
+        product = Product.objects.get(id=productId)
+    except Product.DoesNotExist:
+        return JsonResponse({'message': 'Product not found.'}, safe=False, status=404)
+
+    pid = str(productId)
+    qty = int(cart.get(pid, 0))
+
+    if action == 'add':
+        if qty + 1 > product.stock_quantity:
+            return JsonResponse({
+                'message': f'Cannot add more. Only {product.stock_quantity} units available in stock.',
+                'cartItems': sum(int(v) for v in cart.values()),
+                'error': 'insufficient_stock'
+            }, safe=False, status=400)
+        cart[pid] = qty + 1
+    elif action == 'remove':
+        newq = max(0, qty - 1)
+        if newq > 0:
+            cart[pid] = newq
+        else:
+            if pid in cart: del cart[pid]
+    elif action == 'delete':
+        if pid in cart: del cart[pid]
+
+    # Persist to session
+    request.session['cart'] = cart
+    request.session.modified = True
+
+    cart_items = sum(int(v) for v in cart.values())
+    try:
+        header_html = render_to_string('store/_header_fragment.html', {'cartItems': cart_items, 'request': request})
+    except Exception:
+        header_html = ''
+
+    try:
+        logger.info('update_item response (anon): cartItems=%s header_html_len=%d', cart_items, len(header_html or ''))
+    except Exception:
+        pass
+
+    return JsonResponse({'message': 'Item was updated', 'cartItems': cart_items, 'header_html': header_html}, safe=False)
 
 
 def process_order(request):
