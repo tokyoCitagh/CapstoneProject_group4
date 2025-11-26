@@ -354,7 +354,19 @@ def update_item(request):
     
     productId = data.get('productId')
     action = data.get('action')
-    logger.info('update_item called: user=%s productId=%s action=%s', request.user, productId, action)
+    # Basic invocation log
+    logger.info('update_item called: remote=%s user=%s productId=%s action=%s', request.META.get('REMOTE_ADDR'), request.user, productId, action)
+
+    # Diagnostic: log whether CSRF header present and session cookie exists (avoid logging raw values)
+    try:
+        csrf_hdr = request.META.get('HTTP_X_CSRFTOKEN')
+        session_cookie = request.COOKIES.get(getattr(__import__('django.conf').conf, 'SESSION_COOKIE_NAME', 'sessionid'))
+    except Exception:
+        csrf_hdr = None
+        session_cookie = None
+
+    ua = request.META.get('HTTP_USER_AGENT', '')[:200]
+    logger.info('update_item diag: ua="%s" csrf_present=%s session_cookie_present=%s', ua, bool(csrf_hdr), bool(session_cookie))
     
     if not action:
          return JsonResponse({'message': 'Missing action.'}, safe=False, status=400)

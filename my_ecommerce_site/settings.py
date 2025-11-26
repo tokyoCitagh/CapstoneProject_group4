@@ -365,13 +365,13 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
 # =============================================================
 
-# --- EMAIL BACKEND CONFIGURATION (READING FROM .ENV) ---
-# Allow overriding the email backend from environment so we can switch to a
-# non-blocking backend (console/dummy) in production for diagnostics.
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 
-# Brevo API key for API-based email sending (alternative to SMTP)
+# --- EMAIL BACKEND CONFIGURATION (READING FROM .ENV) ---
+# Prefer the Brevo API backend when a BREVO_API_KEY is provided. This avoids
+# blocked SMTP connections on platforms that disallow outbound SMTP.
 BREVO_API_KEY = config('BREVO_API_KEY', default=None)
+default_email_backend = 'store.brevo_backend.BrevoAPIBackend' if BREVO_API_KEY else 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default=default_email_backend)
 
 # Load email settings securely (used for SMTP backend)
 EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')

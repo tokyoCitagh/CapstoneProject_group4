@@ -80,7 +80,14 @@ class BrevoAPIBackend(BaseEmailBackend):
                 
                 # Send email via Brevo API
                 api_response = api_instance.send_transac_email(send_smtp_email)
-                logger.info(f"Email sent successfully via Brevo API to {message.to}. Message ID: {api_response.message_id}")
+                try:
+                    # Log useful response details for debugging delivery issues
+                    message_id = getattr(api_response, 'message_id', None)
+                    logger.info(f"Email sent successfully via Brevo API to {message.to}. Message ID: {message_id}")
+                    # Some SDK responses include additional attrs; log limited repr
+                    logger.debug(f"Brevo response for subject '{message.subject}': {repr(api_response)[:1000]}")
+                except Exception:
+                    logger.info(f"Email sent via Brevo API to {message.to} (response unavailable)")
                 num_sent += 1
                 
             except ApiException as e:

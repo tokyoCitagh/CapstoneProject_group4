@@ -32,7 +32,12 @@ class CeleryAccountAdapter(DefaultAccountAdapter):
         # Send emails synchronously from web service instead of using Celery
         # TODO: Switch to API-based email service (Brevo API, SendGrid, etc.) for production
         logger.info(f"Sending mail synchronously for {email} (template: {template_prefix})")
-        super().send_mail(template_prefix, email, context)
+        try:
+            result = super().send_mail(template_prefix, email, context)
+            logger.info(f"send_mail returned: {result} for {email}")
+        except Exception as e:
+            logger.error(f"Error sending mail to {email}: {e}", exc_info=True)
+            raise
     
     def _make_context_serializable(self, context):
         """Convert context dict to JSON-safe format by extracting primitive values
