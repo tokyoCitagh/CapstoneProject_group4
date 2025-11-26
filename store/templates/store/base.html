@@ -323,8 +323,26 @@
             }catch(e){/* ignore */}
         }
 
-        // Send initial pageview (duration unknown yet)
-        sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+        // Ensure anonymous visitors have a session cookie before sending the first pageview.
+        // We attempt a lightweight GET to the ensure_session endpoint and wait briefly
+        // (300ms) for it to complete; if it doesn't, proceed with the pageview so
+        // we don't block rendering for long.
+        (function(){
+            var ensureUrl = '/store/session/ensure/';
+            try {
+                var ensurePromise = fetch(ensureUrl, { method: 'GET', credentials: 'same-origin' }).catch(function(){});
+                var timeout = new Promise(function(resolve){ setTimeout(resolve, 300); });
+                Promise.race([ensurePromise, timeout]).then(function(){
+                    sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+                }).catch(function(){
+                    // on unexpected errors, still send the pageview
+                    sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+                });
+            } catch (e) {
+                // If anything goes wrong, fall back to sending the pageview immediately
+                sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+            }
+        })();
 
         // On unload send duration (use sendBeacon when available)
         window.addEventListener('beforeunload', function(){
