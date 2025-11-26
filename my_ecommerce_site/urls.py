@@ -82,6 +82,8 @@ urlpatterns = [
      # Backwards-compatible explicit routes for the trends page (ensure routing works on deployed env)
      path('portal/dashboard/analytics/trends/', store_views.portal_analytics_trends, name='portal_analytics_trends_direct'),
      path('portal/dashboard/analytics/trends-data/', store_views.portal_analytics_trends_data, name='portal_analytics_trends_data_direct'),
+     # Temporary healthcheck for routing
+     path('__health/trends-test/', store_views.trends_health, name='trends_health'),
 ]
 
 if settings.DEBUG:

@@ -1154,6 +1154,11 @@ def portal_analytics_trends_data(request):
     return JsonResponse({'labels': labels, 'values': values, 'period': period})
 
 
+def trends_health(request):
+    """Temporary unprotected health endpoint to verify routing in production."""
+    return HttpResponse('ok')
+
+
 @csrf_exempt
 def record_page_view(request):
     """Endpoint to record a page view from the frontend.
