@@ -152,17 +152,6 @@
 })();
 </script>
 
-// Ensure anonymous visitors have a session cookie so "unique sessions" can be tracked.
-// This calls the lightweight endpoint that will create a session server-side and set the cookie.
-;(function ensureAnonSession(){
-  try {
-    // call but don't block rendering; still await before loading data if needed elsewhere
-    fetch('/store/session/ensure/', { method: 'GET', credentials: 'same-origin' }).catch(()=>{});
-  } catch (e) {
-    console.warn('ensure session failed', e);
-  }
-})();
-
 
 
 {% endblock %}
