@@ -1260,6 +1260,23 @@ def record_page_view(request):
         duration = data.get('duration')
         referrer = data.get('referrer') or request.META.get('HTTP_REFERER')
 
+        # Ensure a session exists so we can capture a session_key on the first pageview.
+        # This avoids race conditions where a client-created session hasn't been
+        # attached to the initial POST yet. Creating it server-side guarantees the
+        # PageView will be associated with a session_key immediately.
+        try:
+            if not request.session.session_key:
+                request.session['anon_session'] = True
+                # Respect configured expiry if present
+                from django.conf import settings
+                if hasattr(settings, 'SESSION_COOKIE_AGE'):
+                    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session.save()
+        except Exception:
+            # If session creation fails for any reason, continue and record the
+            # PageView without a session_key rather than blocking analytics.
+            pass
+
         pv = PageView.objects.create(
             path=path or '/',
             title=title,
