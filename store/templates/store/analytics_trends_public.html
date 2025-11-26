@@ -52,23 +52,38 @@
   }
 
   function createChart(ctx, labels, values) {
-    const grad = ctx.createLinearGradient(0, 0, 0, 300);
-    grad.addColorStop(0, 'rgba(79,70,229,0.45)');
-    grad.addColorStop(1, 'rgba(79,70,229,0.03)');
+    const gradA = ctx.createLinearGradient(0, 0, 0, 300);
+    gradA.addColorStop(0, 'rgba(79,70,229,0.45)');
+    gradA.addColorStop(1, 'rgba(79,70,229,0.03)');
+
+    const gradB = ctx.createLinearGradient(0, 0, 0, 300);
+    gradB.addColorStop(0, 'rgba(6,182,212,0.35)');
+    gradB.addColorStop(1, 'rgba(6,182,212,0.03)');
 
     return new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
-        datasets: [{
-          label: 'Page Visits',
-          data: values,
-          borderColor: '#4f46e5',
-          backgroundColor: grad,
-          tension: 0.25,
-          pointRadius: 2,
-          fill: true,
-        }]
+        datasets: [
+          {
+            label: 'Page Visits',
+            data: values,
+            borderColor: '#4f46e5',
+            backgroundColor: gradA,
+            tension: 0.25,
+            pointRadius: 2,
+            fill: true,
+          },
+          {
+            label: 'Unique Sessions',
+            data: (arguments.length > 2 && Array.isArray(arguments[2])) ? arguments[2] : [],
+            borderColor: '#06b6d4',
+            backgroundColor: gradB,
+            tension: 0.25,
+            pointRadius: 2,
+            fill: true,
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -114,7 +129,7 @@
       const data = await fetchData(period, range);
       if (!ctx) return;
       if (chart) chart.destroy();
-      chart = createChart(ctx, data.labels, data.values);
+      chart = createChart(ctx, data.labels, data.values, data.sessions || []);
     } catch (err) {
       console.error('Trends load error', err);
     }
@@ -126,4 +141,14 @@
 })();
 </script>
 
+  // Ensure anonymous visitors have a session cookie so "unique sessions" can be tracked.
+  (function ensureAnonSession(){
+    try {
+      fetch('/store/session/ensure/', { method: 'GET', credentials: 'same-origin' }).catch(()=>{});
+    } catch (e) {
+      console.warn('ensure session failed', e);
+    }
+  })();
+
   {% endblock main_content %}
+

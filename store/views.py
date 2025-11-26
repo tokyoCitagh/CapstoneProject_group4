@@ -1115,15 +1115,17 @@ def portal_analytics_trends_data(request):
         months = int(request.GET.get('months', '24'))
         # compute start as first day of the (months-1) months ago
         start_month = (now.replace(day=1) - dj_timezone.timedelta(days=months * 31)).date()
-        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = []
         values = []
+        sessions_values = []
         cursor = start_month
         # iterate month by month
         while cursor <= now.date():
             labels.append(cursor.strftime('%Y-%m'))
             match = next((x for x in qs if x['period'].date().year == cursor.year and x['period'].date().month == cursor.month), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
             # advance one month
             if cursor.month == 12:
                 cursor = cursor.replace(year=cursor.year + 1, month=1)
@@ -1132,26 +1134,30 @@ def portal_analytics_trends_data(request):
     elif period == 'yearly':
         years = int(request.GET.get('years', '5'))
         start_year = now.year - years + 1
-        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = [str(y) for y in range(start_year, now.year + 1)]
         values = []
+        sessions_values = []
         for y in range(start_year, now.year + 1):
             match = next((x for x in qs if x['period'].date().year == y), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
     else:
         # daily
         days = max(7, min(days, 365))
         start = (now - dj_timezone.timedelta(days=days - 1)).date()
-        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = []
         values = []
+        sessions_values = []
         for i in range(days):
             d = start + dj_timezone.timedelta(days=i)
             labels.append(d.isoformat())
             match = next((x for x in qs if x['period'].date() == d), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
 
-    return JsonResponse({'labels': labels, 'values': values, 'period': period})
+    return JsonResponse({'labels': labels, 'values': values, 'sessions': sessions_values, 'period': period})
 
 
 def analytics_trends_public(request):
@@ -1185,14 +1191,16 @@ def analytics_trends_public_data(request):
     if period == 'monthly':
         months = int(request.GET.get('months', '24'))
         start_month = (now.replace(day=1) - dj_timezone.timedelta(days=months * 31)).date()
-        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = []
         values = []
+        sessions_values = []
         cursor = start_month
         while cursor <= now.date():
             labels.append(cursor.strftime('%Y-%m'))
             match = next((x for x in qs if x['period'].date().year == cursor.year and x['period'].date().month == cursor.month), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
             if cursor.month == 12:
                 cursor = cursor.replace(year=cursor.year + 1, month=1)
             else:
@@ -1200,25 +1208,29 @@ def analytics_trends_public_data(request):
     elif period == 'yearly':
         years = int(request.GET.get('years', '5'))
         start_year = now.year - years + 1
-        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = [str(y) for y in range(start_year, now.year + 1)]
         values = []
+        sessions_values = []
         for y in range(start_year, now.year + 1):
             match = next((x for x in qs if x['period'].date().year == y), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
     else:
         days = max(7, min(days, 365))
         start = (now - dj_timezone.timedelta(days=days - 1)).date()
-        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id'), sessions=Count('session_key', distinct=True)).order_by('period'))
         labels = []
         values = []
+        sessions_values = []
         for i in range(days):
             d = start + dj_timezone.timedelta(days=i)
             labels.append(d.isoformat())
             match = next((x for x in qs if x['period'].date() == d), None)
             values.append(match['count'] if match else 0)
+            sessions_values.append(match['sessions'] if match and 'sessions' in match else 0)
 
-    return JsonResponse({'labels': labels, 'values': values, 'period': period})
+    return JsonResponse({'labels': labels, 'values': values, 'sessions': sessions_values, 'period': period})
 
 
 def trends_health(request):
