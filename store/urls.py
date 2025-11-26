@@ -38,4 +38,6 @@ urlpatterns = [
     path('analytics/record/', views.record_page_view, name='record_page_view'),
     # Ensure session endpoint (call from client to force session creation)
     path('session/ensure/', views.ensure_session, name='ensure_session'),
+    # Temporary debug endpoint to inspect live site visit counts
+    path('analytics/debug/site_visits/', views.debug_site_visits, name='debug_site_visits'),
 ]

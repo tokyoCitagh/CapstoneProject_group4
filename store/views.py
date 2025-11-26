@@ -1238,6 +1238,25 @@ def trends_health(request):
     return HttpResponse('ok')
 
 
+def debug_site_visits(request):
+    """TEMPORARY: Return current site visit counts for debugging.
+
+    Returns JSON with total pageviews, distinct session-based visits, anon IP visits,
+    and a combined `site_visits` value.
+    Remove this endpoint after debugging.
+    """
+    try:
+        pv_qs = PageView.objects.exclude(path__startswith='/portal').exclude(path__startswith='/admin')
+        session_visits = pv_qs.filter(session_key__isnull=False).values('session_key').distinct().count()
+        anon_visits = pv_qs.filter(session_key__isnull=True).values('ip_address').distinct().exclude(ip_address__isnull=True).count()
+        total = pv_qs.count()
+        return JsonResponse({'total_pageviews': total, 'session_visits': session_visits, 'anon_visits': anon_visits, 'site_visits': session_visits + anon_visits})
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.exception('debug_site_visits failed')
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 @csrf_exempt
 def record_page_view(request):
     """Endpoint to record a page view from the frontend.
