@@ -1154,6 +1154,73 @@ def portal_analytics_trends_data(request):
     return JsonResponse({'labels': labels, 'values': values, 'period': period})
 
 
+def analytics_trends_public(request):
+    """Public trends page (no auth) used for quick access and verification.
+
+    This page displays the same trend chart but is accessible without staff login.
+    """
+    return render(request, 'store/analytics_trends_public.html', {'page_title': 'Traffic Trends (Public)'})
+
+
+@require_GET
+def analytics_trends_public_data(request):
+    """Public JSON endpoint for trends data (no auth). Aggregates PageView counts.
+
+    Query params: same as `portal_analytics_trends_data`.
+    """
+    # Reuse the same aggregation logic but do not require authentication.
+    period = request.GET.get('period', 'daily')
+    try:
+        days = int(request.GET.get('days', '90'))
+    except Exception:
+        days = 90
+
+    pv_qs = PageView.objects.exclude(path__startswith='/portal').exclude(path__startswith='/admin')
+    pv_qs = pv_qs.exclude(path__startswith='/accounts').exclude(path__startswith='/static')
+    pv_qs = pv_qs.exclude(path__startswith='/media').exclude(path__startswith='/test-')
+    pv_qs = pv_qs.exclude(path__startswith='/favicon.ico')
+
+    now = dj_timezone.now()
+
+    if period == 'monthly':
+        months = int(request.GET.get('months', '24'))
+        start_month = (now.replace(day=1) - dj_timezone.timedelta(days=months * 31)).date()
+        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = []
+        values = []
+        cursor = start_month
+        while cursor <= now.date():
+            labels.append(cursor.strftime('%Y-%m'))
+            match = next((x for x in qs if x['period'].date().year == cursor.year and x['period'].date().month == cursor.month), None)
+            values.append(match['count'] if match else 0)
+            if cursor.month == 12:
+                cursor = cursor.replace(year=cursor.year + 1, month=1)
+            else:
+                cursor = cursor.replace(month=cursor.month + 1)
+    elif period == 'yearly':
+        years = int(request.GET.get('years', '5'))
+        start_year = now.year - years + 1
+        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = [str(y) for y in range(start_year, now.year + 1)]
+        values = []
+        for y in range(start_year, now.year + 1):
+            match = next((x for x in qs if x['period'].date().year == y), None)
+            values.append(match['count'] if match else 0)
+    else:
+        days = max(7, min(days, 365))
+        start = (now - dj_timezone.timedelta(days=days - 1)).date()
+        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = []
+        values = []
+        for i in range(days):
+            d = start + dj_timezone.timedelta(days=i)
+            labels.append(d.isoformat())
+            match = next((x for x in qs if x['period'].date() == d), None)
+            values.append(match['count'] if match else 0)
+
+    return JsonResponse({'labels': labels, 'values': values, 'period': period})
+
+
 def trends_health(request):
     """Temporary unprotected health endpoint to verify routing in production."""
     return HttpResponse('ok')

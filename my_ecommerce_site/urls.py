@@ -79,6 +79,9 @@ urlpatterns = [
     
     # STAFF PORTAL PATHS (Namespaced)
     path('portal/', include((portal_urlpatterns, 'portal'), namespace='portal')),
+     # Public trends quick-view (no auth)
+     path('analytics/trends-public/', store_views.analytics_trends_public, name='analytics_trends_public'),
+     path('analytics/trends-public-data/', store_views.analytics_trends_public_data, name='analytics_trends_public_data'),
      # Backwards-compatible explicit routes for the trends page (ensure routing works on deployed env)
      path('portal/dashboard/analytics/trends/', store_views.portal_analytics_trends, name='portal_analytics_trends_direct'),
      path('portal/dashboard/analytics/trends-data/', store_views.portal_analytics_trends_data, name='portal_analytics_trends_data_direct'),
