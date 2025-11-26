@@ -7,7 +7,10 @@
 <div class="px-4 py-8 sm:px-6 lg:px-8">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Analytics</h1>
-    <a href="{% url 'portal:inventory_dashboard' %}" class="text-sm text-indigo-600">← Back to Dashboard</a>
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'portal:inventory_dashboard' %}" class="text-sm text-indigo-600">← Back to Dashboard</a>
+      <a href="{% url 'portal:analytics_trends' %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">View Traffic Trends</a>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
