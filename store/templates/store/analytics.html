@@ -70,7 +70,8 @@
           <input id="toggle-sessions" type="checkbox" class="h-4 w-4" checked>
           <span>Unique Sessions</span>
         </label>
-        {# Removed 'View Trends' action to avoid duplicate links to the trends page #}
+        <!-- Single entry point to the full trends page -->
+        <a href="{% url 'portal:analytics_trends' %}" class="ml-3 inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">View Traffic Trends</a>
       </div>
     </div>
 
