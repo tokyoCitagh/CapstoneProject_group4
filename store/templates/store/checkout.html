@@ -44,17 +44,11 @@
                     </section>
 
                     <section class="bg-white rounded-lg shadow p-5">
-                        <h2 class="text-lg font-semibold mb-3">2. Payment Method</h2>
+                        <h2 class="text-lg font-semibold mb-3">2. Payment</h2>
                         <div class="space-y-3">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="paymentMethod" value="online" checked class="form-radio text-indigo-600">
-                                <span class="ml-2">Pay Online (Card / Mobile Money)</span>
-                            </label>
-                            <label class="inline-flex items-center text-gray-400">
-                                <input type="radio" name="paymentMethod" value="bank" disabled class="form-radio text-indigo-600">
-                                <span class="ml-2">Bank Transfer (Unavailable)</span>
-                            </label>
-
+                            <!-- Bank transfer and alternative payment options are handled inside the Paystack
+                                 checkout modal. Showing separate radio buttons here caused confusion on the
+                                 checkout page, so we present a single payment button that opens Paystack. -->
                             <div>
                                 <button id="make-payment" disabled class="w-full py-2 px-4 rounded bg-gray-300 text-gray-700">Fill required fields to enable payment</button>
                             </div>
