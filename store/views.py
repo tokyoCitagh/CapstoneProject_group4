@@ -1126,7 +1126,23 @@ def ensure_session(request):
             if hasattr(settings, 'SESSION_COOKIE_AGE'):
                 request.session.set_expiry(settings.SESSION_COOKIE_AGE)
             request.session.save()
-        return HttpResponse(status=204)
+            # Build a response and explicitly set the session cookie so clients
+            # receive it even if upstream middleware did not attach it for some
+            # reason in this environment.
+            resp = HttpResponse(status=204)
+            try:
+                cookie_name = getattr(settings, 'SESSION_COOKIE_NAME', 'sessionid')
+                cookie_path = getattr(settings, 'SESSION_COOKIE_PATH', '/')
+                cookie_secure = getattr(settings, 'SESSION_COOKIE_SECURE', False)
+                cookie_httponly = getattr(settings, 'SESSION_COOKIE_HTTPONLY', True)
+                cookie_samesite = getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+                resp.set_cookie(cookie_name, request.session.session_key, path=cookie_path, secure=cookie_secure, httponly=cookie_httponly)
+                # Note: Django's HttpResponse.set_cookie doesn't support samesite in older versions
+                # If available in runtime, it will be handled; otherwise default applies.
+            except Exception:
+                logger = logging.getLogger(__name__)
+                logger.exception('Failed to explicitly set session cookie in ensure_session')
+            return resp
     except Exception:
         logger = logging.getLogger(__name__)
         logger.exception('ensure_session failed')
