@@ -1,12 +1,13 @@
 # store/views.py (FINAL UPDATED - MANUAL AUTHENTICATION LOGIC WITH NEXT/ACTIVE CHECKS)
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum 
+from django.db.models import Sum, Count
 from django.db.models import Q 
 from django.http import JsonResponse, HttpResponse
 from django.forms import inlineformset_factory 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse_lazy 
 from django.utils import timezone 
+from django.utils import timezone as dj_timezone
 from django.utils.dateparse import parse_datetime
 # Ensure these are imported:
 from django.contrib.auth import logout as auth_logout, authenticate, login 
@@ -15,6 +16,8 @@ from django.contrib import messages
 import logging
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 from .models import PageView
 logger = logging.getLogger(__name__)
 from django.template.loader import render_to_string
@@ -1068,6 +1071,87 @@ def portal_analytics(request):
         'sessions_timeseries_values': sessions_values,
     }
     return render(request, 'store/analytics.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+def portal_analytics_trends(request):
+    """Render a dedicated trends page with an interactive chart and controls.
+
+    The page will fetch timeseries data from `portal_analytics_trends_data`.
+    """
+    context = {'page_title': 'Traffic Trends'}
+    return render(request, 'store/analytics_trends.html', context)
+
+
+@login_required(login_url=PORTAL_LOGIN_URL)
+@user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
+@require_GET
+def portal_analytics_trends_data(request):
+    """Return JSON timeseries data aggregated by day/month/year.
+
+    Query params:
+      - period: 'daily' (default), 'monthly', or 'yearly'
+      - days: when period=daily, number of days to return (default 90)
+      - months: when period=monthly, number of months (default 24)
+      - years: when period=yearly, number of years (default 5)
+    """
+    period = request.GET.get('period', 'daily')
+    try:
+        days = int(request.GET.get('days', '90'))
+    except Exception:
+        days = 90
+
+    # Base queryset: exclude admin/portal/static/media
+    pv_qs = PageView.objects.exclude(path__startswith='/portal').exclude(path__startswith='/admin')
+    pv_qs = pv_qs.exclude(path__startswith='/accounts').exclude(path__startswith='/static')
+    pv_qs = pv_qs.exclude(path__startswith='/media').exclude(path__startswith='/test-')
+    pv_qs = pv_qs.exclude(path__startswith='/favicon.ico')
+
+    now = dj_timezone.now()
+
+    # Choose truncation and build labels/values
+    if period == 'monthly':
+        months = int(request.GET.get('months', '24'))
+        # compute start as first day of the (months-1) months ago
+        start_month = (now.replace(day=1) - dj_timezone.timedelta(days=months * 31)).date()
+        qs = list(pv_qs.annotate(period=TruncMonth('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = []
+        values = []
+        cursor = start_month
+        # iterate month by month
+        while cursor <= now.date():
+            labels.append(cursor.strftime('%Y-%m'))
+            match = next((x for x in qs if x['period'].date().year == cursor.year and x['period'].date().month == cursor.month), None)
+            values.append(match['count'] if match else 0)
+            # advance one month
+            if cursor.month == 12:
+                cursor = cursor.replace(year=cursor.year + 1, month=1)
+            else:
+                cursor = cursor.replace(month=cursor.month + 1)
+    elif period == 'yearly':
+        years = int(request.GET.get('years', '5'))
+        start_year = now.year - years + 1
+        qs = list(pv_qs.annotate(period=TruncYear('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = [str(y) for y in range(start_year, now.year + 1)]
+        values = []
+        for y in range(start_year, now.year + 1):
+            match = next((x for x in qs if x['period'].date().year == y), None)
+            values.append(match['count'] if match else 0)
+    else:
+        # daily
+        days = max(7, min(days, 365))
+        start = (now - dj_timezone.timedelta(days=days - 1)).date()
+        qs = list(pv_qs.annotate(period=TruncDay('timestamp')).values('period').annotate(count=Count('id')).order_by('period'))
+        labels = []
+        values = []
+        for i in range(days):
+            d = start + dj_timezone.timedelta(days=i)
+            labels.append(d.isoformat())
+            match = next((x for x in qs if x['period'].date() == d), None)
+            values.append(match['count'] if match else 0)
+
+    return JsonResponse({'labels': labels, 'values': values, 'period': period})
 
 
 @csrf_exempt

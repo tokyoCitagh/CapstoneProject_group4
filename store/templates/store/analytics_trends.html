@@ -1,0 +1,114 @@
+{% extends 'base_portal.html' %}
+{% load static %}
+
+{% block title %}Traffic Trends{% endblock %}
+
+{% block main_content %}
+<div class="px-4 py-8 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Traffic Trends</h1>
+    <a href="{% url 'portal:analytics' %}" class="text-sm text-indigo-600">← Back to Analytics</a>
+  </div>
+
+  <div class="bg-white shadow rounded-lg border p-6 mb-6">
+    <div class="flex items-center space-x-3 mb-4">
+      <label class="text-sm">Granularity:</label>
+      <select id="period" class="border rounded px-2 py-1 text-sm">
+        <option value="daily" selected>Daily</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+
+      <label id="range-label" class="text-sm ml-4">Range:</label>
+      <select id="range" class="border rounded px-2 py-1 text-sm">
+        <option value="30">Last 30</option>
+        <option value="90" selected>Last 90</option>
+        <option value="180">Last 180</option>
+        <option value="365">Last 365</option>
+      </select>
+
+      <button id="refresh" class="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Refresh</button>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-4">View site traffic trends. Use the controls to switch between daily, monthly, and yearly aggregations.</p>
+
+    <div class="w-full">
+      <canvas id="trendsChart" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="text-sm text-gray-600">
+    <p>Tip: Use the legend to toggle series and hover for exact counts.</p>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+<script defer>
+(function () {
+  async function fetchData(period, range) {
+    const params = new URLSearchParams();
+    params.set('period', period);
+    if (period === 'daily') params.set('days', range);
+    if (period === 'monthly') params.set('months', Math.ceil(range / 30));
+    if (period === 'yearly') params.set('years', Math.ceil(range / 365));
+    const res = await fetch(`{% url 'portal:analytics_trends_data' %}?` + params.toString(), { credentials: 'same-origin' });
+    if (!res.ok) throw new Error('Failed to load trends data');
+    return res.json();
+  }
+
+  function createChart(ctx, labels, values) {
+    const grad = ctx.createLinearGradient(0, 0, 0, 300);
+    grad.addColorStop(0, 'rgba(79,70,229,0.45)');
+    grad.addColorStop(1, 'rgba(79,70,229,0.03)');
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Page Visits',
+          data: values,
+          borderColor: '#4f46e5',
+          backgroundColor: grad,
+          tension: 0.25,
+          pointRadius: 2,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: true }, tooltip: { mode: 'index', intersect: false } },
+        scales: { x: { display: true, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+
+  let chart = null;
+  const canvas = document.getElementById('trendsChart');
+  const ctx = canvas ? canvas.getContext('2d') : null;
+  const periodEl = document.getElementById('period');
+  const rangeEl = document.getElementById('range');
+  const refreshBtn = document.getElementById('refresh');
+
+  async function loadAndRender() {
+    try {
+      const period = periodEl.value;
+      const range = parseInt(rangeEl.value, 10);
+      const data = await fetchData(period, range);
+      if (!ctx) return;
+      if (chart) chart.destroy();
+      chart = createChart(ctx, data.labels, data.values);
+    } catch (err) {
+      console.error('Trends load error', err);
+    }
+  }
+
+  if (refreshBtn) refreshBtn.addEventListener('click', loadAndRender);
+  document.addEventListener('DOMContentLoaded', loadAndRender);
+})();
+</script>
+
+{% endblock %}

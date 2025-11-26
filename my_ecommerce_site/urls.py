@@ -22,6 +22,8 @@ portal_urlpatterns = [
     
     path('dashboard/inventory/', store_views.inventory_dashboard, name='inventory_dashboard'),
      path('dashboard/analytics/', store_views.portal_analytics, name='analytics'),
+     path('dashboard/analytics/trends/', store_views.portal_analytics_trends, name='analytics_trends'),
+     path('dashboard/analytics/trends-data/', store_views.portal_analytics_trends_data, name='analytics_trends_data'),
     path('service_requests/', services_views.staff_requests_list, name="staff_requests_list"),
     
     # ... other portal views ...
