@@ -58,6 +58,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # EnsureSessionMiddleware will create lightweight sessions for anonymous
+    # HTML GET requests when enabled via the environment variable
+    'my_ecommerce_site.middleware.EnsureSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -302,6 +305,11 @@ else:
 
 
 # =============================================================
+
+# Feature toggle: create sessions for anonymous HTML visitors so analytics
+# can reliably capture `session_key` for unique-session counting.
+# Add `SESSION_ENSURE_ENABLED=true` to your production env to opt in.
+SESSION_ENSURE_ENABLED = config('SESSION_ENSURE_ENABLED', default=False, cast=bool)
 # CUSTOM AUTHENTICATION AND EMAIL SETTINGS
 # =============================================================
 

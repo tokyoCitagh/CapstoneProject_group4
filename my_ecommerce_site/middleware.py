@@ -66,3 +66,61 @@ class NoCacheHtmlMiddleware:
             # Fail silently - we don't want middleware to break requests
             pass
         return response
+
+
+class EnsureSessionMiddleware:
+    """Ensure anonymous HTML GET requests receive a session key.
+
+    This middleware is opt-in via the `SESSION_ENSURE_ENABLED` setting.
+    When enabled it will create a lightweight session for anonymous GET
+    requests that return HTML so frontend pageview tracking can rely on
+    `request.session.session_key` being present for most visitors.
+
+    To avoid unnecessary DB churn this only runs for GET requests, for
+    anonymous users, and only when the response Content-Type is HTML.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        try:
+            from django.conf import settings
+            # Honor opt-in flag
+            if not getattr(settings, 'SESSION_ENSURE_ENABLED', False):
+                return response
+
+            # Only for anonymous GET requests
+            if request.method != 'GET':
+                return response
+            if getattr(request, 'user', None) and request.user.is_authenticated:
+                return response
+
+            content_type = response.get('Content-Type', '')
+            if not content_type or 'text/html' not in content_type.lower():
+                return response
+
+            # If a session key already exists, nothing to do
+            try:
+                if request.session.session_key:
+                    return response
+            except Exception:
+                # If session object isn't available for some reason, skip
+                return response
+
+            # Create a minimal session marker and save to ensure a session_key
+            try:
+                request.session['anon_session'] = True
+                # Use configured cookie age if present
+                if hasattr(settings, 'SESSION_COOKIE_AGE'):
+                    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session.save()
+                logger.info('EnsureSessionMiddleware: created session for path=%s', getattr(request, 'path', ''))
+            except Exception:
+                logger.exception('EnsureSessionMiddleware failed to create session')
+        except Exception:
+            # Don't break requests if middleware fails
+            logger.exception('EnsureSessionMiddleware top-level error')
+
+        return response
