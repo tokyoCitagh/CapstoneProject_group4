@@ -967,6 +967,12 @@ def portal_analytics(request):
         session_visits = pv_qs.filter(session_key__isnull=False).values('session_key').distinct().count()
         anon_visits = pv_qs.filter(session_key__isnull=True).values('ip_address').distinct().exclude(ip_address__isnull=True).count()
         site_visits = session_visits + anon_visits
+        # Render-time diagnostic logging to help verify what value the view computes
+        try:
+            logger = logging.getLogger(__name__)
+            logger.info('portal_analytics computed site_visits=%s total_visits=%s session_visits=%s anon_visits=%s', site_visits, total_visits, session_visits, anon_visits)
+        except Exception:
+            pass
 
         # Exit page: compute last page per session (within store pages) and aggregate
         last_per_session = pv_qs.filter(session_key=OuterRef('session_key')).order_by('-timestamp').values('path')[:1]
