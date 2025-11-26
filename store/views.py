@@ -1287,6 +1287,14 @@ def record_page_view(request):
             duration=float(duration) if duration not in (None, '') else None,
         )
 
+        # Log successful recording for diagnostics (info-level)
+        logger = logging.getLogger(__name__)
+        try:
+            logger.info('Recorded PageView path=%s session=%s ip=%s', pv.path, pv.session_key, pv.ip_address)
+        except Exception:
+            # avoid logging failures from breaking the response
+            pass
+
         return JsonResponse({'status': 'ok'})
     except Exception as e:
         logger = logging.getLogger(__name__)
@@ -1311,6 +1319,12 @@ def ensure_session(request):
             if hasattr(settings, 'SESSION_COOKIE_AGE'):
                 request.session.set_expiry(settings.SESSION_COOKIE_AGE)
             request.session.save()
+            # diagnostic logging so we can confirm session creation from clients
+            logger = logging.getLogger(__name__)
+            try:
+                logger.info('ensure_session created session=%s for ip=%s', request.session.session_key, request.META.get('REMOTE_ADDR'))
+            except Exception:
+                pass
             # Build a response and explicitly set the session cookie so clients
             # receive it even if upstream middleware did not attach it for some
             # reason in this environment.
