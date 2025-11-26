@@ -5,6 +5,15 @@
 
 {% block main_content %}
 <div class="px-4 py-8 sm:px-6 lg:px-8">
+  <!-- DEBUG BANNER: temporary — very visible to confirm deployment -->
+  <div class="mb-4 p-4 rounded shadow-lg text-white bg-red-600">
+    <div class="flex items-center justify-between">
+      <div class="font-semibold">DEBUG: Trends link deployed</div>
+      <div>
+        <a href="{% url 'analytics_trends_public' %}" class="underline font-medium">Open Public Trends</a>
+      </div>
+    </div>
+  </div>
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Analytics</h1>
     <div class="flex items-center space-x-3">
