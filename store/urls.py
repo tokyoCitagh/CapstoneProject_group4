@@ -36,4 +36,6 @@ urlpatterns = [
     path('about-us/', views.about_us_view, name='about_us'),
     # Analytics recording endpoint (AJAX)
     path('analytics/record/', views.record_page_view, name='record_page_view'),
+    # Ensure session endpoint (call from client to force session creation)
+    path('session/ensure/', views.ensure_session, name='ensure_session'),
 ]

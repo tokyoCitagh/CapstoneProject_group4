@@ -1109,6 +1109,30 @@ def record_page_view(request):
         return JsonResponse({'status': 'error', 'detail': str(e)}, status=500)
 
 
+@csrf_exempt
+def ensure_session(request):
+    """Lightweight endpoint to ensure a session exists for the client.
+
+    Calling this from client-side JS will create a session server-side and
+    cause Django to send back a `sessionid` cookie. This is useful for
+    analytics to reliably capture session_key on the first visit.
+    """
+    try:
+        # Only create for GET requests to avoid side-effects on POSTs
+        if request.method == 'GET':
+            request.session['anon_session'] = True
+            # Respect configured expiry if present
+            from django.conf import settings
+            if hasattr(settings, 'SESSION_COOKIE_AGE'):
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+            request.session.save()
+        return HttpResponse(status=204)
+    except Exception:
+        logger = logging.getLogger(__name__)
+        logger.exception('ensure_session failed')
+        return HttpResponse(status=500)
+
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def orders_list(request):
