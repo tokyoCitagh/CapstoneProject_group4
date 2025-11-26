@@ -20,12 +20,7 @@
       </select>
 
       <label id="range-label" class="text-sm ml-4">Range:</label>
-      <select id="range" class="border rounded px-2 py-1 text-sm">
-        <option value="30">Last 30</option>
-        <option value="90" selected>Last 90</option>
-        <option value="180">Last 180</option>
-        <option value="365">Last 365</option>
-      </select>
+      <select id="range" class="border rounded px-2 py-1 text-sm"></select>
 
       <button id="refresh" class="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Refresh</button>
     </div>
@@ -49,8 +44,8 @@
     const params = new URLSearchParams();
     params.set('period', period);
     if (period === 'daily') params.set('days', range);
-    if (period === 'monthly') params.set('months', Math.ceil(range / 30));
-    if (period === 'yearly') params.set('years', Math.ceil(range / 365));
+    if (period === 'monthly') params.set('months', range);
+    if (period === 'yearly') params.set('years', range);
     const res = await fetch('/analytics/trends-public-data/?' + params.toString(), { credentials: 'same-origin' });
     if (!res.ok) throw new Error('Failed to load trends data');
     return res.json();
@@ -92,6 +87,26 @@
   const rangeEl = document.getElementById('range');
   const refreshBtn = document.getElementById('refresh');
 
+  const RANGE_OPTIONS = {
+    daily: [ {v:30, t:'Last 30'}, {v:90, t:'Last 90'}, {v:180, t:'Last 180'}, {v:365, t:'Last 365'} ],
+    monthly: [ {v:3, t:'Last 3 months'}, {v:6, t:'Last 6 months'}, {v:12, t:'Last 12 months'}, {v:24, t:'Last 24 months'} ],
+    yearly: [ {v:1, t:'Last 1 year'}, {v:2, t:'Last 2 years'}, {v:5, t:'Last 5 years'}, {v:10, t:'Last 10 years'} ],
+  };
+
+  function populateRangeOptions(period) {
+    const opts = RANGE_OPTIONS[period] || RANGE_OPTIONS.daily;
+    rangeEl.innerHTML = '';
+    opts.forEach(function(o, i) {
+      const opt = document.createElement('option');
+      opt.value = o.v;
+      opt.textContent = o.t;
+      if (i === 1) opt.selected = true;
+      rangeEl.appendChild(opt);
+    });
+    const label = document.getElementById('range-label');
+    if (label) label.textContent = period === 'yearly' ? 'Years:' : (period === 'monthly' ? 'Months:' : 'Range:');
+  }
+
   async function loadAndRender() {
     try {
       const period = periodEl.value;
@@ -106,7 +121,8 @@
   }
 
   if (refreshBtn) refreshBtn.addEventListener('click', loadAndRender);
-  document.addEventListener('DOMContentLoaded', loadAndRender);
+  periodEl.addEventListener('change', function () { populateRangeOptions(periodEl.value); });
+  document.addEventListener('DOMContentLoaded', function () { populateRangeOptions(periodEl.value); loadAndRender(); });
 })();
 </script>
 

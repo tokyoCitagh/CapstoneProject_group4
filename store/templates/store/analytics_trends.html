@@ -50,8 +50,8 @@
     const params = new URLSearchParams();
     params.set('period', period);
     if (period === 'daily') params.set('days', range);
-    if (period === 'monthly') params.set('months', Math.ceil(range / 30));
-    if (period === 'yearly') params.set('years', Math.ceil(range / 365));
+    if (period === 'monthly') params.set('months', range);
+    if (period === 'yearly') params.set('years', range);
     const res = await fetch(`{% url 'portal:analytics_trends_data' %}?` + params.toString(), { credentials: 'same-origin' });
     if (!res.ok) throw new Error('Failed to load trends data');
     return res.json();
@@ -93,6 +93,30 @@
   const rangeEl = document.getElementById('range');
   const refreshBtn = document.getElementById('refresh');
 
+  // Range option sets for each granularity. Values represent units: days, months, or years.
+  const RANGE_OPTIONS = {
+    daily: [ {v:30, t:'Last 30'}, {v:90, t:'Last 90'}, {v:180, t:'Last 180'}, {v:365, t:'Last 365'} ],
+    monthly: [ {v:3, t:'Last 3 months'}, {v:6, t:'Last 6 months'}, {v:12, t:'Last 12 months'}, {v:24, t:'Last 24 months'} ],
+    yearly: [ {v:1, t:'Last 1 year'}, {v:2, t:'Last 2 years'}, {v:5, t:'Last 5 years'}, {v:10, t:'Last 10 years'} ],
+  };
+
+  function populateRangeOptions(period) {
+    const opts = RANGE_OPTIONS[period] || RANGE_OPTIONS.daily;
+    rangeEl.innerHTML = '';
+    opts.forEach(function(o, i) {
+      const opt = document.createElement('option');
+      opt.value = o.v;
+      opt.textContent = o.t;
+      if (i === 1) opt.selected = true; // select the 2nd option by default
+      rangeEl.appendChild(opt);
+    });
+    // update label text
+    const label = document.getElementById('range-label');
+    if (label) {
+      label.textContent = period === 'yearly' ? 'Years:' : (period === 'monthly' ? 'Months:' : 'Range:');
+    }
+  }
+
   async function loadAndRender() {
     try {
       const period = periodEl.value;
@@ -107,7 +131,8 @@
   }
 
   if (refreshBtn) refreshBtn.addEventListener('click', loadAndRender);
-  document.addEventListener('DOMContentLoaded', loadAndRender);
+  periodEl.addEventListener('change', function () { populateRangeOptions(periodEl.value); });
+  document.addEventListener('DOMContentLoaded', function () { populateRangeOptions(periodEl.value); loadAndRender(); });
 })();
 </script>
 
