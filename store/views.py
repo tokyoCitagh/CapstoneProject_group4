@@ -1740,39 +1740,6 @@ def order_detail(request, pk):
     }
     return render(request, 'store/order_detail.html', context)
 
-
-@csrf_exempt
-def run_migrations(request):
-    """Temporary endpoint to run Django migrations on the running service.
-
-    Security: requires the header `X-MIGRATE-TOKEN` to match the `MIGRATE_SECRET`
-    environment variable. This endpoint is intended as a short-lived helper
-    when one-off remote execution (Railway UI) is not available. Remove it
-    immediately after use.
-    """
-    import os
-    import io
-    from django.core.management import call_command
-
-    secret = os.environ.get('MIGRATE_SECRET')
-    token = request.META.get('HTTP_X_MIGRATE_TOKEN') or request.POST.get('migrate_token')
-
-    if not secret:
-        return HttpResponse('MIGRATE_SECRET not configured on this environment', status=500)
-
-    if token != secret:
-        return HttpResponse('Forbidden', status=403)
-
-    buf = io.StringIO()
-    try:
-        # Run migrations programmatically and capture output
-        call_command('migrate', '--noinput', stdout=buf, stderr=buf)
-        output = buf.getvalue()
-        return HttpResponse(output, content_type='text/plain')
-    except Exception as e:
-        output = buf.getvalue()
-        return HttpResponse(f'Error running migrations: {e}\n\n{output}', status=500, content_type='text/plain')
-
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def add_product(request):
