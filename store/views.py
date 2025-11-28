@@ -1570,6 +1570,10 @@ def orders_list(request):
     # Defer new fields that may not exist yet in production DB (migration 0015)
     # This avoids SQL errors when the migration hasn't been applied yet.
     orders = Order.objects.filter(complete=True).select_related('customer').defer('fulfillment', 'shipping_speed').order_by('-date_ordered')
+    # Force the template to use the safe fallback display for fulfillment/shipping
+    # so templates do not attempt to access `order.fulfillment` or
+    # `order.shipping_speed` (which would trigger a DB refresh and fail).
+    has_order_fulfillment = False
 
     q = request.GET.get('q', '').strip()
     start_date = request.GET.get('start_date', '').strip()
