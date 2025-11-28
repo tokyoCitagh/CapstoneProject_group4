@@ -1657,7 +1657,14 @@ def orders_list(request):
         'total_revenue': total_revenue,
         'avg_order_value': avg_order_value,
     }
-    return render(request, 'store/orders_list.html', context)
+    try:
+        return render(request, 'store/orders_list.html', context)
+    except Exception:
+        # Fallback: avoid raising 500 in the portal while we resolve DB schema differences.
+        logger = logging.getLogger(__name__)
+        logger.exception('Failed to render orders_list; returning safe fallback')
+        fallback_html = "<html><body><h1>Orders (limited view)</h1><p>The orders portal is currently in limited mode while we apply an update. Please try again shortly.</p></body></html>"
+        return HttpResponse(fallback_html)
 
 
 @login_required(login_url=PORTAL_LOGIN_URL)
