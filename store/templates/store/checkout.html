@@ -19,8 +19,8 @@
                                 <input type="text" class="mt-1 w-full border rounded px-3 py-2 bg-gray-50" value="{{ request.user.get_full_name|default:request.user.username }}" disabled>
                             </div>
                             <div>
-                                <label class="block text-sm text-gray-600">Contact Email</label>
-                                <input type="email" class="mt-1 w-full border rounded px-3 py-2 bg-gray-50" value="{{ request.user.email }}" disabled>
+                                <label class="block text-sm text-gray-600">Phone Number</label>
+                                <input id="contact-phone" name="contact_phone" type="tel" class="mt-1 w-full border rounded px-3 py-2 bg-gray-50" value="{{ request.user.customer.phone|default:request.user.email }}" placeholder="e.g. +233 24 287 2458" {% if not request.user.is_authenticated %}disabled{% else %}disabled{% endif %}>
                             </div>
                         </div>
 
