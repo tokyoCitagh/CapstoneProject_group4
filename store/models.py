@@ -149,6 +149,22 @@ class Order(models.Model):
     # Shipping fee stored on the order so totals include delivery cost
     from decimal import Decimal
     shipping_fee = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('0.00'))
+    # Fulfillment and shipping speed
+    FULFILLMENT_DELIVERY = 'delivery'
+    FULFILLMENT_PICKUP = 'pickup'
+    FULFILLMENT_CHOICES = [
+        (FULFILLMENT_DELIVERY, 'Delivery'),
+        (FULFILLMENT_PICKUP, 'Pick-up'),
+    ]
+    fulfillment = models.CharField(max_length=20, choices=FULFILLMENT_CHOICES, default=FULFILLMENT_DELIVERY)
+
+    SHIPPING_STANDARD = 'standard'
+    SHIPPING_EXPRESS = 'express'
+    SHIPPING_SPEED_CHOICES = [
+        (SHIPPING_STANDARD, 'Standard'),
+        (SHIPPING_EXPRESS, 'Express'),
+    ]
+    shipping_speed = models.CharField(max_length=20, choices=SHIPPING_SPEED_CHOICES, default=SHIPPING_STANDARD)
 
     def __str__(self):
         return str(self.id)

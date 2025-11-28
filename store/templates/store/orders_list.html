@@ -164,6 +164,10 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{% if order.customer %}{{ order.customer.name }}{% else %}Guest{% endif %}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.get_cart_items }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GHC {{ order.get_cart_total|floatformat:2 }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div class="text-sm">{% if order.fulfillment == 'pickup' %}Pick-up{% else %}Delivery ({{ order.shipping_speed|capfirst }}){% endif %}</div>
+                <div class="text-xs text-gray-500 mt-1">Shipping: GHC {{ order.shipping_fee|floatformat:2 }}</div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <span class="text-sm inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800">{{ order.get_status_display }}</span>
                 {% if order.expected_delivery %}

@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    <link rel="icon" type="image/webp" href="/static/images/imjlogo.webp">
+    <link rel="shortcut icon" type="image/webp" href="/static/images/imjlogo.webp">
+    
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <title>My Shop - </title>
+    
+        
+        <style>
+            /* Ensure no horizontal scrollbar caused by overflow */
+            html, body { overflow-x: hidden; }
+            /* Make images, videos and iframes scale down on small screens */
+            img, video, iframe { max-width: 100%; height: auto; }
+            /* Ensure long words or unbroken strings wrap */
+            .break-words { word-break: break-word; }
+        </style>
+
+        
+         
+    
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 text-white shadow-md">
+    <nav class="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+
+        
+        <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
+            <a href="/" class="flex items-center space-x-2 min-w-0">
+                <img src="https://res.cloudinary.com/dey547z7d/image/upload/v1762637341/site_static/rykcto60qb2cp7bhluel.webp" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                <span class="text-lg font-bold tracking-wide truncate max-w-xs ml-2">Image Electronics</span>
+            </a>
+
+            <button id="nav-toggle" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        
+        <div class="hidden md:flex md:items-center md:space-x-4">
+            <a href="/" class="hover:text-gray-300">Home</a>
+            <a href="/store/" class="hover:text-gray-300">Products</a>
+            
+                <a href="/accounts/login/" class="hover:text-gray-300">Services</a>
+            
+            
+            
+
+            <a href="/accounts/login/" class="hover:text-gray-300 relative flex items-center space-x-1">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span>Cart</span>
+                <span id="cart-total" class="bg-red-500 rounded-full px-2 text-xs absolute -top-2 -right-4">
+                    0
+                </span>
+            </a>
+
+            
+                <a href="/accounts/login/" class="bg-gray-300 text-gray-800 hover:bg-gray-400 px-3 py-1 rounded transition duration-200">Sign in</a>
+            
+        </div>
+    </nav>
+
+    
+    <div id="mobile-menu" class="md:hidden hidden bg-gray-800 text-white w-full">
+        <div class="px-4 pt-4 pb-4 space-y-2">
+            <a href="/" class="block py-2 hover:text-gray-300">Home</a>
+            <a href="/store/" class="block py-2 hover:text-gray-300">Products</a>
+            
+                <a href="/accounts/login/" class="block py-2 hover:text-gray-300">Services</a>
+            
+            
+            <a href="/accounts/login/" class="block py-2 hover:text-gray-300">Cart (<span id="mobile-menu-cart-count">0</span>)</a>
+            
+                <a href="/accounts/login/" class="block py-2 bg-gray-300 text-gray-800 rounded px-2">Sign in</a>
+            
+        </div>
+    </div>
+</header>
+
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        
+        
+
+        
+    <div class="max-w-6xl mx-auto py-8">
+        <!-- COMMIT: 94ecd4a -->
+        <!-- REDEPLOY-MARKER: 2025-11-28T14:00:00Z -->
+        <h1 class="text-2xl font-bold mb-6">Finalize Your Order</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-4">
+                <form id="shipping-form" oninput="togglePaymentButton()" class="space-y-4">
+                    <section class="bg-white rounded-lg shadow p-5">
+                        <h2 class="text-lg font-semibold mb-3">1. Delivery Details</h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600">Customer</label>
+                                <input type="text" class="mt-1 w-full border rounded px-3 py-2 bg-gray-50" value="" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600">Phone Number</label>
+                                
+                                <input id="contact-phone" name="contact_phone" type="tel" class="mt-1 w-full border rounded px-3 py-2" value="" placeholder="e.g. +233 24 287 2458">
+                                
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-2">Fulfillment</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    <input id="fulfillment-delivery" type="radio" name="fulfillment" value="delivery" class="form-radio" checked>
+                                    <span class="ml-2">Delivery</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input id="fulfillment-pickup" type="radio" name="fulfillment" value="pickup" class="form-radio">
+                                    <span class="ml-2">Pick-up (Free)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-2">Delivery Speed</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    <input id="shipping-standard" type="radio" name="shipping_speed" value="standard" class="form-radio" checked>
+                                    <span class="ml-2">Standard Delivery</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input id="shipping-express" type="radio" name="shipping_speed" value="express" class="form-radio">
+                                    <span class="ml-2">Express Delivery (faster)</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Express delivery is usually faster. Standard cost doubles for Express unless your order qualifies for free delivery (orders over GHC 3000).</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-gray-600">Street Address <span class="text-red-600">*</span></label>
+                            <input id="address" name="address" type="text" class="mt-1 w-full border rounded px-3 py-2" placeholder="House number, street, landmark" required>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600">City / Destination <span class="text-red-600">*</span></label>
+                                <select id="city" name="city" class="mt-1 w-full border rounded px-3 py-2 bg-white" required>
+                                    <option value="" disabled selected>Select destination town</option>
+                                    <option value="Kumasi">Kumasi</option>
+                                    <option value="Tamale">Tamale</option>
+                                    <option value="Bolga (Bolgatanga)">Bolga (Bolgatanga)</option>
+                                    <option value="Accra">Accra</option>
+                                    <option value="Bawku">Bawku</option>
+                                    <option value="Wa">Wa</option>
+                                    <option value="Garu">Garu</option>
+                                    <option value="Takyiman (Techiman)">Takyiman (Techiman)</option>
+                                    <option value="Yeji">Yeji</option>
+                                    <option value="Sunyani">Sunyani</option>
+                                    <option value="Wenchi">Wenchi</option>
+                                    <option value="Dormaa">Dormaa</option>
+                                    <option value="Drobo">Drobo</option>
+                                    <option value="Nsawkaw">Nsawkaw</option>
+                                    <option value="Nkrankwanta">Nkrankwanta</option>
+                                    <option value="Ahafo Goaso">Ahafo Goaso</option>
+                                    <option value="Ahafo Mim">Ahafo Mim</option>
+                                    <option value="Ahafo Kasapii">Ahafo Kasapii</option>
+                                    <option value="Sankore">Sankore</option>
+                                    <option value="Cape Coast">Cape Coast</option>
+                                    <option value="Takoradi">Takoradi</option>
+                                    <option value="Tarkwa">Tarkwa</option>
+                                    <option value="Bogoso">Bogoso</option>
+                                    <option value="Prestea">Prestea</option>
+                                    <option value="Dunkwa (on Offin)">Dunkwa (on Offin)</option>
+                                    <option value="Diaso">Diaso</option>
+                                    <option value="Ash. Mampong (Ashanti Mampong)">Ash. Mampong (Ashanti Mampong)</option>
+                                    <option value="Ejura">Ejura</option>
+                                    <option value="Bibiani">Bibiani</option>
+                                    <option value="Enchi">Enchi</option>
+                                    <option value="Sefwi B. Nkwanta">Sefwi B. Nkwanta</option>
+                                    <option value="Sefwi Wiawso">Sefwi Wiawso</option>
+                                    <option value="Sefwi Debiso">Sefwi Debiso</option>
+                                    <option value="Sefwi O. K. Krom">Sefwi O. K. Krom</option>
+                                    <option value="Suaman Dadieso">Suaman Dadieso</option>
+                                    <option value="Wassa Akropong">Wassa Akropong</option>
+                                    <option value="Ho">Ho</option>
+                                    <option value="Koforidua">Koforidua</option>
+                                    <option value="Dambai">Dambai</option>
+                                    <option value="Damongo">Damongo</option>
+                                    <option value="Nalerigu">Nalerigu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600">State / Region <span class="text-red-600">*</span></label>
+                                <select id="state" name="state" class="mt-1 w-full border rounded px-3 py-2 bg-white" required>
+                                    <option value="" disabled selected>Select your region</option>
+                                    <option>Greater Accra</option>
+                                    <option>Ashanti</option>
+                                    <option>Ahafo</option>
+                                    <option>Bono</option>
+                                    <option>Bono East</option>
+                                    <option>Central</option>
+                                    <option>Eastern</option>
+                                    <option>Western</option>
+                                    <option>Western North</option>
+                                    <option>Volta</option>
+                                    <option>Oti</option>
+                                    <option>Northern</option>
+                                    <option>North East</option>
+                                    <option>Savannah</option>
+                                    <option>Upper East</option>
+                                    <option>Upper West</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600">Zip Code</label>
+                                <input id="zipcode" name="zipcode" type="text" class="mt-1 w-full border rounded px-3 py-2">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-lg shadow p-5">
+                        <h2 class="text-lg font-semibold mb-3">2. Payment</h2>
+                        <div class="space-y-3">
+                            <!-- Bank transfer and alternative payment options are handled inside the Paystack
+                                 checkout modal. Showing separate radio buttons here caused confusion on the
+                                 checkout page, so we present a single payment button that opens Paystack. -->
+                            <div>
+                                <button id="make-payment" disabled class="w-full py-2 px-4 rounded bg-gray-300 text-gray-700">Fill required fields to enable payment</button>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+            </div>
+
+            <aside class="bg-white shadow rounded-lg p-4">
+                <h3 class="text-lg font-semibold mb-3">Order Summary (Review)</h3>
+                <div class="divide-y">
+                    
+                </div>
+
+                <div class="mt-4">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <div>Subtotal</div>
+                        <div>GHC 0.00</div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 mt-2">
+                        <div>Shipping Fee</div>
+                        <div id="shipping-fee" class="text-green-600">GHC 0.00</div>
+                    </div>
+                    <div class="border-t mt-3 pt-3 flex justify-between items-center">
+                        <div class="text-lg font-bold">Grand Total</div>
+                        <div id="grand-total" class="text-xl font-bold text-indigo-600">GHC 0.00</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="/store/cart/" class="text-sm text-gray-600">← Go Back to Cart</a>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
+    <script>
+        const csrftoken = 'zPGndtM4TFPJoapt2lvOjEd2OCE8SMtmGfwOVkRobIo2ssvIuGn3xVTIjJQHnhtN';
+        // Start with server-side cart total (items only). shipping_fee will be applied client-side
+        let totalAmount = parseFloat(0.00);
+        const paystackPublicKey = 'pk_live_154e04c450a95a3d78856e0bc5293ee681ba74d1';
+
+        // Mapping of town -> shipping fee and town -> region
+        const SHIPPING_RATES = {
+            'Kumasi': 80.00,
+            'Tamale': 200.00,
+            'Bolga (Bolgatanga)': 225.00,
+            'Bawku': 235.00,
+            'Wa': 215.00,
+            'Garu': 240.00,
+            'Takyiman (Techiman)': 115.00,
+            'Yeji': 135.00,
+            'Sunyani': 115.00,
+            'Wenchi': 120.00,
+            'Dormaa': 125.00,
+            'Drobo': 125.00,
+            'Nsawkaw': 120.00,
+            'Nkrankwanta': 140.00,
+            'Ahafo Goaso': 115.00,
+            'Ahafo Mim': 115.00,
+            'Ahafo Kasapii': 125.00,
+            'Sankore': 115.00,
+            'Cape Coast': 65.00,
+            'Takoradi': 80.00,
+            'Tarkwa': 95.00,
+            'Bogoso': 105.00,
+            'Prestea': 115.00,
+            'Dunkwa (on Offin)': 115.00,
+            'Diaso': 120.00,
+            'Ash. Mampong (Ashanti Mampong)': 95.00,
+            'Ejura': 105.00,
+            'Bibiani': 105.00,
+            'Enchi': 145.00,
+            'Sefwi B. Nkwanta': 135.00,
+            'Sefwi Debiso': 145.00,
+            'Sefwi O. K. Krom': 150.00,
+            'Suaman Dadieso': 150.00,
+            'Wassa Akropong': 120.00
+        };
+
+        // Add missing regional capitals with conservative default fares so UI updates immediately.
+        // These are estimates; TomTom estimator will run for more accurate distance-based pricing.
+        SHIPPING_RATES['Koforidua'] = 45.00; // Eastern (near Accra)
+        SHIPPING_RATES['Ho'] = 150.00;      // Volta
+        SHIPPING_RATES['Dambai'] = 220.00;  // Oti
+        SHIPPING_RATES['Damongo'] = 210.00; // Savannah
+        SHIPPING_RATES['Nalerigu'] = 250.00; // North East
+        // Flat rate for Accra (as requested)
+        SHIPPING_RATES['Accra'] = 40.00;
+
+        const TOWN_TO_REGION = {
+            'Kumasi': 'Ashanti',
+            'Tamale': 'Northern',
+            'Bolga (Bolgatanga)': 'Upper East',
+            'Bawku': 'Upper East',
+            'Wa': 'Upper West',
+            'Garu': 'Upper East',
+            'Takyiman (Techiman)': 'Bono East',
+            'Yeji': 'Bono East',
+            'Sunyani': 'Bono',
+            'Wenchi': 'Bono',
+            'Dormaa': 'Bono',
+            'Drobo': 'Bono',
+            'Nsawkaw': 'Bono',
+            'Nkrankwanta': 'Bono',
+            'Ahafo Goaso': 'Ahafo',
+            'Ahafo Mim': 'Ahafo',
+            'Ahafo Kasapii': 'Ahafo',
+            'Sankore': 'Ahafo',
+            'Cape Coast': 'Central',
+            'Takoradi': 'Western',
+            'Tarkwa': 'Western',
+            'Bogoso': 'Western',
+            'Prestea': 'Western',
+            'Dunkwa (on Offin)': 'Central',
+            'Diaso': 'Central',
+            'Ash. Mampong (Ashanti Mampong)': 'Ashanti',
+            'Ejura': 'Ashanti',
+            'Bibiani': 'Western North',
+            'Enchi': 'Western North',
+            'Sefwi B. Nkwanta': 'Western North',
+            'Sefwi Debiso': 'Western North',
+            'Sefwi O. K. Krom': 'Western North',
+            'Suaman Dadieso': 'Western North',
+            'Wassa Akropong': 'Western North',
+            'Sefwi Wiawso': 'Western North',
+            // Capitals not in the original list
+            'Accra': 'Greater Accra',
+            'Koforidua': 'Eastern',
+            'Ho': 'Volta',
+            'Dambai': 'Oti',
+            'Damongo': 'Savannah',
+            'Nalerigu': 'North East'
+        };
+
+        function formatGhc(amount) {
+            return 'GHC ' + Number(amount).toFixed(2);
+        }
+
+        // lastEstimatedShipping holds the most recent dynamically estimated fee
+        let lastEstimatedShipping = 0;
+        // fulfillment: 'delivery' or 'pickup'
+        let fulfillment = 'delivery';
+        // shippingSpeed: 'standard' or 'express'
+        let shippingSpeed = 'standard';
+
+        function updateShippingAndTotal() {
+            const city = document.getElementById('city')?.value;
+            const stateSelect = document.getElementById('state');
+            const shippingFeeElem = document.getElementById('shipping-fee');
+            const grandTotalElem = document.getElementById('grand-total');
+            const itemsSubtotal = parseFloat(0.00);
+
+            // Auto-select the region for the selected town even if we don't have a static rate
+            if (city && stateSelect && TOWN_TO_REGION[city]) {
+                stateSelect.value = TOWN_TO_REGION[city];
+            }
+
+            // If pickup is selected, shipping is zero
+            if (fulfillment !== 'delivery') {
+                if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(0);
+                const newTotal = itemsSubtotal;
+                if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                totalAmount = newTotal;
+                const paymentButton = document.getElementById('make-payment');
+                if (paymentButton && !paymentButton.disabled) {
+                    paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                }
+                return;
+            }
+
+            // helper to apply speed/discount logic and update UI
+            function applySpeedAndUpdate(baseShipping) {
+                let standard = baseShipping;
+                let express = baseShipping * 2;
+                // Orders over 3000 qualify for free standard delivery
+                if (itemsSubtotal >= 3000) {
+                    standard = 0;
+                    // If user still opts for express after qualifying for free delivery,
+                    // express costs only the original base (not doubled)
+                    express = baseShipping;
+                }
+                const effective = (shippingSpeed === 'express') ? express : standard;
+                if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(effective);
+                const newTotal = itemsSubtotal + effective;
+                if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                totalAmount = newTotal;
+                const paymentButton = document.getElementById('make-payment');
+                if (paymentButton && !paymentButton.disabled) {
+                    paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                }
+            }
+
+            // Determine base shipping (synchronous or async)
+            if (city && SHIPPING_RATES[city] !== undefined) {
+                const base = SHIPPING_RATES[city];
+                lastEstimatedShipping = base;
+                applySpeedAndUpdate(base);
+            } else if (city) {
+                // Unknown town: asynchronously ask server for estimate via TomTom
+                fetch(`/store/shipping/estimate/?q=${encodeURIComponent(city)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        let base = 0;
+                        if (data && data.shipping_fee !== undefined) {
+                            base = parseFloat(data.shipping_fee);
+                            lastEstimatedShipping = base;
+                            // Auto-fill region from our mapping if available
+                            if (TOWN_TO_REGION[city] && stateSelect) {
+                                stateSelect.value = TOWN_TO_REGION[city];
+                            }
+                        } else {
+                            base = 0;
+                            lastEstimatedShipping = 0;
+                        }
+                        applySpeedAndUpdate(base);
+                    })
+                    .catch(() => {
+                        // failed to fetch estimate: fall back to zero
+                        lastEstimatedShipping = 0;
+                        applySpeedAndUpdate(0);
+                    });
+                // return early because update will happen in the fetch callback
+                return;
+            } else {
+                // no city selected
+                lastEstimatedShipping = 0;
+                applySpeedAndUpdate(0);
+            }
+        }
+
+        // update whenever city or state changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cityEl = document.getElementById('city');
+            const stateEl = document.getElementById('state');
+
+            // Preserve a snapshot of the original city options so we can restore or filter them
+            let originalCityOptions = [];
+            if (cityEl) {
+                for (let i = 0; i < cityEl.options.length; i++) {
+                    const o = cityEl.options[i];
+                    originalCityOptions.push({ value: o.value, text: o.text, disabled: o.disabled, selected: o.selected });
+                }
+            }
+
+            if (cityEl) cityEl.addEventListener('change', function(){ updateShippingAndTotal(); togglePaymentButton(); });
+
+            // fulfillment radio buttons
+            const fulfillmentDelivery = document.getElementById('fulfillment-delivery');
+            const fulfillmentPickup = document.getElementById('fulfillment-pickup');
+            if (fulfillmentDelivery) fulfillmentDelivery.addEventListener('change', function(){ fulfillment = 'delivery'; updateShippingAndTotal(); togglePaymentButton(); });
+            if (fulfillmentPickup) fulfillmentPickup.addEventListener('change', function(){ fulfillment = 'pickup'; updateShippingAndTotal(); togglePaymentButton(); });
+            // shipping speed radio buttons
+            const shippingStandard = document.getElementById('shipping-standard');
+            const shippingExpress = document.getElementById('shipping-express');
+            if (shippingStandard) shippingStandard.addEventListener('change', function(){ shippingSpeed = 'standard'; updateShippingAndTotal(); togglePaymentButton(); });
+            if (shippingExpress) shippingExpress.addEventListener('change', function(){ shippingSpeed = 'express'; updateShippingAndTotal(); togglePaymentButton(); });
+
+            // When a region is selected, filter the town list to towns in that region
+            if (stateEl) {
+                stateEl.addEventListener('change', function(){
+                    const selectedRegion = stateEl.value;
+                    // Helper to (re)populate city options
+                    function populateCityOptions(optionsArray) {
+                        if (!cityEl) return;
+                        cityEl.innerHTML = '';
+                        optionsArray.forEach(opt => {
+                            const newOpt = document.createElement('option');
+                            if (opt.disabled) newOpt.disabled = true;
+                            newOpt.value = opt.value;
+                            newOpt.text = opt.text;
+                            if (opt.selected) newOpt.selected = true;
+                            cityEl.appendChild(newOpt);
+                        });
+                    }
+
+                    if (!selectedRegion) {
+                        // restore original set
+                        populateCityOptions(originalCityOptions);
+                    } else {
+                        // keep the placeholder and include only towns mapped to the selected region
+                        const filtered = originalCityOptions.filter(opt => {
+                            if (!opt.value) return true; // keep placeholder
+                            const town = opt.value;
+                            return TOWN_TO_REGION[town] === selectedRegion;
+                        });
+                        // If no towns were found for the region, fall back to showing all towns
+                        if (filtered.length === 1) { // only placeholder
+                            populateCityOptions(originalCityOptions);
+                        } else {
+                            populateCityOptions(filtered);
+                        }
+                    }
+
+                    // trigger update after filtering
+                    updateShippingAndTotal();
+                    togglePaymentButton();
+                });
+            }
+            // Run an initial update in case the form was pre-filled (selecting a town should auto-fill region)
+            updateShippingAndTotal();
+            togglePaymentButton();
+        });
+        
+        function togglePaymentButton() {
+            const address = document.getElementById('address')?.value;
+            const city = document.getElementById('city')?.value;
+            const state = document.getElementById('state')?.value;
+            const paymentButton = document.getElementById('make-payment');
+
+            if (address && city && state) {
+                paymentButton.disabled = false;
+                paymentButton.classList.remove('bg-gray-300');
+                paymentButton.classList.add('bg-indigo-600','text-white','hover:bg-indigo-700');
+                paymentButton.innerHTML = `Pay GHC ${totalAmount.toFixed(2)} & Place Order`;
+                paymentButton.onclick = (e) => {
+                    e.preventDefault();
+                    initiatePaystackPayment();
+                };
+            } else {
+                paymentButton.disabled = true;
+                paymentButton.classList.remove('bg-indigo-600','text-white','hover:bg-indigo-700');
+                paymentButton.classList.add('bg-gray-300');
+                paymentButton.innerHTML = 'Fill required fields to enable payment';
+            }
+        }
+
+        function getShippingInfo() {
+            const city = document.getElementById('city')?.value;
+            const fee = (fulfillment === 'delivery') ? ((city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : lastEstimatedShipping) : 0;
+            return {
+                address: document.getElementById('address').value,
+                contact_phone: document.getElementById('contact-phone')?.value || '',
+                city: city,
+                state: document.getElementById('state').value,
+                zipcode: document.getElementById('zipcode').value || '',
+                country: 'Ghana',
+                shipping_fee: fee,
+                fulfillment: fulfillment,
+                shipping_speed: shippingSpeed
+            };
+        }
+
+        function initiatePaystackPayment() {
+            // Validate key before attempting payment
+            if (!paystackPublicKey || paystackPublicKey.trim() === '') {
+                alert('Payment system is not configured. Please contact support.');
+                console.error('Cannot initiate payment: Paystack key is missing');
+                return;
+            }
+            
+            const handler = PaystackPop.setup({
+                key: paystackPublicKey,
+                email: '',
+                amount: totalAmount * 100, // Paystack expects amount in kobo (pesewas)
+                currency: 'GHS',
+                ref: 'ORD-' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Customer Name",
+                            variable_name: "customer_name",
+                            value: ""
+                        }
+                    ]
+                },
+                callback: function(response) {
+                    // Payment successful
+                    verifyAndCompleteOrder(response.reference);
+                },
+                onClose: function() {
+                    alert('Payment window closed. Your order has not been placed.');
+                }
+            });
+            handler.openIframe();
+        }
+
+        function verifyAndCompleteOrder(reference) {
+            const shipping = getShippingInfo();
+            
+            fetch('/store/process_order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    'form': {
+                        'total': totalAmount
+                    },
+                    'shipping': shipping,
+                    'payment_reference': reference
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Payment confirmed! Order #' + data.order_id + ' has been placed successfully.');
+                window.location.href = '/store/orders/';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an issue confirming your payment. Please contact support with reference: ' + reference);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', togglePaymentButton);
+    </script>
+
+    </main>
+
+    
+    <footer class="bg-gray-800 text-gray-300 mt-auto">
+        <div class="container mx-auto px-6 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                <!-- Column 1: Company Info & Socials -->
+                <div class="space-y-4">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img src="https://res.cloudinary.com/dey547z7d/image/upload/v1762637341/site_static/rykcto60qb2cp7bhluel.webp" alt="Image Electronics Logo" class="w-10 h-10 object-contain rounded-full">
+                        <span class="text-xl font-bold text-white">Image Electronics</span>
+                    </a>
+                    <p class="text-sm text-gray-400">Your trusted source for quality electronics and expert services in Ghana.</p>
+                    <div class="flex space-x-4">
+                        <a href="https://web.facebook.com/IMAGEELECTRONICSGH" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/233242872458" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="hover:text-white hover:underline">Home</a></li>
+                        <li><a href="/store/" class="hover:text-white hover:underline">Products</a></li>
+                        <li><a href="/services/add/" class="hover:text-white hover:underline">Request a Service</a></li>
+                        <li><a href="/store/about-us/" class="hover:text-white hover:underline">About Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Our Policies -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Our Policies</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/store/privacy-policy/" class="hover:text-white hover:underline">Privacy Policy</a></li>
+                        <li><a href="/store/terms-conditions/" class="hover:text-white hover:underline">Terms & Conditions</a></li>
+                        <li><a href="/store/shipping-info/" class="hover:text-white hover:underline">Shipping Information</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Contact Us -->
+                <address class="not-italic">
+                    <h4 class="text-lg font-semibold text-white mb-4">Contact & Location</h4>
+                    <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Santa Maria, Accra, Ghana</p>
+                    <p class="mb-2"><i class="fas fa-envelope mr-2"></i><a href="mailto:imageelectronicsgh@yahoo.com" class="hover:text-white">imageelectronicsgh@yahoo.com</a></p>
+                    <p class="mb-2"><i class="fas fa-phone mr-2"></i><a href="tel:+233242872458" class="hover:text-white">+233 24 287 2458</a></p>
+                    <p><i class="fab fa-whatsapp mr-2"></i><a href="https://wa.me/233242872458" target="_blank" rel="noopener noreferrer" class="hover:text-white">WhatsApp Us</a></p>
+                </address>
+            </div>
+            <div class="mt-8 pt-6 border-t border-gray-700 text-center text-sm text-gray-500">
+                &copy; 2025 Image Electronics. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        // 1. Define the 'user' status for cart.js
+        var user = 'AnonymousUser';
+        
+        // 2. Define the CSRF Token for all AJAX POST requests
+        var csrftoken = 'zPGndtM4TFPJoapt2lvOjEd2OCE8SMtmGfwOVkRobIo2ssvIuGn3xVTIjJQHnhtN';
+        
+        console.log('User Status:', user);
+    </script>
+    
+    <!-- Emergency inline cart handlers: quick fallback for mobile clients that may be running cached external JS -->
+    <script type="text/javascript">
+        (function(){
+            if (window.__inline_cart_installed) return; window.__inline_cart_installed = true;
+
+            function showInlineToast(msg, timeout){
+                timeout = timeout || 2200;
+                try{
+                    var wrap = document.getElementById('mobile-toast-inner');
+                    if (!wrap) return;
+                    wrap.textContent = msg;
+                    wrap.classList.remove('hidden');
+                    wrap.style.opacity = '1';
+                    setTimeout(function(){ wrap.classList.add('hidden'); }, timeout);
+                }catch(e){/* ignore */}
+            }
+
+            function applyHeaderHtml(html){
+                try{
+                    if (!html) return;
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newHeader = doc.querySelector('header');
+                    var curHeader = document.querySelector('header');
+                    if (newHeader && curHeader) {
+                        curHeader.innerHTML = newHeader.innerHTML;
+                    }
+                }catch(e){/* ignore */}
+            }
+
+            function safeParseJSON(text){ try { return JSON.parse(text); } catch(e){ return null; } }
+
+            function inlineUpdate(productId, action){
+                try{
+                    var url = '/store/update_item/';
+                    var body = JSON.stringify({productId: productId, action: action});
+                    fetch(url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {'Content-Type':'application/json','X-CSRFToken': csrftoken},
+                        body: body
+                    }).then(function(resp){
+                        return resp.text().then(function(text){ return {ok: resp.ok, status: resp.status, text: text}; });
+                    }).then(function(r){
+                        var data = safeParseJSON(r.text) || {};
+                        if (!r.ok) {
+                            if (data.error === 'insufficient_stock') {
+                                showInlineToast(data.message || 'Insufficient stock');
+                            } else {
+                                showInlineToast('Cart update failed: ' + (data.message || r.status));
+                            }
+                            return;
+                        }
+                        // update counts from response
+                        try{
+                            var count = data.cartItems !== undefined ? data.cartItems : null;
+                            if (count !== null) {
+                                var el = document.getElementById('cart-total'); if (el) el.innerText = count;
+                                var el2 = document.getElementById('mobile-cart-count'); if (el2) el2.innerText = count;
+                                var el3 = document.getElementById('mobile-menu-cart-count'); if (el3) el3.innerText = count;
+                            }
+                        }catch(e){}
+                        // apply header_html if present
+                        if (data.header_html) applyHeaderHtml(data.header_html);
+                        showInlineToast('Cart updated');
+                        // On small screens, reload the page so the full page reflects server state
+                        try { if (window.innerWidth && window.innerWidth <= 640) { setTimeout(function(){ window.location.reload(); }, 300); } } catch(e){}
+                    }).catch(function(e){ showInlineToast('Cart update failed'); });
+                }catch(e){ /* ignore */ }
+            }
+
+            function attachInline(){
+                try{
+                    var buttons = document.querySelectorAll('.add-to-cart, .update-cart');
+                    for (var i=0;i<buttons.length;i++){
+                        var b = buttons[i];
+                        if (b.dataset && b.dataset.inlineListener) continue;
+                        (function(btn){
+                            var handler = function(ev){
+                                try{ ev.preventDefault(); }catch(e){}
+                                var pid = btn.dataset.product || btn.getAttribute('data-product');
+                                var act = btn.dataset.action || btn.getAttribute('data-action');
+                                if (!act) return;
+                                btn.dataset.inlineListener = '1';
+                                inlineUpdate(pid, act);
+                            };
+                            try{ btn.addEventListener('pointerdown', handler); }catch(e){}
+                            try{ btn.addEventListener('touchstart', handler); }catch(e){}
+                            try{ btn.addEventListener('click', handler); }catch(e){}
+                        })(b);
+                    }
+                }catch(e){ /* ignore */ }
+            }
+
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachInline); else attachInline();
+        })();
+    </script>
+
+    <script type="text/javascript" src="/static/store/js/cart.js?v=1764344460"></script>
+
+    <script type="text/javascript">
+        // Temporary runtime loader: force clients to fetch the latest cart.js by appending a timestamp.
+        // This is a short-lived mitigation to overcome aggressive client caching on mobile browsers.
+        (function(){
+            try{
+                var scripts = document.querySelectorAll('script[src*="store/js/cart.js"]');
+                if (!scripts || !scripts.length) return;
+                scripts.forEach(function(s){
+                    try{
+                        if (s.dataset.__forced) return;
+                        var base = s.src.split('?')[0];
+                        var forcedSrc = base + '?v=' + Date.now();
+                        var ns = document.createElement('script');
+                        ns.type = 'text/javascript';
+                        ns.src = forcedSrc;
+                        ns.async = false;
+                        ns.dataset.__forced = '1';
+                        s.parentNode.insertBefore(ns, s.nextSibling);
+                        // Remove old script after new one loads to avoid double bindings
+                        ns.addEventListener('load', function(){ try { s.remove(); } catch(e){} });
+                        s.dataset.__forced = '1';
+                    }catch(e){ /* ignore per-script errors */ }
+                });
+            }catch(e){ /* ignore */ }
+        })();
+    </script>
+
+    <script type="text/javascript">
+        (function(){
+            // Runtime patch: ensure same-origin fetches include cookies by default.
+            // This helps when an older static bundle lacking `credentials` is still being served.
+            try {
+                var _fetch = window.fetch;
+                if (!_fetch) return;
+                window.fetch = function(resource, init){
+                    try {
+                        var url = (typeof resource === 'string') ? resource : (resource && resource.url);
+                        var isSameOrigin = url && (url.indexOf('http') !== 0 || url.indexOf(window.location.origin) === 0);
+                        if (isSameOrigin) {
+                            init = init || {};
+                            if (!('credentials' in init)) {
+                                init.credentials = 'same-origin';
+                            }
+                        }
+                    } catch (e) { /* ignore */ }
+                    return _fetch.call(this, resource, init);
+                };
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+
+    
+    <!-- Mobile floating cart button (appears on small screens) -->
+    <div id="mobile-floating-cart" class="fixed bottom-6 right-4 z-50 md:hidden hidden">
+        <button id="mobile-cart-btn" class="flex items-center space-x-3 bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 7m13-7l2 7m-9 0a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
+            </svg>
+            <span class="font-medium">Cart</span>
+            <span id="mobile-cart-count" class="bg-red-500 text-xs rounded-full px-2 py-0.5">0</span>
+        </button>
+    </div>
+
+        <!-- Toast container for mobile notifications -->
+        <div id="mobile-toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+            <div id="mobile-toast-inner" class="hidden bg-gray-900 text-white px-4 py-2 rounded shadow-lg text-sm"></div>
+        </div>
+
+    <script type="text/javascript">
+    (function(){
+        // Helper: get cookie value
+        function getCookie(name) {
+            let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return v ? v.pop() : '';
+        }
+
+        var startTime = Date.now();
+        var path = window.location.pathname + window.location.search;
+        var title = document.title;
+        var referrer = document.referrer || '';
+
+        function sendPayload(payload, useBeacon){
+            var url = '/store/analytics/record/';
+            try{
+                if (useBeacon && navigator.sendBeacon) {
+                    var blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+                    navigator.sendBeacon(url, blob);
+                    return;
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                }).catch(function(e){/* ignore */});
+            }catch(e){/* ignore */}
+        }
+
+        // Ensure anonymous visitors have a session cookie before sending the first pageview.
+        // We attempt a lightweight GET to the ensure_session endpoint and wait briefly
+        // (300ms) for it to complete; if it doesn't, proceed with the pageview so
+        // we don't block rendering for long.
+        (function(){
+            var ensureUrl = '/store/session/ensure/';
+            try {
+                var ensurePromise = fetch(ensureUrl, { method: 'GET', credentials: 'same-origin' }).catch(function(){});
+                var timeout = new Promise(function(resolve){ setTimeout(resolve, 300); });
+                Promise.race([ensurePromise, timeout]).then(function(){
+                    sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+                }).catch(function(){
+                    // on unexpected errors, still send the pageview
+                    sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+                });
+            } catch (e) {
+                // If anything goes wrong, fall back to sending the pageview immediately
+                sendPayload({path: path, title: title, referrer: referrer, duration: null}, false);
+            }
+        })();
+
+        // On unload send duration (use sendBeacon when available)
+        window.addEventListener('beforeunload', function(){
+            var duration = (Date.now() - startTime) / 1000.0;
+            sendPayload({path: path, title: title, referrer: referrer, duration: duration}, true);
+        });
+    })();
+    </script>
+
+        <script>
+            // Mobile nav toggle
+            document.addEventListener('DOMContentLoaded', function(){
+                var btn = document.getElementById('nav-toggle');
+                var menu = document.getElementById('mobile-menu');
+                if (!btn || !menu) return;
+                btn.addEventListener('click', function(){
+                    if (menu.classList.contains('hidden')) {
+                        menu.classList.remove('hidden');
+                    } else {
+                        menu.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            // Mobile floating cart behavior: initialize count and click handler
+            document.addEventListener('DOMContentLoaded', function () {
+                try {
+                    var mobileWrap = document.getElementById('mobile-floating-cart');
+                    var mobileBtn = document.getElementById('mobile-cart-btn');
+                    var mobileCount = document.getElementById('mobile-cart-count');
+                    var headerCountEl = document.getElementById('cart-total');
+
+                    function syncFromHeader() {
+                        try {
+                            var headerText = headerCountEl ? headerCountEl.innerText.trim() : '';
+                            var parsed = parseInt(headerText || '0', 10) || 0;
+                            if (mobileCount) mobileCount.innerText = parsed;
+                            if (mobileWrap) {
+                                if (parsed > 0) mobileWrap.classList.remove('hidden'); else mobileWrap.classList.add('hidden');
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
+
+                    // initial sync
+                    syncFromHeader();
+
+                    if (mobileBtn) {
+                        mobileBtn.addEventListener('click', function (e) {
+                            // If user is authenticated go to cart, otherwise go to login
+                            try {
+                                if (typeof user !== 'undefined' && user !== 'AnonymousUser') {
+                                    window.location.href = '/store/cart/';
+                                } else {
+                                    window.location.href = '/accounts/login/';
+                                }
+                            } catch (ex) { console.error(ex); }
+                        });
+                    }
+                } catch (err) {
+                    console.debug('mobile cart init failed', err);
+                }
+            });
+        </script>
+
+</body>
+</html>

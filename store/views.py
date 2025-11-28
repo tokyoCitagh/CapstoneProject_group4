@@ -723,6 +723,17 @@ def process_order(request):
         except Exception:
             order.shipping_fee = 0
 
+        # Persist fulfillment and shipping speed if provided
+        try:
+            fulfillment_val = data.get('shipping', {}).get('fulfillment')
+            speed_val = data.get('shipping', {}).get('shipping_speed')
+            if fulfillment_val:
+                order.fulfillment = fulfillment_val
+            if speed_val:
+                order.shipping_speed = speed_val
+        except Exception:
+            logger.exception('Failed to set order fulfillment/shipping_speed')
+
         order.transaction_id = transaction_id
         order.complete = True
         # Clear any existing expected_delivery - admin will set it later if needed
