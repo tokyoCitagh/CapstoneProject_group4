@@ -145,6 +145,9 @@ class Order(models.Model):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     expected_delivery = models.DateTimeField(null=True, blank=True)
+    # Shipping fee stored on the order so totals include delivery cost
+    from decimal import Decimal
+    shipping_fee = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
         return str(self.id)
@@ -164,6 +167,12 @@ class Order(models.Model):
         # Sums the total cost across all OrderItems in this Order
         orderitems = self.orderitem_set.all()
         total = sum([item.get_total for item in orderitems])
+        # Add any shipping fee that has been set on the order
+        try:
+            total = total + (self.shipping_fee or 0)
+        except Exception:
+            # defensive: if shipping_fee missing or invalid, ignore
+            pass
         return total
 
     @property
@@ -199,6 +208,8 @@ class ShippingAddress(models.Model):
     # CRITICAL: Added 'country' field as it's typically required in checkout forms
     country = models.CharField(max_length=200, null=False, default='Ghana') 
     date_added = models.DateTimeField(auto_now_add=True)
+    # Persist shipping fee used for this shipment (optional)
+    shipping_fee = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.address

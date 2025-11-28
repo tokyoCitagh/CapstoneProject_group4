@@ -340,10 +340,23 @@ def checkout_view(request):
     context = {
         'items': items, 
         'order': order, 
+        'items_total': None,
         'cartItems': data['cartItems'],
         'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY
     } 
-    return render(request, 'store/checkout.html', context) 
+    # Compute server-side items subtotal (exclude any stored shipping_fee so "Subtotal" reflects items only)
+    try:
+        # If order is a model instance, compute from order items
+        items_total = sum([it.get_total for it in (items or [])])
+    except Exception:
+        try:
+            # Fallback: if order has get_cart_total and shipping_fee attr
+            items_total = float(getattr(order, 'get_cart_total', 0)) - float(getattr(order, 'shipping_fee', 0) or 0)
+        except Exception:
+            items_total = 0
+
+    context['items_total'] = items_total
+    return render(request, 'store/checkout.html', context)
 
 
 def update_item(request):
@@ -511,6 +524,7 @@ def process_order(request):
     """Handles the final submission of an order from the checkout page with Paystack payment verification."""
     import requests
     from django.conf import settings
+    from decimal import Decimal
     
     data = json.loads(request.body)
     
@@ -519,10 +533,20 @@ def process_order(request):
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         
         # --- 1. Security Check: Verify Total ---
-        total = float(data['form']['total'])
-        if round(total, 2) != round(order.get_cart_total, 2):
-             print(f"SECURITY ALERT: Total mismatch! Client: {total}, Server: {order.get_cart_total}")
-             return JsonResponse({'error': 'Total mismatch'}, status=400)
+        # The client sends a total that should equal the sum of item totals + shipping_fee.
+        total = Decimal(str(data['form']['total']))
+
+        # Compute items total server-side (do NOT rely on order.get_cart_total here because we
+        # will set order.shipping_fee afterwards).
+        items_total = sum([item.get_total for item in order.orderitem_set.all()])
+
+        # Read shipping fee supplied by client (fallback 0)
+        shipping_fee = Decimal(str(data.get('shipping', {}).get('shipping_fee', 0) or 0))
+
+        expected_total = (items_total + shipping_fee).quantize(Decimal('0.01'))
+        if total.quantize(Decimal('0.01')) != expected_total:
+            print(f"SECURITY ALERT: Total mismatch! Client: {total}, Expected: {expected_total} (items: {items_total} + shipping: {shipping_fee})")
+            return JsonResponse({'error': 'Total mismatch'}, status=400)
         
         # --- 2. Verify Paystack Payment ---
         payment_reference = data.get('payment_reference')
@@ -557,6 +581,12 @@ def process_order(request):
             transaction_id = str(timezone.now().timestamp())
              
         # --- 3. Finalize Order ---
+        # Persist shipping fee on the order and save
+        try:
+            order.shipping_fee = shipping_fee
+        except Exception:
+            order.shipping_fee = 0
+
         order.transaction_id = transaction_id
         order.complete = True
         # Clear any existing expected_delivery - admin will set it later if needed
@@ -586,6 +616,7 @@ def process_order(request):
                 state=data['shipping']['state'],
                 zipcode=data['shipping']['zipcode'],
                 country=data['shipping']['country'],
+                shipping_fee=shipping_fee
             )
         
         return JsonResponse({

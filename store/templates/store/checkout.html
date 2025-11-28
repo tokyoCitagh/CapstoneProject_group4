@@ -29,8 +29,44 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-sm text-gray-600">City <span class="text-red-600">*</span></label>
-                                <input id="city" name="city" type="text" class="mt-1 w-full border rounded px-3 py-2" required>
+                                <label class="block text-sm text-gray-600">City / Destination <span class="text-red-600">*</span></label>
+                                <select id="city" name="city" class="mt-1 w-full border rounded px-3 py-2 bg-white" required>
+                                    <option value="" disabled selected>Select destination town</option>
+                                    <option value="Kumasi">Kumasi</option>
+                                    <option value="Tamale">Tamale</option>
+                                    <option value="Bolga (Bolgatanga)">Bolga (Bolgatanga)</option>
+                                    <option value="Bawku">Bawku</option>
+                                    <option value="Wa">Wa</option>
+                                    <option value="Garu">Garu</option>
+                                    <option value="Takyiman (Techiman)">Takyiman (Techiman)</option>
+                                    <option value="Yeji">Yeji</option>
+                                    <option value="Sunyani">Sunyani</option>
+                                    <option value="Wenchi">Wenchi</option>
+                                    <option value="Dormaa">Dormaa</option>
+                                    <option value="Drobo">Drobo</option>
+                                    <option value="Nsawkaw">Nsawkaw</option>
+                                    <option value="Nkrankwanta">Nkrankwanta</option>
+                                    <option value="Ahafo Goaso">Ahafo Goaso</option>
+                                    <option value="Ahafo Mim">Ahafo Mim</option>
+                                    <option value="Ahafo Kasapii">Ahafo Kasapii</option>
+                                    <option value="Sankore">Sankore</option>
+                                    <option value="Cape Coast">Cape Coast</option>
+                                    <option value="Takoradi">Takoradi</option>
+                                    <option value="Tarkwa">Tarkwa</option>
+                                    <option value="Bogoso">Bogoso</option>
+                                    <option value="Prestea">Prestea</option>
+                                    <option value="Dunkwa (on Offin)">Dunkwa (on Offin)</option>
+                                    <option value="Diaso">Diaso</option>
+                                    <option value="Ash. Mampong (Ashanti Mampong)">Ash. Mampong (Ashanti Mampong)</option>
+                                    <option value="Ejura">Ejura</option>
+                                    <option value="Bibiani">Bibiani</option>
+                                    <option value="Enchi">Enchi</option>
+                                    <option value="Sefwi B. Nkwanta">Sefwi B. Nkwanta</option>
+                                    <option value="Sefwi Debiso">Sefwi Debiso</option>
+                                    <option value="Sefwi O. K. Krom">Sefwi O. K. Krom</option>
+                                    <option value="Suaman Dadieso">Suaman Dadieso</option>
+                                    <option value="Wassa Akropong">Wassa Akropong</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm text-gray-600">State / Region <span class="text-red-600">*</span></label>
@@ -95,15 +131,15 @@
                 <div class="mt-4">
                     <div class="flex justify-between text-sm text-gray-600">
                         <div>Subtotal</div>
-                        <div>GHC {{ order.get_cart_total|floatformat:2 }}</div>
+                        <div>GHC {{ items_total|floatformat:2 }}</div>
                     </div>
                     <div class="flex justify-between text-sm text-gray-600 mt-2">
                         <div>Shipping Fee</div>
-                        <div class="text-green-600">GHC 0.00</div>
+                        <div id="shipping-fee" class="text-green-600">GHC 0.00</div>
                     </div>
                     <div class="border-t mt-3 pt-3 flex justify-between items-center">
                         <div class="text-lg font-bold">Grand Total</div>
-                        <div class="text-xl font-bold text-indigo-600">GHC {{ order.get_cart_total|floatformat:2 }}</div>
+                        <div id="grand-total" class="text-xl font-bold text-indigo-600">GHC {{ order.get_cart_total|floatformat:2 }}</div>
                     </div>
                 </div>
 
@@ -119,8 +155,129 @@
 
     <script>
         const csrftoken = '{{ csrf_token }}';
-        const totalAmount = {{ order.get_cart_total|floatformat:2 }};
+        // Start with server-side cart total (items only). shipping_fee will be applied client-side
+        let totalAmount = parseFloat({{ order.get_cart_total|floatformat:2 }});
         const paystackPublicKey = '{{ paystack_public_key }}';
+
+        // Mapping of town -> shipping fee and town -> region
+        const SHIPPING_RATES = {
+            'Kumasi': 80.00,
+            'Tamale': 200.00,
+            'Bolga (Bolgatanga)': 225.00,
+            'Bawku': 235.00,
+            'Wa': 215.00,
+            'Garu': 240.00,
+            'Takyiman (Techiman)': 115.00,
+            'Yeji': 135.00,
+            'Sunyani': 115.00,
+            'Wenchi': 120.00,
+            'Dormaa': 125.00,
+            'Drobo': 125.00,
+            'Nsawkaw': 120.00,
+            'Nkrankwanta': 140.00,
+            'Ahafo Goaso': 115.00,
+            'Ahafo Mim': 115.00,
+            'Ahafo Kasapii': 125.00,
+            'Sankore': 115.00,
+            'Cape Coast': 65.00,
+            'Takoradi': 80.00,
+            'Tarkwa': 95.00,
+            'Bogoso': 105.00,
+            'Prestea': 115.00,
+            'Dunkwa (on Offin)': 115.00,
+            'Diaso': 120.00,
+            'Ash. Mampong (Ashanti Mampong)': 95.00,
+            'Ejura': 105.00,
+            'Bibiani': 105.00,
+            'Enchi': 145.00,
+            'Sefwi B. Nkwanta': 135.00,
+            'Sefwi Debiso': 145.00,
+            'Sefwi O. K. Krom': 150.00,
+            'Suaman Dadieso': 150.00,
+            'Wassa Akropong': 120.00
+        };
+
+        const TOWN_TO_REGION = {
+            'Kumasi': 'Ashanti',
+            'Tamale': 'Northern',
+            'Bolga (Bolgatanga)': 'Upper East',
+            'Bawku': 'Upper East',
+            'Wa': 'Upper West',
+            'Garu': 'Upper East',
+            'Takyiman (Techiman)': 'Bono East',
+            'Yeji': 'Bono East',
+            'Sunyani': 'Bono',
+            'Wenchi': 'Bono',
+            'Dormaa': 'Bono',
+            'Drobo': 'Bono',
+            'Nsawkaw': 'Bono',
+            'Nkrankwanta': 'Bono',
+            'Ahafo Goaso': 'Ahafo',
+            'Ahafo Mim': 'Ahafo',
+            'Ahafo Kasapii': 'Ahafo',
+            'Sankore': 'Ahafo',
+            'Cape Coast': 'Central',
+            'Takoradi': 'Western',
+            'Tarkwa': 'Western',
+            'Bogoso': 'Western',
+            'Prestea': 'Western',
+            'Dunkwa (on Offin)': 'Central',
+            'Diaso': 'Central',
+            'Ash. Mampong (Ashanti Mampong)': 'Ashanti',
+            'Ejura': 'Ashanti',
+            'Bibiani': 'Western North',
+            'Enchi': 'Western North',
+            'Sefwi B. Nkwanta': 'Western North',
+            'Sefwi Debiso': 'Western North',
+            'Sefwi O. K. Krom': 'Western North',
+            'Suaman Dadieso': 'Western North',
+            'Wassa Akropong': 'Western North'
+        };
+
+        function formatGhc(amount) {
+            return 'GHC ' + Number(amount).toFixed(2);
+        }
+
+        function updateShippingAndTotal() {
+            const city = document.getElementById('city')?.value;
+            const stateSelect = document.getElementById('state');
+            const shippingFeeElem = document.getElementById('shipping-fee');
+            const grandTotalElem = document.getElementById('grand-total');
+
+            let shipping = 0;
+            if (city && SHIPPING_RATES[city] !== undefined) {
+                shipping = SHIPPING_RATES[city];
+                // auto-select the region
+                if (TOWN_TO_REGION[city]) {
+                    stateSelect.value = TOWN_TO_REGION[city];
+                }
+            } else {
+                // no city selected or unknown -> try to use selected state's default (not implemented)
+                shipping = 0;
+            }
+
+            // Update UI
+            if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
+
+            const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
+            if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+
+            // Update the global totalAmount used by Paystack
+            totalAmount = newTotal;
+            // Also update payment button text when possible
+            const paymentButton = document.getElementById('make-payment');
+            if (paymentButton && !paymentButton.disabled) {
+                paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+            }
+        }
+
+        // update whenever city or state changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cityEl = document.getElementById('city');
+            const stateEl = document.getElementById('state');
+            if (cityEl) cityEl.addEventListener('change', function(){ updateShippingAndTotal(); togglePaymentButton(); });
+            if (stateEl) stateEl.addEventListener('change', function(){ updateShippingAndTotal(); togglePaymentButton(); });
+        });
         
         function togglePaymentButton() {
             const address = document.getElementById('address')?.value;
@@ -146,12 +303,15 @@
         }
 
         function getShippingInfo() {
+            const city = document.getElementById('city')?.value;
+            const fee = (city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : 0;
             return {
                 address: document.getElementById('address').value,
-                city: document.getElementById('city').value,
+                city: city,
                 state: document.getElementById('state').value,
                 zipcode: document.getElementById('zipcode').value || '',
-                country: 'Ghana'
+                country: 'Ghana',
+                shipping_fee: fee
             };
         }
 
