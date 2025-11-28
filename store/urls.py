@@ -42,4 +42,6 @@ urlpatterns = [
     path('shipping/estimate/', views.shipping_estimate, name='shipping_estimate'),
     # Temporary debug endpoint to inspect live site visit counts
     path('analytics/debug/site_visits/', views.debug_site_visits, name='debug_site_visits'),
+    # Temporary admin-only endpoint to run migrations remotely (use with caution)
+    path('run-migrations/', views.run_migrations, name='run_migrations'),
 ]
