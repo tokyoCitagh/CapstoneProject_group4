@@ -1567,7 +1567,9 @@ def orders_list(request):
     """Portal view: list orders for staff."""
     # Filtering: keyword search (q) and optional date range (start_date, end_date)
     # Only show complete orders (exclude incomplete carts)
-    orders = Order.objects.filter(complete=True).select_related('customer').order_by('-date_ordered')
+    # Defer new fields that may not exist yet in production DB (migration 0015)
+    # This avoids SQL errors when the migration hasn't been applied yet.
+    orders = Order.objects.filter(complete=True).select_related('customer').defer('fulfillment', 'shipping_speed').order_by('-date_ordered')
 
     q = request.GET.get('q', '').strip()
     start_date = request.GET.get('start_date', '').strip()
