@@ -22,6 +22,35 @@
                             </div>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-2">Fulfillment</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    <input id="fulfillment-delivery" type="radio" name="fulfillment" value="delivery" class="form-radio" checked>
+                                    <span class="ml-2">Delivery</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input id="fulfillment-pickup" type="radio" name="fulfillment" value="pickup" class="form-radio">
+                                    <span class="ml-2">Pick-up (Free)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-2">Delivery Speed</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    <input id="shipping-standard" type="radio" name="shipping_speed" value="standard" class="form-radio" checked>
+                                    <span class="ml-2">Standard Delivery</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input id="shipping-express" type="radio" name="shipping_speed" value="express" class="form-radio">
+                                    <span class="ml-2">Express Delivery (faster)</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Express delivery is usually faster. Standard cost doubles for Express unless your order qualifies for free delivery (orders over GHC 3000).</p>
+                        </div>
+
                         <div>
                             <label class="block text-sm text-gray-600">Street Address <span class="text-red-600">*</span></label>
                             <input id="address" name="address" type="text" class="mt-1 w-full border rounded px-3 py-2" placeholder="House number, street, landmark" required>
@@ -211,6 +240,8 @@
         SHIPPING_RATES['Dambai'] = 220.00;  // Oti
         SHIPPING_RATES['Damongo'] = 210.00; // Savannah
         SHIPPING_RATES['Nalerigu'] = 250.00; // North East
+        // Flat rate for Accra (as requested)
+        SHIPPING_RATES['Accra'] = 40.00;
 
         const TOWN_TO_REGION = {
             'Kumasi': 'Ashanti',
@@ -263,76 +294,93 @@
 
         // lastEstimatedShipping holds the most recent dynamically estimated fee
         let lastEstimatedShipping = 0;
+        // fulfillment: 'delivery' or 'pickup'
+        let fulfillment = 'delivery';
+        // shippingSpeed: 'standard' or 'express'
+        let shippingSpeed = 'standard';
 
         function updateShippingAndTotal() {
             const city = document.getElementById('city')?.value;
             const stateSelect = document.getElementById('state');
             const shippingFeeElem = document.getElementById('shipping-fee');
             const grandTotalElem = document.getElementById('grand-total');
+            const itemsSubtotal = parseFloat({{ items_total|floatformat:2 }});
 
-            let shipping = 0;
             // Auto-select the region for the selected town even if we don't have a static rate
             if (city && stateSelect && TOWN_TO_REGION[city]) {
                 stateSelect.value = TOWN_TO_REGION[city];
             }
 
+            // If pickup is selected, shipping is zero
+            if (fulfillment !== 'delivery') {
+                if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(0);
+                const newTotal = itemsSubtotal;
+                if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                totalAmount = newTotal;
+                const paymentButton = document.getElementById('make-payment');
+                if (paymentButton && !paymentButton.disabled) {
+                    paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                }
+                return;
+            }
+
+            // helper to apply speed/discount logic and update UI
+            function applySpeedAndUpdate(baseShipping) {
+                let standard = baseShipping;
+                let express = baseShipping * 2;
+                // Orders over 3000 qualify for free standard delivery
+                if (itemsSubtotal >= 3000) {
+                    standard = 0;
+                    // If user still opts for express after qualifying for free delivery,
+                    // express costs only the original base (not doubled)
+                    express = baseShipping;
+                }
+                const effective = (shippingSpeed === 'express') ? express : standard;
+                if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(effective);
+                const newTotal = itemsSubtotal + effective;
+                if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                totalAmount = newTotal;
+                const paymentButton = document.getElementById('make-payment');
+                if (paymentButton && !paymentButton.disabled) {
+                    paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                }
+            }
+
+            // Determine base shipping (synchronous or async)
             if (city && SHIPPING_RATES[city] !== undefined) {
-                shipping = SHIPPING_RATES[city];
-                lastEstimatedShipping = shipping;
+                const base = SHIPPING_RATES[city];
+                lastEstimatedShipping = base;
+                applySpeedAndUpdate(base);
             } else if (city) {
                 // Unknown town: asynchronously ask server for estimate via TomTom
                 fetch(`/store/shipping/estimate/?q=${encodeURIComponent(city)}`)
                     .then(r => r.json())
                     .then(data => {
+                        let base = 0;
                         if (data && data.shipping_fee !== undefined) {
-                            shipping = parseFloat(data.shipping_fee);
-                            lastEstimatedShipping = shipping;
+                            base = parseFloat(data.shipping_fee);
+                            lastEstimatedShipping = base;
                             // Auto-fill region from our mapping if available
                             if (TOWN_TO_REGION[city] && stateSelect) {
                                 stateSelect.value = TOWN_TO_REGION[city];
                             }
                         } else {
-                            shipping = 0;
+                            base = 0;
                             lastEstimatedShipping = 0;
                         }
-                        if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
-                        const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
-                        if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
-                        totalAmount = newTotal;
-                        const paymentButton = document.getElementById('make-payment');
-                        if (paymentButton && !paymentButton.disabled) {
-                            paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
-                        }
+                        applySpeedAndUpdate(base);
                     })
                     .catch(() => {
                         // failed to fetch estimate: fall back to zero
-                        shipping = 0;
                         lastEstimatedShipping = 0;
-                        if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
-                        const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
-                        if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
-                        totalAmount = newTotal;
+                        applySpeedAndUpdate(0);
                     });
                 // return early because update will happen in the fetch callback
                 return;
             } else {
                 // no city selected
-                shipping = 0;
                 lastEstimatedShipping = 0;
-            }
-
-            // Update UI
-            if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
-
-            const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
-            if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
-
-            // Update the global totalAmount used by Paystack
-            totalAmount = newTotal;
-            // Also update payment button text when possible
-            const paymentButton = document.getElementById('make-payment');
-            if (paymentButton && !paymentButton.disabled) {
-                paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                applySpeedAndUpdate(0);
             }
         }
 
@@ -351,6 +399,17 @@
             }
 
             if (cityEl) cityEl.addEventListener('change', function(){ updateShippingAndTotal(); togglePaymentButton(); });
+
+            // fulfillment radio buttons
+            const fulfillmentDelivery = document.getElementById('fulfillment-delivery');
+            const fulfillmentPickup = document.getElementById('fulfillment-pickup');
+            if (fulfillmentDelivery) fulfillmentDelivery.addEventListener('change', function(){ fulfillment = 'delivery'; updateShippingAndTotal(); togglePaymentButton(); });
+            if (fulfillmentPickup) fulfillmentPickup.addEventListener('change', function(){ fulfillment = 'pickup'; updateShippingAndTotal(); togglePaymentButton(); });
+            // shipping speed radio buttons
+            const shippingStandard = document.getElementById('shipping-standard');
+            const shippingExpress = document.getElementById('shipping-express');
+            if (shippingStandard) shippingStandard.addEventListener('change', function(){ shippingSpeed = 'standard'; updateShippingAndTotal(); togglePaymentButton(); });
+            if (shippingExpress) shippingExpress.addEventListener('change', function(){ shippingSpeed = 'express'; updateShippingAndTotal(); togglePaymentButton(); });
 
             // When a region is selected, filter the town list to towns in that region
             if (stateEl) {
@@ -423,14 +482,16 @@
 
         function getShippingInfo() {
             const city = document.getElementById('city')?.value;
-            const fee = (city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : lastEstimatedShipping;
+            const fee = (fulfillment === 'delivery') ? ((city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : lastEstimatedShipping) : 0;
             return {
                 address: document.getElementById('address').value,
                 city: city,
                 state: document.getElementById('state').value,
                 zipcode: document.getElementById('zipcode').value || '',
                 country: 'Ghana',
-                shipping_fee: fee
+                shipping_fee: fee,
+                fulfillment: fulfillment,
+                shipping_speed: shippingSpeed
             };
         }
 
