@@ -21,6 +21,8 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 from .models import PageView
 logger = logging.getLogger(__name__)
 from django.template.loader import render_to_string
+import requests
+import time
 
 # --- CRITICAL IMPORTS ---
 from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
@@ -357,6 +359,140 @@ def checkout_view(request):
 
     context['items_total'] = items_total
     return render(request, 'store/checkout.html', context)
+
+
+
+@require_GET
+def shipping_estimate(request):
+    """Estimate shipping fee using TomTom APIs for destinations not in static list.
+
+    Query params:
+      - q: place name (town)
+      - lat, lon: optional coords
+
+    Returns JSON: {found:bool, shipping_fee: float, distance_km: float, source: 'static'|'tomtom_estimate'}
+    """
+    from django.conf import settings
+
+    TOMTOM_KEY = getattr(settings, 'TOMTOM_API_KEY', None)
+    ORIGIN = (
+        float(getattr(settings, 'SHIPPING_ORIGIN_LAT', 5.6037)),
+        float(getattr(settings, 'SHIPPING_ORIGIN_LON', -0.1870))
+    )
+
+    SHIPPING_RATES = {
+        'Kumasi': 80.00,
+        'Tamale': 200.00,
+        'Bolga (Bolgatanga)': 225.00,
+        'Bawku': 235.00,
+        'Wa': 215.00,
+        'Garu': 240.00,
+        'Takyiman (Techiman)': 115.00,
+        'Yeji': 135.00,
+        'Sunyani': 115.00,
+        'Wenchi': 120.00,
+        'Dormaa': 125.00,
+        'Drobo': 125.00,
+        'Nsawkaw': 120.00,
+        'Nkrankwanta': 140.00,
+        'Ahafo Goaso': 115.00,
+        'Ahafo Mim': 115.00,
+        'Ahafo Kasapii': 125.00,
+        'Sankore': 115.00,
+        'Cape Coast': 65.00,
+        'Takoradi': 80.00,
+        'Tarkwa': 95.00,
+        'Bogoso': 105.00,
+        'Prestea': 115.00,
+        'Dunkwa (on Offin)': 115.00,
+        'Diaso': 120.00,
+        'Ash. Mampong (Ashanti Mampong)': 95.00,
+        'Ejura': 105.00,
+        'Bibiani': 105.00,
+        'Enchi': 145.00,
+        'Sefwi B. Nkwanta': 135.00,
+        'Sefwi Debiso': 145.00,
+        'Sefwi O. K. Krom': 150.00,
+        'Suaman Dadieso': 150.00,
+        'Wassa Akropong': 120.00
+    }
+
+    q = request.GET.get('q')
+    lat = request.GET.get('lat')
+    lon = request.GET.get('lon')
+
+    # immediate static match
+    if q and q in SHIPPING_RATES:
+        return JsonResponse({'found': True, 'shipping_fee': SHIPPING_RATES[q], 'source': 'static'})
+
+    if not TOMTOM_KEY:
+        return JsonResponse({'error': 'TomTom API key not configured'}, status=500)
+
+    def geocode(place_query):
+        url = f'https://api.tomtom.com/search/2/geocode/{requests.utils.requote_uri(place_query)}.json'
+        params = {'key': TOMTOM_KEY, 'countrySet': 'GH'}
+        r = requests.get(url, params=params, timeout=8)
+        r.raise_for_status()
+        data = r.json()
+        if data.get('results'):
+            pos = data['results'][0]['position']
+            return float(pos['lat']), float(pos['lon'])
+        return None
+
+    def route_distance_meters(o, d):
+        origin = f"{o[0]},{o[1]}"
+        dest = f"{d[0]},{d[1]}"
+        url = f'https://api.tomtom.com/routing/1/calculateRoute/{origin}:{dest}/json'
+        params = {'key': TOMTOM_KEY, 'traffic': 'false'}
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        summary = data.get('routes', [{}])[0].get('summary', {})
+        return summary.get('lengthInMeters')
+
+    dest_coords = None
+    if lat and lon:
+        try:
+            dest_coords = (float(lat), float(lon))
+        except Exception:
+            dest_coords = None
+
+    if not dest_coords and q:
+        try:
+            dest_coords = geocode(q)
+        except Exception as e:
+            logger.exception('TomTom geocode failed: %s', e)
+            return JsonResponse({'error': 'Geocoding failed'}, status=500)
+
+    if not dest_coords:
+        return JsonResponse({'error': 'Destination not found'}, status=404)
+
+    # Build known-town cache with average per-km rate on first run
+    if not hasattr(shipping_estimate, '_avg_rate') or shipping_estimate._avg_rate is None:
+        rates = []
+        shipping_estimate._known_cache = {}
+        for town, fare in SHIPPING_RATES.items():
+            try:
+                coords = geocode(town)
+                if coords:
+                    meters = route_distance_meters(ORIGIN, coords)
+                    km = max(0.001, meters / 1000.0)
+                    rate = float(fare) / km
+                    shipping_estimate._known_cache[town] = {'coords': coords, 'fare': float(fare), 'km': km, 'rate': rate}
+                    rates.append(rate)
+                    time.sleep(0.12)
+            except Exception:
+                continue
+        shipping_estimate._avg_rate = (sum(rates) / len(rates)) if rates else 1.0
+
+    try:
+        meters = route_distance_meters(ORIGIN, dest_coords)
+        km = meters / 1000.0 if meters else 0
+        est_fare = round(km * (shipping_estimate._avg_rate or 1.0), 2)
+        return JsonResponse({'found': True, 'shipping_fee': est_fare, 'distance_km': round(km,3), 'source': 'tomtom_estimate'})
+    except Exception as e:
+        logger.exception('Error computing route: %s', e)
+        return JsonResponse({'error': 'Routing failed'}, status=500)
 
 
 def update_item(request):

@@ -238,6 +238,9 @@
             return 'GHC ' + Number(amount).toFixed(2);
         }
 
+        // lastEstimatedShipping holds the most recent dynamically estimated fee
+        let lastEstimatedShipping = 0;
+
         function updateShippingAndTotal() {
             const city = document.getElementById('city')?.value;
             const stateSelect = document.getElementById('state');
@@ -247,13 +250,48 @@
             let shipping = 0;
             if (city && SHIPPING_RATES[city] !== undefined) {
                 shipping = SHIPPING_RATES[city];
+                lastEstimatedShipping = shipping;
                 // auto-select the region
                 if (TOWN_TO_REGION[city]) {
                     stateSelect.value = TOWN_TO_REGION[city];
                 }
+            } else if (city) {
+                // Unknown town: asynchronously ask server for estimate via TomTom
+                fetch(`/store/shipping/estimate/?q=${encodeURIComponent(city)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.shipping_fee !== undefined) {
+                            shipping = parseFloat(data.shipping_fee);
+                            lastEstimatedShipping = shipping;
+                            // Optionally auto-fill region if server provides it later
+                        } else {
+                            shipping = 0;
+                            lastEstimatedShipping = 0;
+                        }
+                        if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
+                        const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
+                        if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                        totalAmount = newTotal;
+                        const paymentButton = document.getElementById('make-payment');
+                        if (paymentButton && !paymentButton.disabled) {
+                            paymentButton.innerHTML = `Pay GHC ${Number(totalAmount).toFixed(2)} & Place Order`;
+                        }
+                    })
+                    .catch(() => {
+                        // failed to fetch estimate: fall back to zero
+                        shipping = 0;
+                        lastEstimatedShipping = 0;
+                        if (shippingFeeElem) shippingFeeElem.innerText = formatGhc(shipping);
+                        const newTotal = parseFloat({{ items_total|floatformat:2 }}) + parseFloat(shipping);
+                        if (grandTotalElem) grandTotalElem.innerText = formatGhc(newTotal);
+                        totalAmount = newTotal;
+                    });
+                // return early because update will happen in the fetch callback
+                return;
             } else {
-                // no city selected or unknown -> try to use selected state's default (not implemented)
+                // no city selected
                 shipping = 0;
+                lastEstimatedShipping = 0;
             }
 
             // Update UI
@@ -304,7 +342,7 @@
 
         function getShippingInfo() {
             const city = document.getElementById('city')?.value;
-            const fee = (city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : 0;
+            const fee = (city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : lastEstimatedShipping;
             return {
                 address: document.getElementById('address').value,
                 city: city,

@@ -38,6 +38,8 @@ urlpatterns = [
     path('analytics/record/', views.record_page_view, name='record_page_view'),
     # Ensure session endpoint (call from client to force session creation)
     path('session/ensure/', views.ensure_session, name='ensure_session'),
+    # Shipping estimate (TomTom-backed) for towns not in static list
+    path('shipping/estimate/', views.shipping_estimate, name='shipping_estimate'),
     # Temporary debug endpoint to inspect live site visit counts
     path('analytics/debug/site_visits/', views.debug_site_visits, name='debug_site_visits'),
 ]
