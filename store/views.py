@@ -1610,14 +1610,34 @@ def orders_list(request):
     )['total'] or 0
     
     # Total revenue from filtered orders
-    total_revenue = sum(order.get_cart_total for order in orders)
-    
+    from django.db import ProgrammingError
+
+    total_revenue = 0
+    has_order_fulfillment = True
+    try:
+        total_revenue = sum(order.get_cart_total for order in orders)
+    except ProgrammingError:
+        # The DB may not yet have the new `fulfillment` / `shipping_speed` columns
+        # (migration 0015). Defer those fields and re-evaluate so the portal
+        # doesn't return a 500 while migrations are pending.
+        logger = logging.getLogger(__name__)
+        logger.exception('ProgrammingError while computing total_revenue; deferring new order fields')
+        try:
+            orders = orders.defer('fulfillment', 'shipping_speed')
+            total_revenue = sum(order.get_cart_total for order in orders)
+            has_order_fulfillment = False
+        except Exception:
+            # Give up and show zero to avoid another crash
+            logger.exception('Fallback revenue computation failed')
+            total_revenue = 0
+
     # Average order value
     avg_order_value = total_revenue / total_orders if total_orders > 0 else 0
 
     context = {
         'orders': orders,
         'page_title': 'Orders',
+        'has_order_fulfillment': has_order_fulfillment,
         'q': q,
         'start_date': start_date,
         'end_date': end_date,
@@ -1638,7 +1658,16 @@ def orders_list(request):
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def order_detail(request, pk):
     """Portal view: show a single order and its items."""
-    order = get_object_or_404(Order, pk=pk)
+    from django.db import ProgrammingError
+    try:
+        order = Order.objects.select_related('customer').get(pk=pk)
+        has_order_fulfillment = True
+    except ProgrammingError:
+        logger = logging.getLogger(__name__)
+        logger.exception('ProgrammingError when fetching order detail; deferring new order fields')
+        # Try fetching without the new fields so the page can render while migrations run
+        order = Order.objects.select_related('customer').defer('fulfillment', 'shipping_speed').get(pk=pk)
+        has_order_fulfillment = False
 
     # Handle staff updates: change status and expected_delivery
     if request.method == 'POST':
@@ -1694,6 +1723,7 @@ def order_detail(request, pk):
         'page_title': f'Order #{order.pk}',
         # expose choices for form rendering
         'status_choices': Order.STATUS_CHOICES if hasattr(Order, 'STATUS_CHOICES') else [],
+        'has_order_fulfillment': has_order_fulfillment,
     }
     return render(request, 'store/order_detail.html', context)
 

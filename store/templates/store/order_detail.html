@@ -15,7 +15,13 @@
       {% load tz %}
       <p><strong>Date:</strong> {{ order.date_ordered|localtime|date:"F d, Y g:i A" }}</p>
       <p><strong>Status:</strong> {{ order.get_status_display }}</p>
-      <p><strong>Fulfillment:</strong> {% if order.fulfillment == 'pickup' %}Pick-up{% else %}Delivery ({{ order.shipping_speed|capfirst }}){% endif %}</p>
+      <p><strong>Fulfillment:</strong>
+        {% if has_order_fulfillment|default:True %}
+          {% if order.fulfillment == 'pickup' %}Pick-up{% else %}Delivery ({{ order.shipping_speed|capfirst }}){% endif %}
+        {% else %}
+          Delivery
+        {% endif %}
+      </p>
       {% if order.shipping_fee %}
         <p><strong>Shipping Fee:</strong> GHC {{ order.shipping_fee|floatformat:2 }}</p>
       {% endif %}
