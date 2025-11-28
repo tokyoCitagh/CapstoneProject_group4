@@ -50,6 +50,7 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=200, null=True)
     email = models.CharField(max_length=200, null=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.name if self.name else 'Guest Customer'
@@ -210,6 +211,8 @@ class ShippingAddress(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     # Persist shipping fee used for this shipment (optional)
     shipping_fee = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    # Persist contact phone number used for this shipment (optional)
+    phone = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.address

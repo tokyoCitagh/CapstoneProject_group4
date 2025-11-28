@@ -744,6 +744,7 @@ def process_order(request):
         
         # --- 5. Save Shipping Address ---
         if order.shipping:
+            phone = data.get('shipping', {}).get('contact_phone') or ''
             ShippingAddress.objects.create(
                 customer=customer,
                 order=order,
@@ -752,8 +753,17 @@ def process_order(request):
                 state=data['shipping']['state'],
                 zipcode=data['shipping']['zipcode'],
                 country=data['shipping']['country'],
-                shipping_fee=shipping_fee
+                shipping_fee=shipping_fee,
+                phone=phone
             )
+            # Persist user's phone number if provided
+            try:
+                if phone:
+                    customer.phone = phone
+                    customer.save()
+            except Exception:
+                # Non-fatal: if customer model doesn't accept phone or save fails, continue
+                logger.exception('Failed to save customer phone')
         
         return JsonResponse({
             'message': 'Payment confirmed and order completed',

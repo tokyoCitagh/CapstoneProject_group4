@@ -20,7 +20,11 @@
                             </div>
                             <div>
                                 <label class="block text-sm text-gray-600">Phone Number</label>
-                                <input id="contact-phone" name="contact_phone" type="tel" class="mt-1 w-full border rounded px-3 py-2 bg-gray-50" value="{{ request.user.customer.phone|default:request.user.email }}" placeholder="e.g. +233 24 287 2458" {% if not request.user.is_authenticated %}disabled{% else %}disabled{% endif %}>
+                                {% if request.user.is_authenticated %}
+                                <input id="contact-phone" name="contact_phone" type="tel" class="mt-1 w-full border rounded px-3 py-2" value="{{ request.user.customer.phone|default:'' }}" placeholder="e.g. +233 24 287 2458">
+                                {% else %}
+                                <input id="contact-phone" name="contact_phone" type="tel" class="mt-1 w-full border rounded px-3 py-2" value="" placeholder="e.g. +233 24 287 2458">
+                                {% endif %}
                             </div>
                         </div>
 
@@ -487,6 +491,7 @@
             const fee = (fulfillment === 'delivery') ? ((city && SHIPPING_RATES[city] !== undefined) ? SHIPPING_RATES[city] : lastEstimatedShipping) : 0;
             return {
                 address: document.getElementById('address').value,
+                contact_phone: document.getElementById('contact-phone')?.value || '',
                 city: city,
                 state: document.getElementById('state').value,
                 zipcode: document.getElementById('zipcode').value || '',
