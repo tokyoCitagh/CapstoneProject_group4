@@ -29,6 +29,16 @@ _csrf = config('CSRF_TRUSTED_ORIGINS', default='')
 if _csrf:
     CSRF_TRUSTED_ORIGINS = [u.strip() for u in _csrf.split(',') if u.strip()]
 
+# Ensure the production domains are trusted for CSRF even if the environment
+# variable wasn't set (avoids CSRF 403 immediately after adding a custom
+# domain). We prefer configuring via the environment, but include a safe
+# fallback so the app accepts POSTs from the known custom domains.
+if 'CSRF_TRUSTED_ORIGINS' not in globals():
+    CSRF_TRUSTED_ORIGINS = []
+for _origin in ("https://www.imageelectronics.org", "https://imageelectronics.org"):
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
+
 # NOTE: Ensure DEBUG=False in production. DEBUG can be toggled via the DEBUG env var above.
 
 # Application definition
