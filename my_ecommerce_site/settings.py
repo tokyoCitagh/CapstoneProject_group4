@@ -15,6 +15,14 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 _allowed = config('ALLOWED_HOSTS', default='')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else []
 
+# Ensure common deployment domains are allowed even if env isn't set or
+# to guarantee the site accepts requests immediately after adding a
+# custom domain via the hosting control panel. This helps avoid a
+# transient DisallowedHost 400 when DNS changes propagate.
+for _host in ("www.imageelectronics.org", "imageelectronics.org"):
+    if _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+
 # Allow configuring CSRF trusted origins via environment (comma-separated list)
 # Useful for deployment platforms where you can't edit settings directly.
 _csrf = config('CSRF_TRUSTED_ORIGINS', default='')
