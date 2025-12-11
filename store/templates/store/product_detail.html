@@ -77,16 +77,26 @@
                 </div>
             </div>
 
-            <!-- Additional Details -->
+            <!-- Additional Details: Specifications (only show if present) -->
+            {% if product.description or product.specifications.exists %}
             <div class="mt-10 border-t pt-6">
+                {% if product.specifications.exists %}
                 <h3 class="text-xl font-semibold mb-3">Product Specifications</h3>
                 <ul class="space-y-2 text-gray-600">
-                    <li><strong>Category:</strong> {{ product.category.name|default:"Uncategorized" }}</li>
-                    <li><strong>SKU:</strong> {{ product.sku|default:"N/A" }}</li>
-                    <li><strong>Weight:</strong> {{ product.weight|default:"N/A" }}</li>
-                    <!-- Add more product fields as needed -->
+                    {% for spec in product.specifications.all %}
+                        <li><strong>{{ spec.name }}:</strong> {{ spec.value }}</li>
+                    {% endfor %}
                 </ul>
+                {% endif %}
+
+                {% if product.description %}
+                <div class="mt-4">
+                    <h3 class="text-xl font-semibold mb-2">Description</h3>
+                    <div class="text-gray-700">{{ product.description|linebreaksbr }}</div>
+                </div>
+                {% endif %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

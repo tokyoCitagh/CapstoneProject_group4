@@ -204,6 +204,34 @@
                 </div>
                 {% endif %}
 
+                {# Product Specifications formset (name / value pairs) #}
+                {% if spec_formset %}
+                <hr style="margin: 20px 0;">
+                <h3>Product Specifications</h3>
+                {{ spec_formset.management_form }}
+                <div style="margin-top:10px;">
+                    {% for sf in spec_formset.forms %}
+                        <div class="form-row" style="align-items: center; border-bottom: 1px dashed #eee; padding:8px 0;">
+                            <div style="flex:1; max-width: 45%; margin-right: 8px;">
+                                {{ sf.name.label_tag }}
+                                {{ sf.name }}
+                            </div>
+                            <div style="flex:1; max-width: 45%; margin-right: 8px;">
+                                {{ sf.value.label_tag }}
+                                {{ sf.value }}
+                            </div>
+                            <div style="width:80px; text-align:center;">
+                                {{ sf.sort_order.label_tag }}
+                                {{ sf.sort_order }}
+                            </div>
+                            <div style="width:70px; text-align:center;">
+                                {% if sf.DELETE %}{{ sf.DELETE }}<br><small>Delete</small>{% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
             </div>
             
             <hr style="margin: 20px 0;">

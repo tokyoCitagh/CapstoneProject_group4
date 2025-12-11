@@ -1,5 +1,6 @@
 # store/views.py (FINAL UPDATED - MANUAL AUTHENTICATION LOGIC WITH NEXT/ACTIVE CHECKS)
 from django.shortcuts import render, redirect, get_object_or_404
+from django.forms import inlineformset_factory
 from django.db.models import Sum, Count
 from django.db.models import Q 
 from django.http import JsonResponse, HttpResponse
@@ -1739,6 +1740,9 @@ def edit_product(request, pk):
     if request.method == 'POST':
         form = ProductEditForm(request.POST, request.FILES, instance=product)
         image_formset = ImageFormSet(request.POST, request.FILES, instance=product)
+        # Specification formset (allow add/delete of specs)
+        SpecFormSet = inlineformset_factory(Product, ProductSpecification, fields=('name','value','sort_order'), extra=1, can_delete=True)
+        spec_formset = SpecFormSet(request.POST, instance=product)
 
         # Diagnostic logging: record incoming files and which storage backend is active.
         try:
@@ -1755,7 +1759,7 @@ def edit_product(request, pk):
             # Keep diagnostics non-fatal in production
             logging.exception("Failed to log upload diagnostics")
         
-        if form.is_valid() and image_formset.is_valid():
+        if form.is_valid() and image_formset.is_valid() and spec_formset.is_valid():
             # Capture existing image names so we can detect newly-saved images
             try:
                 prev_names = set(product.images.values_list('image', flat=True))
@@ -1769,6 +1773,13 @@ def edit_product(request, pk):
             except TypeError:
                 # Some Django versions return None; fall back to querying by new names
                 saved_images = None
+
+            # Save specifications
+            try:
+                spec_formset.instance = updated_product
+                spec_formset.save()
+            except Exception:
+                logging.exception('Failed to save product specifications')
 
             # Log newly added images and their storage URLs (best-effort)
             try:
@@ -1877,13 +1888,16 @@ def edit_product(request, pk):
             
             return redirect('portal:inventory_dashboard') 
     else:
-        form = ProductEditForm(instance=product)
-        image_formset = ImageFormSet(instance=product) 
+    form = ProductEditForm(instance=product)
+    image_formset = ImageFormSet(instance=product)
+    SpecFormSet = inlineformset_factory(Product, ProductSpecification, fields=('name','value','sort_order'), extra=1, can_delete=True)
+    spec_formset = SpecFormSet(instance=product)
         
     context = {
         'form': form, 
         'product': product,
-        'image_formset': image_formset, 
+        'image_formset': image_formset,
+        'spec_formset': spec_formset,
         'page_title': f'Edit Product: {product.name}'
     }
     return render(request, 'store/edit_product.html', context)

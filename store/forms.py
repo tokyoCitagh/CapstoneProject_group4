@@ -3,6 +3,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm 
 from .models import Product, ProductImage 
+from .models import ProductSpecification
 
 # Import allauth's base form for overriding the login view
 from allauth.account.forms import LoginForm as AllauthLoginForm 
@@ -114,6 +115,23 @@ class ProductImageForm(forms.ModelForm):
         fields = ('image',)
         labels = {
             'image': 'Product Image File',
+        }
+
+
+# Form for editing a single product specification
+class ProductSpecificationForm(forms.ModelForm):
+    class Meta:
+        model = ProductSpecification
+        fields = ['name', 'value', 'sort_order']
+        labels = {
+            'name': 'Specification Name',
+            'value': 'Specification Value',
+            'sort_order': 'Order',
+        }
+        widgets = {
+            'value': forms.TextInput(attrs={'placeholder': 'e.g., 45kg or 1920x1080'}),
+            'name': forms.TextInput(attrs={'placeholder': 'e.g., Weight, Resolution, SKU'}),
+            'sort_order': forms.NumberInput(attrs={'min': 0, 'style': 'width:6rem;'}),
         }
 
 # -------------------------------------------------------------------

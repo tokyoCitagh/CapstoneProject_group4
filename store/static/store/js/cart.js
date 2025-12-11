@@ -398,6 +398,21 @@ function initHeaderBehavior(){
             });
         }
 
+        // Add a delegated click handler as a robust fallback (handles dynamically-replaced headers)
+        document.addEventListener('click', function(e){
+            try {
+                var t = e.target && e.target.closest ? e.target.closest('#nav-toggle') : null;
+                if (t) {
+                    var m = document.getElementById('mobile-menu');
+                    if (m) {
+                        if (m.classList.contains('hidden')) m.classList.remove('hidden'); else m.classList.add('hidden');
+                        // update aria-expanded if present on the button
+                        try { t.setAttribute('aria-expanded', m.classList.contains('hidden') ? 'false' : 'true'); } catch(e){}
+                    }
+                }
+            } catch (e) { /* ignore delegated handler errors */ }
+        });
+
         // Mobile floating cart button click behavior
         var mobileBtn = document.getElementById('mobile-cart-btn');
         if (mobileBtn) {

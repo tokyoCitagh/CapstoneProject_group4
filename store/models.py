@@ -91,6 +91,13 @@ class Product(models.Model):
     # Many-to-Many relationship with Category
     categories = models.ManyToManyField(Category, blank=True, related_name='products')
 
+    # Optional long description shown on the product detail page
+    description = models.TextField(blank=True, null=True)
+
+    def specifications(self):
+        """Return related specifications ordered by sort_order."""
+        return self.specification_set.all().order_by('sort_order')
+
     def __str__(self):
         return self.name
     
@@ -122,6 +129,20 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+
+# New model: ProductSpecification for arbitrary key/value pairs on a product
+class ProductSpecification(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='specifications')
+    name = models.CharField(max_length=200)
+    value = models.CharField(max_length=500)
+    sort_order = models.IntegerField(default=0, help_text='Lower numbers appear first')
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
 
 # 3. Order Model: The shopping cart or completed transaction 
 class Order(models.Model):
