@@ -194,6 +194,10 @@
 
             function attachInline(){
                 try{
+                    // If any button already has the modern cart listener mark, skip attaching
+                    if (document.querySelector('[data-listener="1"]') || document.querySelector('[data-inline-listener="1"]')) {
+                        return;
+                    }
                     var buttons = document.querySelectorAll('.add-to-cart, .update-cart');
                     for (var i=0;i<buttons.length;i++){
                         var b = buttons[i];

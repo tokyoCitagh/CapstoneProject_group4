@@ -142,7 +142,7 @@
                     </div>
                     
                 </a> 
-                <button type="button" data-product="{{product.id}}" data-action="add" class="add-to-cart" onclick="(function(btn){try{var pid=btn.getAttribute('data-product');var act=btn.getAttribute('data-action');fetch('/store/update_item/',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({productId:pid,action:act})}).then(function(){if(window.innerWidth&&window.innerWidth<=640){setTimeout(function(){location.reload();},250);}else{return;} }).catch(function(){ if(window.innerWidth&&window.innerWidth<=640){location.reload();} });}catch(e){} })(this); return false;">Add to Cart</button>
+                <button type="button" data-product="{{product.id}}" data-action="add" class="add-to-cart">Add to Cart</button>
                 
             </div>
             {% endfor %}
