@@ -124,6 +124,12 @@ function updateUserOrder(productId, action){
 
 // Initialize cart button listeners. Exposed so we can call it even if the script is injected after DOMContentLoaded.
 function initCartListeners(){
+    // Avoid attaching listeners more than once across multiple script loads
+    if (window.__imagee_cart_listeners_attached) {
+        console.debug('initCartListeners: listeners already attached - skipping');
+        return;
+    }
+
     // Select all buttons with the update-cart or add-to-cart class
     var updateBtns = document.querySelectorAll('.update-cart, .add-to-cart'); 
 
@@ -133,6 +139,10 @@ function initCartListeners(){
     // -----------------------------
 
     updateBtns.forEach(function(btn) {
+        // If another script already added listeners to this button, skip it
+        try {
+            if (btn.getAttribute && btn.getAttribute('data-listener') === '1') return;
+        } catch(e) { /* ignore */ }
         // Use pointer events to support mouse, touch and pen consistently on mobile
         var lastHandled = 0;
 
@@ -193,9 +203,12 @@ function initCartListeners(){
         try { btn.addEventListener('pointerdown', handler); } catch(e){}
         try { btn.addEventListener('touchstart', handler); } catch(e){}
         try { btn.addEventListener('click', handler); } catch(e){}
-        // Mark button for debugging
-        btn.setAttribute('data-listener', '1');
+        // Mark button for debugging and to prevent duplicate bindings
+        try { btn.setAttribute('data-listener', '1'); } catch(e){}
     });
+
+    // Record that we've attached listeners so subsequent loads skip re-attaching
+    try { window.__imagee_cart_listeners_attached = true; } catch(e){}
 }
 
 // If the document is already loaded (script injected after DOMContentLoaded), run immediately.

@@ -39,6 +39,13 @@ for _origin in ("https://www.imageelectronics.org", "https://imageelectronics.or
     if _origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_origin)
 
+# When running in DEBUG (local development), allow typical local hosts so
+# `runserver` on 127.0.0.1 or localhost doesn't raise DisallowedHost.
+if DEBUG:
+    for _local in ("127.0.0.1", "localhost", "[::1]"):
+        if _local not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(_local)
+
 # NOTE: Ensure DEBUG=False in production. DEBUG can be toggled via the DEBUG env var above.
 
 # Application definition

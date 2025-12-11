@@ -251,3 +251,40 @@
     {% endif %} {# End of search_query check #}
     
 {% endblock %}
+
+{% block extra_body %}
+<!-- Make header sticky on desktop only (store page) -->
+<script>
+    (function(){
+        try {
+            // Only apply on desktop widths (>=768px)
+            if (!(window.matchMedia && window.matchMedia('(min-width: 768px)').matches)) return;
+            var header = document.querySelector('header');
+            if (!header) return;
+
+            // Apply sticky positioning via inline styles so it activates immediately
+            header.style.position = 'sticky';
+            header.style.top = '0';
+            header.style.zIndex = '50';
+
+            // Add a placeholder top padding on the main content to avoid overlap
+            var main = document.querySelector('main');
+            if (main) {
+                var h = header.getBoundingClientRect().height || 64;
+                // Only set if not already set
+                if (!main.style.paddingTop) main.style.paddingTop = h + 'px';
+            }
+
+            // If the header height changes (responsive), keep padding in sync
+            var ro = new ResizeObserver(function(){
+                try {
+                    if (!main) return;
+                    var newh = header.getBoundingClientRect().height || 64;
+                    main.style.paddingTop = newh + 'px';
+                } catch(e){}
+            });
+            try { ro.observe(header); } catch(e){}
+        } catch (e) { console.debug('sticky header init failed', e); }
+    })();
+</script>
+{% endblock %}
