@@ -1888,10 +1888,10 @@ def edit_product(request, pk):
             
             return redirect('portal:inventory_dashboard') 
     else:
-    form = ProductEditForm(instance=product)
-    image_formset = ImageFormSet(instance=product)
-    SpecFormSet = inlineformset_factory(Product, ProductSpecification, fields=('name','value','sort_order'), extra=1, can_delete=True)
-    spec_formset = SpecFormSet(instance=product)
+        form = ProductEditForm(instance=product)
+        image_formset = ImageFormSet(instance=product)
+        SpecFormSet = inlineformset_factory(Product, ProductSpecification, fields=('name','value','sort_order'), extra=1, can_delete=True)
+        spec_formset = SpecFormSet(instance=product)
         
     context = {
         'form': form, 
