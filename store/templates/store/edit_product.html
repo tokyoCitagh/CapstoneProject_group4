@@ -227,12 +227,16 @@
                                 {{ sf.value.label_tag }}
                                 {{ sf.value }}
                             </div>
-                            <div style="width:80px; text-align:center;">
-                                {{ sf.sort_order.label_tag }}
-                                {{ sf.sort_order }}
+                            {# Keep sort_order as a hidden input (admins don't need to edit it manually) #}
+                            <div style="display:none;">
+                                {{ sf.sort_order.as_hidden }}
                             </div>
-                            <div style="width:70px; text-align:center;">
-                                {% if sf.DELETE %}{{ sf.DELETE }}<br><small>Delete</small>{% endif %}
+                            <div style="width:90px; text-align:center;">
+                                {# Render a hidden DELETE input and show a Delete button instead #}
+                                {% if sf.DELETE %}
+                                    {{ sf.DELETE.as_hidden }}
+                                {% endif %}
+                                <button type="button" class="delete-spec-btn" style="background:#ef4444;color:white;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;">Delete</button>
                             </div>
                         </div>
                         {% endfor %}
@@ -244,6 +248,30 @@
                     </div>
                 </div>
                 {% endif %}
+                    <script>
+                        // Delegated handler for Delete buttons on spec rows
+                        document.addEventListener('DOMContentLoaded', function(){
+                            var container = document.getElementById('spec-forms-container');
+                            if (!container) return;
+                            container.addEventListener('click', function(e){
+                                var btn = e.target.closest('.delete-spec-btn');
+                                if (!btn) return;
+                                e.preventDefault();
+                                var row = btn.closest('.spec-row');
+                                if (!row) return;
+                                try {
+                                    // Find any DELETE checkbox/hidden input in this row (name ends with -DELETE)
+                                    var delInput = row.querySelector('input[name$="-DELETE"]');
+                                    if (delInput) {
+                                        // For checkbox inputs, set checked; for hidden inputs set value
+                                        if (delInput.type === 'checkbox') delInput.checked = true; else delInput.value = 'on';
+                                    }
+                                } catch (err) { console.debug('delete-spec error', err); }
+                                // Hide the row visually
+                                row.style.display = 'none';
+                            });
+                        });
+                    </script>
 
             </div>
             
