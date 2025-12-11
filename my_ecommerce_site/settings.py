@@ -15,19 +15,16 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 try:
     SECRET_KEY = config('SECRET_KEY')
 except UndefinedValueError:
-    # If SECRET_KEY is not defined and we're in DEBUG (local dev), generate a temporary key.
-    # This avoids crashing `runserver` for local development while still requiring
-    # a real SECRET_KEY in production environments.
-    if DEBUG:
-        try:
-            from django.core.management.utils import get_random_secret_key
-            SECRET_KEY = get_random_secret_key()
-        except Exception:
-            # Last-resort fallback (not secure, acceptable only for local dev)
-            SECRET_KEY = 'dev-secret-key-change-me'
-    else:
-        # In production, SECRET_KEY must be provided via env var.
-        raise
+    # If SECRET_KEY is not set, generate a temporary one and warn.
+    # This allows local development `runserver` to start even when .env is missing.
+    # In production you MUST set SECRET_KEY via environment variables.
+    import warnings
+    warnings.warn('SECRET_KEY environment variable not found. Using a temporary development SECRET_KEY.', RuntimeWarning)
+    try:
+        from django.core.management.utils import get_random_secret_key
+        SECRET_KEY = get_random_secret_key()
+    except Exception:
+        SECRET_KEY = 'dev-secret-key-change-me'
 # Read ALLOWED_HOSTS from env (comma separated) for production (Railway)
 _allowed = config('ALLOWED_HOSTS', default='')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else []
@@ -431,7 +428,10 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)  # SMTP connection timeout in seconds
 
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=('webmaster@localhost' if DEBUG else None))
+if DEFAULT_FROM_EMAIL is None:
+    # In production DEFAULT_FROM_EMAIL must be set explicitly
+    raise RuntimeError('DEFAULT_FROM_EMAIL is required in production environment')
 SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # ===== PAYSTACK PAYMENT CONFIGURATION =====
