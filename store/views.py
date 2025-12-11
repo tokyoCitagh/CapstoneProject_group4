@@ -26,7 +26,7 @@ import requests
 import time
 
 # --- CRITICAL IMPORTS ---
-from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog 
+from store.models import Product, Order, OrderItem, ProductImage, Customer, ShippingAddress, ActivityLog, ProductSpecification 
 from store.utils import cartData 
 from store.forms import ProductForm, ProductEditForm 
 from services.models import ServiceRequest, QuoteMessage, ServiceAttachment 
