@@ -1,5 +1,5 @@
 from pathlib import Path
-from decouple import config
+from decouple import config, UndefinedValueError
 import dj_database_url
 import os
 import cloudinary
@@ -9,8 +9,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- DECOUPLE SETUP FOR .ENV FILE ---
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = config('SECRET_KEY')
+# Read DEBUG first so we can provide a safe development SECRET_KEY fallback when needed
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+try:
+    SECRET_KEY = config('SECRET_KEY')
+except UndefinedValueError:
+    # If SECRET_KEY is not defined and we're in DEBUG (local dev), generate a temporary key.
+    # This avoids crashing `runserver` for local development while still requiring
+    # a real SECRET_KEY in production environments.
+    if DEBUG:
+        try:
+            from django.core.management.utils import get_random_secret_key
+            SECRET_KEY = get_random_secret_key()
+        except Exception:
+            # Last-resort fallback (not secure, acceptable only for local dev)
+            SECRET_KEY = 'dev-secret-key-change-me'
+    else:
+        # In production, SECRET_KEY must be provided via env var.
+        raise
 # Read ALLOWED_HOSTS from env (comma separated) for production (Railway)
 _allowed = config('ALLOWED_HOSTS', default='')
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else []
