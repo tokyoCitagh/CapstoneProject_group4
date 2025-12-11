@@ -114,6 +114,9 @@
     <script type="text/javascript">
         // 1. Define the 'user' status for cart.js
         var user = '{{ request.user.is_authenticated|yesno:"AuthenticatedUser,AnonymousUser" }}';
+
+        // 1.b Define the login URL so static JS can redirect/show link
+        var loginUrl = '{% url "account_login" %}';
         
         // 2. Define the CSRF Token for all AJAX POST requests
         var csrftoken = '{{ csrf_token }}';

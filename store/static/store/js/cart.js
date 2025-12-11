@@ -192,7 +192,21 @@ function initCartListeners(){
 
                     updateUserOrder(productId, action);
                 } else {
-                    console.warn('Authentication required: Please log in to update the cart.');
+                    // Show a friendly prompt asking the user to log in before adding to cart
+                    try {
+                        if (typeof showLoginPrompt === 'function') {
+                            showLoginPrompt(typeof loginUrl !== 'undefined' ? loginUrl : '/accounts/login/');
+                        } else {
+                            // Fallbacks: mobile toast or window confirm
+                            if (window.innerWidth && window.innerWidth <= 640) {
+                                try { showToast('Please login to add items to your cart.'); } catch(e){}
+                            } else {
+                                if (window.confirm && window.confirm('Please log in to add items to your cart.\n\nGo to the login page now?')) {
+                                    window.location.href = (typeof loginUrl !== 'undefined' ? loginUrl : '/accounts/login/');
+                                }
+                            }
+                        }
+                    } catch (e) { console.debug('showLoginPrompt failed', e); }
                 }
             } catch (ex) {
                 console.error('Cart handler error', ex);
@@ -270,6 +284,79 @@ function showCartDebug(cartItems){
         // hide after 2s
         setTimeout(function(){ d.style.opacity = '0'; }, 2000);
     }catch(e){/* ignore */}
+}
+
+// Show a modal/login prompt when unauthenticated users attempt to add items to cart
+function showLoginPrompt(loginHref){
+    try {
+        // On small screens prefer a simple toast + redirect
+        if (window.innerWidth && window.innerWidth <= 640) {
+            try { showToast('Please login to add items to your cart.'); } catch(e){}
+            // Offer a short delay before redirect so the toast is visible
+            setTimeout(function(){ window.location.href = loginHref || '/accounts/login/'; }, 1100);
+            return;
+        }
+
+        // If modal already exists, reuse it
+        var existing = document.getElementById('login-prompt-modal');
+        if (existing) {
+            // Ensure modal is visible (use inline display to override styles)
+            existing.style.display = 'flex';
+            return;
+        }
+
+        var overlay = document.createElement('div');
+        overlay.id = 'login-prompt-modal';
+        overlay.style.position = 'fixed';
+        overlay.style.left = 0; overlay.style.top = 0; overlay.style.right = 0; overlay.style.bottom = 0;
+        overlay.style.zIndex = 999999;
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.background = 'rgba(0,0,0,0.45)';
+
+        var card = document.createElement('div');
+        card.style.background = '#fff';
+        card.style.padding = '20px';
+        card.style.borderRadius = '8px';
+        card.style.maxWidth = '420px';
+        card.style.width = '90%';
+        card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+        card.innerHTML = '<h3 style="margin:0 0 8px;font-size:18px;">Please log in</h3>' +
+                         '<p style="margin:0 0 16px;color:#333;">You need to be logged in to add items to your cart. Would you like to go to the login page now?</p>';
+
+        var controls = document.createElement('div');
+        controls.style.display = 'flex';
+        controls.style.justifyContent = 'flex-end';
+        controls.style.gap = '8px';
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.padding = '8px 12px';
+        cancelBtn.style.border = '1px solid #ddd';
+        cancelBtn.style.background = '#fff';
+        cancelBtn.style.borderRadius = '6px';
+        cancelBtn.style.cursor = 'pointer';
+        cancelBtn.addEventListener('click', function(){ overlay.style.display = 'none'; });
+
+        var loginBtn = document.createElement('button');
+        loginBtn.textContent = 'Login';
+        loginBtn.style.padding = '8px 12px';
+        loginBtn.style.border = 'none';
+        loginBtn.style.background = '#2563eb';
+        loginBtn.style.color = '#fff';
+        loginBtn.style.borderRadius = '6px';
+        loginBtn.style.cursor = 'pointer';
+        loginBtn.addEventListener('click', function(){ window.location.href = loginHref || '/accounts/login/'; });
+
+        controls.appendChild(cancelBtn);
+        controls.appendChild(loginBtn);
+        card.appendChild(controls);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        // allow closing by clicking backdrop
+        overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.style.display = 'none'; });
+    } catch (e) { console.debug('showLoginPrompt error', e); }
 }
 
 // Fetch the site's home page and replace the <header> element with the server-rendered header.
