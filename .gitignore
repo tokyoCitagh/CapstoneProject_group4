@@ -61,3 +61,13 @@ npm-debug.log
 
 # Tailwind
 static/css/output.css
+
+# Sensitive exports and local dumps
+railway_vars_export.json
+railway_dump.json
+railway_dump-*.json
+auth.json
+*.dump
+*.sql
+.env.local
+.env
