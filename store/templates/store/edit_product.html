@@ -88,6 +88,8 @@
             display: block;
             margin-bottom: 5px;
         }
+        /* Hide any labels that refer to sort_order fields in the spec formset */
+        label[for$='-sort_order'] { display: none; }
         
         /* --- ACTION BUTTONS & MODAL STYLES --- */
         .action-buttons {
@@ -208,7 +210,9 @@
                 {% if spec_formset %}
                 <hr style="margin: 20px 0;">
                 <h3>Product Specifications</h3>
-                {{ spec_formset.management_form }}
+                <div id="spec-management">
+                    {{ spec_formset.management_form }}
+                </div>
 
                 <div style="margin-top:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -252,8 +256,52 @@
                         // Delegated handler for Delete buttons on spec rows
                         document.addEventListener('DOMContentLoaded', function(){
                             var container = document.getElementById('spec-forms-container');
-                            if (!container) return;
-                            container.addEventListener('click', function(e){
+                                if (!container) return;
+                                // Normalize existing rows: hide sort_order labels/inputs and remove duplicate delete controls
+                                try {
+                                    var mgmt = document.querySelector('#spec-management input[name$="-TOTAL_FORMS"]');
+                                    var prefix = mgmt ? mgmt.name.replace(/-TOTAL_FORMS$/, '') : null;
+                                    var rows = container.querySelectorAll('.spec-row');
+                                    rows.forEach(function(row, idx){
+                                        // hide any sort_order inputs/labels
+                                        var sortInputs = row.querySelectorAll('input[name$="-sort_order"]');
+                                        sortInputs.forEach(function(si){ si.type = 'hidden'; if (si.parentElement) si.parentElement.style.display = 'none'; });
+                                        var sortLabels = row.querySelectorAll('label[for$="-sort_order"]');
+                                        sortLabels.forEach(function(l){ l.style.display = 'none'; });
+
+                                        // hide any visible DELETE checkbox inputs/labels (formsets may render checkboxes)
+                                        var delChecks = row.querySelectorAll('input[type="checkbox"][name$="-DELETE"]');
+                                        delChecks.forEach(function(d){ d.style.display = 'none'; if (d.labels) d.labels.forEach(function(l){ l.style.display = 'none'; }); });
+
+                                        // Ensure exactly one Delete button: remove extras
+                                        var delBtns = row.querySelectorAll('.delete-spec-btn');
+                                        if (delBtns.length > 1) {
+                                            for (var i = 1; i < delBtns.length; i++) delBtns[i].remove();
+                                        } else if (delBtns.length === 0) {
+                                            // add a Delete button if missing
+                                            var deleteContainer = document.createElement('div');
+                                            deleteContainer.style.width = '90px';
+                                            deleteContainer.style.textAlign = 'center';
+                                            // ensure hidden DELETE input exists
+                                            if (prefix) {
+                                                var hiddenDel = document.createElement('input');
+                                                hiddenDel.type = 'hidden';
+                                                hiddenDel.name = prefix + '-' + idx + '-DELETE';
+                                                hiddenDel.value = '';
+                                                deleteContainer.appendChild(hiddenDel);
+                                            }
+                                            var delBtn = document.createElement('button');
+                                            delBtn.type = 'button';
+                                            delBtn.className = 'delete-spec-btn';
+                                            delBtn.style = 'background:#ef4444;color:white;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
+                                            delBtn.appendChild(document.createTextNode('Delete'));
+                                            deleteContainer.appendChild(delBtn);
+                                            row.appendChild(deleteContainer);
+                                        }
+                                    });
+                                } catch (normErr) { console.debug('spec normalize error', normErr); }
+
+                                container.addEventListener('click', function(e){
                                 var btn = e.target.closest('.delete-spec-btn');
                                 if (!btn) return;
                                 e.preventDefault();
@@ -365,20 +413,46 @@
             try {
                 var addBtn = document.getElementById('add-spec-btn');
                 if (!addBtn) return;
-                var prefix = '{{ spec_formset.prefix }}';
-                var totalEl = document.querySelector('input[name="' + prefix + '-TOTAL_FORMS"]');
+                // Find the TOTAL_FORMS input for this spec formset inside the management wrapper
+                var totalEl = document.querySelector('#spec-management input[name$="-TOTAL_FORMS"]');
                 var container = document.getElementById('spec-forms-container');
                 var template = document.getElementById('empty-spec-form');
                 if (!totalEl || !container || !template) return;
 
+                // Derive prefix from the TOTAL_FORMS input name (e.g. 'spec_set' from 'spec_set-TOTAL_FORMS')
+                var prefix = totalEl.name.replace(/-TOTAL_FORMS$/, '');
+
                 addBtn.addEventListener('click', function(e){
                     e.preventDefault();
                     var total = parseInt(totalEl.value, 10);
+                    // Replace Django's __prefix__ placeholders with the new index
                     var newHtml = template.innerHTML.replace(/__prefix__/g, total);
+
+                    // Build wrapper and ensure Delete input/button exists for the new row
                     var wrapper = document.createElement('div');
                     wrapper.className = 'form-row spec-row';
                     wrapper.style = 'align-items: center; border-bottom: 1px dashed #eee; padding:8px 0;';
                     wrapper.innerHTML = newHtml;
+
+                    // Append a hidden DELETE input and a visible Delete button to match existing rows
+                    var deleteContainer = document.createElement('div');
+                    deleteContainer.style.width = '90px';
+                    deleteContainer.style.textAlign = 'center';
+                    // Hidden DELETE input
+                    var delInput = document.createElement('input');
+                    delInput.type = 'hidden';
+                    delInput.name = prefix + '-' + total + '-DELETE';
+                    delInput.value = '';
+                    deleteContainer.appendChild(delInput);
+                    // Delete button
+                    var delBtn = document.createElement('button');
+                    delBtn.type = 'button';
+                    delBtn.className = 'delete-spec-btn';
+                    delBtn.style = 'background:#ef4444;color:white;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;';
+                    delBtn.appendChild(document.createTextNode('Delete'));
+                    deleteContainer.appendChild(delBtn);
+
+                    wrapper.appendChild(deleteContainer);
                     container.appendChild(wrapper);
                     totalEl.value = total + 1;
                 });
