@@ -191,7 +191,9 @@
                     {% if image_form.instance.pk %}
                         <img src="{{ image_form.instance.image|cloud_url }}" alt="Photo Preview">
                         <p style="margin: 5px 0;">{{ image_form.DELETE.label_tag }} {{ image_form.DELETE }}</p>
+                        {% if debug %}
                         <p style="font-size:0.9em;color:#666;margin-top:6px;word-break:break-all;">Debug: name={{ image_form.instance.image.name }} | url={{ image_form.instance.image.url }} | cloud_url={{ image_form.instance.image|cloud_url }}</p>
+                        {% endif %}
                         <p class="text-xs text-gray-500 mb-2">Change/Replace:</p>
                         {{ image_form.image }}
                         {{ image_form.id }}
