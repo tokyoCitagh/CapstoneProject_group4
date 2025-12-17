@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+Disallow: /admin/
+Disallow: /accounts/
+Sitemap: https://www.imageelectronics.org/sitemap.xml

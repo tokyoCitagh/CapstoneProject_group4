@@ -5,7 +5,8 @@ from django.urls import path, include, reverse_lazy
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView 
+from django.views.generic import RedirectView
+from django.http import HttpResponse
 from django.contrib.sitemaps.views import sitemap
 from store import views as store_views 
 from services import views as services_views
@@ -19,6 +20,18 @@ sitemaps = {
     'products': ProductSitemap,
     'static': StaticSitemap,
 }
+
+
+def robots_txt(request):
+    """Serve robots.txt with sitemap reference"""
+    content = """User-agent: *
+Allow: /
+Disallow: /portal/
+Disallow: /admin/
+Disallow: /accounts/
+Sitemap: https://www.imageelectronics.org/sitemap.xml
+"""
+    return HttpResponse(content, content_type='text/plain')
 
 
 # --- New pattern list for the Portal, using a dedicated namespace ---
@@ -81,7 +94,8 @@ urlpatterns = [
     
     path('admin/', admin.site.urls),
 
-    # CUSTOMER SHOP PATHS
+    # SEO
+    path('robots.txt', robots_txt),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path('store/', include(('store.urls', 'store'), namespace='store')), 
     path('services/', include('services.urls')), 

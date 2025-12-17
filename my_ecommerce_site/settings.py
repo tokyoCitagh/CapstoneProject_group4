@@ -96,6 +96,7 @@ MIDDLEWARE = [
     # Emergency: force HTML revalidation so mobile clients pick up inline JS changes
     'my_ecommerce_site.middleware.NoCacheHtmlMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'my_ecommerce_site.middleware.AllowSitemapIndexingMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     # EnsureSessionMiddleware will create lightweight sessions for anonymous

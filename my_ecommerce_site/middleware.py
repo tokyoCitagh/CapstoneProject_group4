@@ -5,6 +5,25 @@ import sys
 logger = logging.getLogger(__name__)
 
 
+class AllowSitemapIndexingMiddleware:
+    """Remove noindex tag from sitemap.xml to allow Google to fetch it."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Allow sitemaps and robots.txt to be indexed
+        if request.path in ['/sitemap.xml', '/robots.txt']:
+            # Remove the noindex tag that SecurityMiddleware adds
+            if 'X-Robots-Tag' in response:
+                del response['X-Robots-Tag']
+        
+        return response
+
+
+
 class ExceptionLoggingMiddleware:
     """Middleware that logs uncaught exceptions with full traceback to the default logger.
 
