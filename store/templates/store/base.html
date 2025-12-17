@@ -9,6 +9,9 @@
     <link rel="icon" type="image/webp" href="{% static 'images/imjlogo.webp' %}">
     <link rel="shortcut icon" type="image/webp" href="{% static 'images/imjlogo.webp' %}">
     
+    {# --- Google Site Verification --- #}
+    <meta name="google-site-verification" content="lV65DM5cCb0GyDN11ZbkaaTP9yThNm44B49KJWHsk-E" />
+    
     {# --- CRITICAL: The Tailwind script MUST be placed here in the parent base template head --- #}
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -226,7 +229,11 @@
         })();
     </script>
 
-    <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
+     {# Only load the storefront cart.js on non-portal pages to avoid
+         interfering with staff portal UI (modals/overlays). #}
+     {% if '/portal' not in request.path %}
+     <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
+     {% endif %}
 
     <!-- Removed runtime loader that dynamically re-inserted cart.js to avoid duplicate script loads -->
 
