@@ -6,11 +6,19 @@ from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView 
+from django.contrib.sitemaps.views import sitemap
 from store import views as store_views 
-from services import views as services_views 
+from services import views as services_views
+from store.sitemaps import ProductSitemap, StaticSitemap 
 
 # CRITICAL SETTINGS FOR LOGIN VIEW
 STAFF_LOGOUT_URL = reverse_lazy('portal:login')
+
+# Sitemap configuration
+sitemaps = {
+    'products': ProductSitemap,
+    'static': StaticSitemap,
+}
 
 
 # --- New pattern list for the Portal, using a dedicated namespace ---
@@ -74,6 +82,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # CUSTOMER SHOP PATHS
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('store/', include(('store.urls', 'store'), namespace='store')), 
     path('services/', include('services.urls')), 
     
