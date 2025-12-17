@@ -289,6 +289,11 @@ function showCartDebug(cartItems){
 // Show a modal/login prompt when unauthenticated users attempt to add items to cart
 function showLoginPrompt(loginHref){
     try {
+        // Do not show the add-to-cart login modal on portal/staff pages.
+        if (typeof window !== 'undefined' && window.location && window.location.pathname && window.location.pathname.indexOf('/portal') === 0) {
+            console.warn('showLoginPrompt suppressed on portal page');
+            return;
+        }
         // On small screens prefer a simple toast + redirect
         if (window.innerWidth && window.innerWidth <= 640) {
             try { showToast('Please login to add items to your cart.'); } catch(e){}

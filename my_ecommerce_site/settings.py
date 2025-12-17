@@ -428,10 +428,14 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)  # SMTP connection timeout in seconds
 
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=('webmaster@localhost' if DEBUG else None))
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=None)
 if DEFAULT_FROM_EMAIL is None:
-    # In production DEFAULT_FROM_EMAIL must be set explicitly
-    raise RuntimeError('DEFAULT_FROM_EMAIL is required in production environment')
+    # In local development allow a safe fallback so `runserver` works
+    if DEBUG:
+        DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+    else:
+        # In production DEFAULT_FROM_EMAIL must be set explicitly
+        raise RuntimeError('DEFAULT_FROM_EMAIL is required in production environment')
 SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # ===== PAYSTACK PAYMENT CONFIGURATION =====

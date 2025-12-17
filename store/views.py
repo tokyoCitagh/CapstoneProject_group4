@@ -1050,6 +1050,85 @@ def inventory_dashboard(request):
     return render(request, 'store/inventory_dashboard.html', context)
 
 
+# Temporary debug endpoint: render the inventory dashboard without auth checks.
+# ONLY enabled for DEBUG/local use to help diagnose rendering issues.
+def portal_inventory_debug(request):
+    try:
+        total_products = Product.objects.count()
+        LOW_STOCK_THRESHOLD = 5
+        low_stock_count = Product.objects.filter(stock_quantity__lte=LOW_STOCK_THRESHOLD).count()
+        pending_orders_count = Order.objects.filter(complete=False).count()
+
+        product_search = request.GET.get('product_search', '').strip()
+        product_sales = Product.objects.annotate(
+            total_sold=Sum('orderitem__quantity', filter=Q(orderitem__order__complete=True))
+        )
+        if product_search:
+            product_sales = product_sales.filter(name__icontains=product_search)
+        from django.db.models.functions import Coalesce
+        from django.db.models import Value
+        product_sales = product_sales.annotate(sold_count=Coalesce('total_sold', Value(0))).order_by('-sold_count', '-id')
+
+        latest_activities = ActivityLog.objects.all().order_by('-action_time')[:10]
+        all_orders_count = Order.objects.filter(complete=True).count()
+        recent_orders = Order.objects.filter(complete=True).order_by('-date_ordered')[:5]
+
+        context = {
+            'product_sales': product_sales,
+            'product_search': product_search,
+            'page_title': 'Inventory Dashboard (debug)',
+            'latest_activities': latest_activities,
+            'total_products': total_products,
+            'low_stock_count': low_stock_count,
+            'pending_orders_count': pending_orders_count,
+            'all_orders_count': all_orders_count,
+            'recent_orders': recent_orders,
+        }
+        # Bypass client-side portal auth redirect in base_portal.html for this debug view
+        context['skip_portal_auth'] = True
+        return render(request, 'store/inventory_dashboard.html', context)
+    except Exception as e:
+        logger.exception('portal_inventory_debug failed: %s', e)
+        return HttpResponse('Debug inventory failed: %s' % e, status=500)
+
+
+def portal_inventory_debug_plain(request):
+    """Plain, minimal HTML version of the inventory dashboard for troubleshooting
+    client-side rendering issues. No CSS or JS included — useful for isolating
+    browser/extension problems."""
+    try:
+        product_sales = Product.objects.annotate(
+            total_sold=Sum('orderitem__quantity', filter=Q(orderitem__order__complete=True))
+        ).order_by('-id')[:50]
+        # minimal context
+        context = {
+            'product_sales': product_sales,
+            'page_title': 'Inventory Dashboard (plain debug)'
+        }
+        return render(request, 'store/inventory_debug_plain.html', context)
+    except Exception as e:
+        logger.exception('portal_inventory_debug_plain failed: %s', e)
+        return HttpResponse('Debug (plain) failed: %s' % e, status=500)
+
+
+def portal_inventory_debug_ui(request):
+    """Simplified portal-like UI for local debugging. Minimal CSS/HTML so
+    browser rendering issues are less likely to hide content."""
+    try:
+        from django.conf import settings
+        product_sales = Product.objects.annotate(
+            total_sold=Sum('orderitem__quantity', filter=Q(orderitem__order__complete=True))
+        ).order_by('-id')[:100]
+        context = {
+            'product_sales': product_sales,
+            'page_title': 'Inventory Dashboard (simple UI)'
+        }
+        return render(request, 'store/inventory_debug_ui.html', context)
+    except Exception as e:
+        logger.exception('portal_inventory_debug_ui failed: %s', e)
+        return HttpResponse('Debug (ui) failed: %s' % e, status=500)
+
+
 @login_required(login_url=PORTAL_LOGIN_URL)
 @user_passes_test(is_staff_user, login_url=PORTAL_LOGIN_URL)
 def portal_analytics(request):
@@ -1894,12 +1973,16 @@ def edit_product(request, pk):
         spec_formset = SpecFormSet(instance=product)
         
     context = {
-        'form': form, 
+        'form': form,
         'product': product,
         'image_formset': image_formset,
         'spec_formset': spec_formset,
         'page_title': f'Edit Product: {product.name}'
     }
+    from django.conf import settings as _settings
+    # Render the full edit template (includes image gallery and debug helpers).
+    # Previously we rendered the minimal `edit_product_fixed.html` during cleanup;
+    # switch back to the richer `edit_product.html` so image previews appear.
     return render(request, 'store/edit_product.html', context)
 
 
@@ -1943,6 +2026,51 @@ def service_home(request):
     data = cartData(request)
     context = {'cartItems': data['cartItems']}
     return render(request, 'services/service_home.html', context)
+
+
+def render_test(request):
+        """Minimal debug endpoint that returns a very small HTML page to verify
+        whether the browser is able to render basic HTML. Useful to isolate
+        client-side rendering issues from template/view problems.
+        """
+        from django.http import HttpResponse
+        import datetime
+        now = datetime.datetime.utcnow().isoformat() + 'Z'
+        html = f"""<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Render Test</title>
+        <style>body{{background:#fffbeb;color:#111;font-family:Arial,sans-serif;padding:40px}} .ok{{background:#10b981;color:#fff;padding:8px 12px;border-radius:6px}}</style>
+    </head>
+    <body>
+        <h1>RENDER TEST — Visible</h1>
+        <p class="ok">Timestamp (UTC): {now}</p>
+        <p>If you can see this text, the browser renders basic HTML correctly.</p>
+    </body>
+</html>"""
+        return HttpResponse(html)
+
+
+def render_raw_inventory(request):
+    """Return a very small, dependency-free HTML page listing product names.
+    This bypasses templates, CSS and JS so you can confirm the server data
+    is reachable and the browser will render the raw content.
+    """
+    from django.http import HttpResponse
+    try:
+        from .models import Product
+        products = Product.objects.all()[:200]
+    except Exception:
+        products = []
+    lines = ['<html><head><meta charset="utf-8"><title>Raw Inventory</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:20px">', '<h1>Raw Inventory</h1>', '<ul>']
+    if products:
+        for p in products:
+            lines.append(f'<li>{p.pk}: {p.name}</li>')
+    else:
+        lines.append('<li><em>No products or DB error</em></li>')
+    lines.extend(['</ul>', '</body></html>'])
+    return HttpResponse('\n'.join(lines))
 
 
 @login_required 

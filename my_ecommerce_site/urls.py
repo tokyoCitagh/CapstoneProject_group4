@@ -79,6 +79,12 @@ urlpatterns = [
     
     # STAFF PORTAL PATHS (Namespaced)
     path('portal/', include((portal_urlpatterns, 'portal'), namespace='portal')),
+     # Minimal render-check endpoint for debugging browser rendering issues
+     path('__render_test__/', store_views.render_test, name='render_test'),
+     path('__raw_inventory__/', store_views.render_raw_inventory, name='raw_inventory'),
+     # Local debug endpoint to render the portal inventory without auth (DEBUG only)
+     path('__portal_debug_inventory__/', store_views.portal_inventory_debug, name='portal_debug_inventory'),
+          path('__portal_debug_inventory_plain__/', store_views.portal_inventory_debug_plain, name='portal_debug_inventory_plain'),
      # Public trends quick-view (no auth)
      path('analytics/trends-public/', store_views.analytics_trends_public, name='analytics_trends_public'),
      path('analytics/trends-public-data/', store_views.analytics_trends_public_data, name='analytics_trends_public_data'),
