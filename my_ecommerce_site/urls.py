@@ -82,7 +82,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # CUSTOMER SHOP PATHS
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path('store/', include(('store.urls', 'store'), namespace='store')), 
     path('services/', include('services.urls')), 
     
