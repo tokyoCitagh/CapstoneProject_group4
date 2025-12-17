@@ -3,6 +3,34 @@
 
 {% block title %}{{ product.name }}{% endblock %}
 
+{% block extra_head %}
+{# --- Product Schema Markup (for Google Rich Snippets) --- #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "description": "{{ product.description|truncatewords:50 }}",
+  "image": "{% if images %}{{ images.0.image|cloud_url }}{% else %}{% endif %}",
+  "brand": {
+    "@type": "Brand",
+    "name": "Image Electronics"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.build_absolute_uri }}",
+    "priceCurrency": "GHS",
+    "price": "{% if product.discount_price and product.discount_price < product.price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}",
+    "availability": "{% if product.stock_quantity > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "inventoryLevel": {
+      "@type": "QuantitativeValue",
+      "value": {{ product.stock_quantity }}
+    }
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="lg:flex lg:gap-12">
