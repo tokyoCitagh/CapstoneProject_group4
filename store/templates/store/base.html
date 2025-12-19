@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Image Electronics - Professional camera repairs, tech accessories, and electronics services in Accra, Ghana. Expert repair services for cameras, lenses, drones and more.">
     
     {# --- Favicon (Logo in Browser Tab) --- #}
     <link rel="icon" type="image/webp" href="{% static 'images/imjlogo.webp' %}">
@@ -16,11 +17,11 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
+      "@type": ["Organization", "LocalBusiness"],
       "name": "Image Electronics",
       "url": "https://www.imageelectronics.org",
       "logo": "https://www.imageelectronics.org/static/images/imjlogo.webp",
-      "description": "Your trusted source for the latest cameras, tech accessories, and professional repair services",
+      "description": "Professional camera repairs and electronics services in Ghana",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "JP4F+9JV, Kwashieman",
@@ -31,7 +32,26 @@
         "@type": "ContactPoint",
         "telephone": "+233-24-287-2458",
         "contactType": "Customer Service"
-      }
+      },
+      "areaServed": "Ghana",
+      "priceRange": "GH₵",
+      "service": [
+        {
+          "@type": "Service",
+          "name": "Camera Repair",
+          "description": "Professional camera and lens repair services"
+        },
+        {
+          "@type": "Service",
+          "name": "Drone Repair",
+          "description": "Drone and photography equipment repairs"
+        },
+        {
+          "@type": "Service",
+          "name": "Electronics Sales",
+          "description": "Tech accessories and electronics products"
+        }
+      ]
     }
     </script>
     
