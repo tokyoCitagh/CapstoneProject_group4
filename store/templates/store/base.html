@@ -252,8 +252,6 @@
         })();
     </script>
 
-     {# Only load the storefront cart.js on non-portal pages to avoid
-         interfering with staff portal UI (modals/overlays). #}
      {% if '/portal' not in request.path %}
      <script type="text/javascript" src="{% static 'store/js/cart.js' %}?v={% now "U" %}"></script>
      {% endif %}
